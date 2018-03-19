@@ -2,4 +2,4 @@
 *.obj
 *.lib
 *.a
-./build
+build

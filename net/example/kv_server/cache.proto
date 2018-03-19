@@ -1,0 +1,32 @@
+syntax="proto3";
+option cc_generic_services = true;
+
+package push;
+
+enum Status {
+  OK = 0;
+  ERROR = 1;
+  UNKNOWN = 255;
+};
+
+message GetRequest {
+  repeated string keys = 1;
+};
+
+message GetResponse {
+  Status status = 1;
+  repeated string values = 2;
+};
+
+message SetRequest {
+  map<string, string> key_values = 1;
+};
+
+message SetResponse {
+  Status status = 1;
+};
+
+service CacheService {
+  rpc Get(GetRequest) returns (GetResponse);
+  rpc Set(SetRequest) returns (SetResponse);
+};
