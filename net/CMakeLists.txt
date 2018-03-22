@@ -1,13 +1,354 @@
-if(BUILD_UNIT_TESTS)
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DUNIT_TEST -DBVAR_NOT_LINK_DEFAULT_VARIABLES")
-  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DUNIT_TEST")
-elseif(NOT DEBUG)
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DNDEBUG")
-  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DNDEBUG")
+# Licensed to the Apache Software Foundation (ASF) under one
+# or more contributor license agreements.  See the NOTICE file
+# distributed with this work for additional information
+# regarding copyright ownership.  The ASF licenses this file
+# to you under the Apache License, Version 2.0 (the
+# "License"); you may not use this file except in compliance
+# with the License.  You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# URLs for each downloaded or bundled third-party dependency.
+#############################################################
+cmake_minimum_required(VERSION 3.2.0)
+
+project(net C CXX)
+
+# In-tree dependencies.
+#######################
+
+# get third_party property
+# get protobuf include and protoc path
+get_target_property(PROTOBUF_INCLUDE_DIR protobuf INTERFACE_INCLUDE_DIRECTORIES)
+get_target_property(GFLAGS_INCLUDE_PATH gflags INTERFACE_INCLUDE_DIRECTORIES)
+get_target_property(LEVELDB_INCLUDE_PATH leveldb INTERFACE_INCLUDE_DIRECTORIES)
+
+if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+  # require at least gcc 4.8
+  if(CMAKE_CXX_COMPILER_VERSION VERSION_LESS 4.8)
+    message(FATAL_ERROR "GCC is too old, please install a newer version supporting C++11")
+  endif()
+elseif(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+  # require at least clang 3.3
+  if(CMAKE_CXX_COMPILER_VERSION VERSION_LESS 3.3)
+    message(FATAL_ERROR "Clang is too old, please install a newer version supporting C++11")
+  endif()
+else()
+  message(WARNING "You are using an unsupported compiler! Compilation has only been tested with Clang and GCC.")
 endif()
 
-#include_directories(${CMAKE_CURRENT_BINARY_DIR})
-#include_directories(${CMAKE_SOURCE_DIR}/net)
+option(BRPC_WITH_GLOG "With glog" ON)
+option(DEBUG "Print debug logs" OFF)
+option(WITH_DEBUG_SYMBOLS "With debug symbols" OFF)
+option(BUILD_UNIT_TESTS "Whether to build unit tests" ON)
+
+set(WITH_GLOG_VAL "0")
+if(BRPC_WITH_GLOG)
+  set(WITH_GLOG_VAL "1")
+endif()
+
+if(WITH_DEBUG_SYMBOLS)
+  set(DEBUG_SYMBOL "-g")
+endif()
+
+configure_file(${CMAKE_SOURCE_DIR}/build_tools/config.h.in ${CMAKE_SOURCE_DIR}/net/butil/config.h @ONLY)
+
+# CMAKE MODULE SETUP.
+list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/build_tools/cmake)
+
+include(FindThreads)
+include(CppLint)
+
+#find_package(GFLAGS REQUIRED)
+
+#execute_process(
+#    COMMAND bash -c "grep \"namespace [_A-Za-z0-9]\\+ {\" ${GFLAGS_INCLUDE_PATH}/gflags/gflags_declare.h | head -1 | awk '{print $2}' | tr -d '\n'"
+#    OUTPUT_VARIABLE GFLAGS_NS
+#)
+#if(${GFLAGS_NS} STREQUAL "GFLAGS_NAMESPACE")
+#    execute_process(
+#        COMMAND bash -c "grep \"#define GFLAGS_NAMESPACE [_A-Za-z0-9]\\+\" ${GFLAGS_INCLUDE_PATH}/gflags/gflags_declare.h | head -1 | awk '{print $3}' | tr -d '\n'"
+#        OUTPUT_VARIABLE GFLAGS_NS
+#    )
+#endif()
+
+include_directories(
+  ${CMAKE_SOURCE_DIR}/net
+  ${CMAKE_CURRENT_BINARY_DIR}
+  ${GFLAGS_INCLUDE_PATH}
+  ${PROTOBUF_INCLUDE_DIR}
+  ${LEVELDB_INCLUDE_PATH}
+  ) 
+execute_process(
+  COMMAND bash -c "git rev-parse --short HEAD | tr -d '\n'"
+  OUTPUT_VARIABLE BRPC_REVISION
+  )
+
+set(CMAKE_CPP_FLAGS "-DBRPC_WITH_GLOG=${WITH_GLOG_VAL}")
+set(CMAKE_CPP_FLAGS "${CMAKE_CPP_FLAGS} -DBTHREAD_USE_FAST_PTHREAD_MUTEX -D__const__= -D_GNU_SOURCE -DUSE_SYMBOLIZE -D__STDC_FORMAT_MACROS -D__STDC_LIMIT_MACROS -D__STDC_CONSTANT_MACROS -DBRPC_REVISION=\\\"${BRPC_REVISION}\\\" -D__STRICT_ANSI__")
+set(CMAKE_CPP_FLAGS "${CMAKE_CPP_FLAGS} ${DEBUG_SYMBOL}")
+set(CMAKE_CXX_FLAGS "${CMAKE_CPP_FLAGS} -O2 -pipe -Wall -W -fPIC -fstrict-aliasing -Wno-invalid-offsetof -Wno-unused-parameter -fno-omit-frame-pointer")
+set(CMAKE_C_FLAGS "${CMAKE_CPP_FLAGS} -O2 -pipe -Wall -W -fPIC -fstrict-aliasing -Wno-unused-parameter -fno-omit-frame-pointer")
+
+#set(CMAKE_CXX_STANDARD 11)
+#set(CMAKE_CXX_STANDARD_REQUIRED ON)
+macro(use_cxx11)
+  if(CMAKE_VERSION VERSION_LESS "3.1.3")
+    if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+      set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+    endif()
+    if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+      set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+    endif()
+  else()
+    set(CMAKE_CXX_STANDARD 11)
+    set(CMAKE_CXX_STANDARD_REQUIRED ON)
+  endif()
+endmacro(use_cxx11)
+
+use_cxx11()
+
+if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+  #required by butil/crc32.cc to boost performance for 10x
+  if(NOT (CMAKE_CXX_COMPILER_VERSION VERSION_LESS 4.4))
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -msse4 -msse4.2")
+  endif()
+  if(NOT (CMAKE_CXX_COMPILER_VERSION VERSION_LESS 7.0))
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-aligned-new")
+  endif()
+endif()
+
+#find_path(LEVELDB_INCLUDE_PATH NAMES leveldb/db.h)
+#find_library(LEVELDB_LIB NAMES leveldb)
+#if ((NOT LEVELDB_INCLUDE_PATH) OR (NOT LEVELDB_LIB))
+#    message(FATAL_ERROR "Fail to find leveldb")
+#endif()
+#
+#if(BRPC_WITH_GLOG)
+#    find_path(GLOG_INCLUDE_PATH NAMES glog/logging.h)
+#    find_library(GLOG_LIB NAMES glog)
+#    if((NOT GLOG_INCLUDE_PATH) OR (NOT GLOG_LIB))
+#        message(FATAL_ERROR "Fail to find glog")
+#    endif()
+#    include_directories(${GLOG_INCLUDE_PATH})
+#endif()
+#
+#find_library(PROTOC_LIB NAMES protoc)
+#if(NOT PROTOC_LIB)
+#    message(FATAL_ERROR "Fail to find protoc lib")
+#endif()
+
+#include_directories(
+#        ${GFLAGS_INCLUDE_PATH}
+#        ${PROTOBUF_INCLUDE_DIR}
+#        ${LEVELDB_INCLUDE_PATH}
+#        )
+
+set(DYNAMIC_LIB
+  ${CMAKE_THREAD_LIBS_INIT}
+  gflags
+  protobuf
+  libprotoc
+  leveldb
+  rt
+  ssl
+  crypto
+  dl
+  z
+  )
+
+if(BRPC_WITH_GLOG)
+  set(DYNAMIC_LIB
+    ${DYNAMIC_LIB}
+    glog
+    )
+  get_target_property(GLOG_INCLUDE_PATH glog INTERFACE_INCLUDE_DIRECTORIES)
+  include_directories(${GLOG_INCLUDE_PATH})
+endif()
+
+# for *.so
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/output/lib)
+# for *.a
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/output/lib)
+
+## list all source files
+set(BUTIL_SOURCES
+  ${CMAKE_SOURCE_DIR}/net/butil/third_party/dmg_fp/g_fmt.cc
+  ${CMAKE_SOURCE_DIR}/net/butil/third_party/dmg_fp/dtoa_wrapper.cc
+  ${CMAKE_SOURCE_DIR}/net/butil/third_party/dynamic_annotations/dynamic_annotations.c
+  ${CMAKE_SOURCE_DIR}/net/butil/third_party/icu/icu_utf.cc
+  ${CMAKE_SOURCE_DIR}/net/butil/third_party/superfasthash/superfasthash.c
+  ${CMAKE_SOURCE_DIR}/net/butil/third_party/modp_b64/modp_b64.cc
+  ${CMAKE_SOURCE_DIR}/net/butil/third_party/nspr/prtime.cc
+  ${CMAKE_SOURCE_DIR}/net/butil/third_party/symbolize/demangle.cc
+  ${CMAKE_SOURCE_DIR}/net/butil/third_party/symbolize/symbolize.cc
+  ${CMAKE_SOURCE_DIR}/net/butil/third_party/snappy/snappy-sinksource.cc
+  ${CMAKE_SOURCE_DIR}/net/butil/third_party/snappy/snappy-stubs-internal.cc
+  ${CMAKE_SOURCE_DIR}/net/butil/third_party/snappy/snappy.cc
+  ${CMAKE_SOURCE_DIR}/net/butil/third_party/murmurhash3/murmurhash3.cpp
+  ${CMAKE_SOURCE_DIR}/net/butil/arena.cpp
+  ${CMAKE_SOURCE_DIR}/net/butil/at_exit.cc
+  ${CMAKE_SOURCE_DIR}/net/butil/atomicops_internals_x86_gcc.cc
+  ${CMAKE_SOURCE_DIR}/net/butil/base64.cc
+  ${CMAKE_SOURCE_DIR}/net/butil/big_endian.cc
+  ${CMAKE_SOURCE_DIR}/net/butil/cpu.cc
+  ${CMAKE_SOURCE_DIR}/net/butil/debug/alias.cc
+  ${CMAKE_SOURCE_DIR}/net/butil/debug/asan_invalid_access.cc
+  ${CMAKE_SOURCE_DIR}/net/butil/debug/crash_logging.cc
+  ${CMAKE_SOURCE_DIR}/net/butil/debug/debugger.cc
+  ${CMAKE_SOURCE_DIR}/net/butil/debug/debugger_posix.cc
+  ${CMAKE_SOURCE_DIR}/net/butil/debug/dump_without_crashing.cc
+  ${CMAKE_SOURCE_DIR}/net/butil/debug/proc_maps_linux.cc
+  ${CMAKE_SOURCE_DIR}/net/butil/debug/stack_trace.cc
+  ${CMAKE_SOURCE_DIR}/net/butil/debug/stack_trace_posix.cc
+  ${CMAKE_SOURCE_DIR}/net/butil/environment.cc
+  ${CMAKE_SOURCE_DIR}/net/butil/files/file.cc
+  ${CMAKE_SOURCE_DIR}/net/butil/files/file_posix.cc
+  ${CMAKE_SOURCE_DIR}/net/butil/files/file_enumerator.cc
+  ${CMAKE_SOURCE_DIR}/net/butil/files/file_enumerator_posix.cc
+  ${CMAKE_SOURCE_DIR}/net/butil/files/file_path.cc
+  ${CMAKE_SOURCE_DIR}/net/butil/files/file_path_constants.cc
+  ${CMAKE_SOURCE_DIR}/net/butil/files/memory_mapped_file.cc
+  ${CMAKE_SOURCE_DIR}/net/butil/files/memory_mapped_file_posix.cc
+  ${CMAKE_SOURCE_DIR}/net/butil/files/scoped_file.cc
+  ${CMAKE_SOURCE_DIR}/net/butil/files/scoped_temp_dir.cc
+  ${CMAKE_SOURCE_DIR}/net/butil/file_util.cc
+  ${CMAKE_SOURCE_DIR}/net/butil/file_util_linux.cc
+  ${CMAKE_SOURCE_DIR}/net/butil/file_util_posix.cc
+  ${CMAKE_SOURCE_DIR}/net/butil/guid.cc
+  ${CMAKE_SOURCE_DIR}/net/butil/guid_posix.cc
+  ${CMAKE_SOURCE_DIR}/net/butil/hash.cc
+  ${CMAKE_SOURCE_DIR}/net/butil/lazy_instance.cc
+  ${CMAKE_SOURCE_DIR}/net/butil/location.cc
+  ${CMAKE_SOURCE_DIR}/net/butil/md5.cc
+  ${CMAKE_SOURCE_DIR}/net/butil/memory/aligned_memory.cc
+  ${CMAKE_SOURCE_DIR}/net/butil/memory/ref_counted.cc
+  ${CMAKE_SOURCE_DIR}/net/butil/memory/ref_counted_memory.cc
+  ${CMAKE_SOURCE_DIR}/net/butil/memory/singleton.cc
+  ${CMAKE_SOURCE_DIR}/net/butil/memory/weak_ptr.cc
+  ${CMAKE_SOURCE_DIR}/net/butil/posix/file_descriptor_shuffle.cc
+  ${CMAKE_SOURCE_DIR}/net/butil/posix/global_descriptors.cc
+  ${CMAKE_SOURCE_DIR}/net/butil/rand_util.cc
+  ${CMAKE_SOURCE_DIR}/net/butil/rand_util_posix.cc
+  ${CMAKE_SOURCE_DIR}/net/butil/fast_rand.cpp
+  ${CMAKE_SOURCE_DIR}/net/butil/safe_strerror_posix.cc
+  ${CMAKE_SOURCE_DIR}/net/butil/sha1_portable.cc
+  ${CMAKE_SOURCE_DIR}/net/butil/strings/latin1_string_conversions.cc
+  ${CMAKE_SOURCE_DIR}/net/butil/strings/nullable_string16.cc
+  ${CMAKE_SOURCE_DIR}/net/butil/strings/safe_sprintf.cc
+  ${CMAKE_SOURCE_DIR}/net/butil/strings/string16.cc
+  ${CMAKE_SOURCE_DIR}/net/butil/strings/string_number_conversions.cc
+  ${CMAKE_SOURCE_DIR}/net/butil/strings/string_split.cc
+  ${CMAKE_SOURCE_DIR}/net/butil/strings/string_piece.cc
+  ${CMAKE_SOURCE_DIR}/net/butil/strings/string_util.cc
+  ${CMAKE_SOURCE_DIR}/net/butil/strings/string_util_constants.cc
+  ${CMAKE_SOURCE_DIR}/net/butil/strings/stringprintf.cc
+  ${CMAKE_SOURCE_DIR}/net/butil/strings/sys_string_conversions_posix.cc
+  ${CMAKE_SOURCE_DIR}/net/butil/strings/utf_offset_string_conversions.cc
+  ${CMAKE_SOURCE_DIR}/net/butil/strings/utf_string_conversion_utils.cc
+  ${CMAKE_SOURCE_DIR}/net/butil/strings/utf_string_conversions.cc
+  ${CMAKE_SOURCE_DIR}/net/butil/synchronization/cancellation_flag.cc
+  ${CMAKE_SOURCE_DIR}/net/butil/synchronization/condition_variable_posix.cc
+  ${CMAKE_SOURCE_DIR}/net/butil/synchronization/waitable_event_posix.cc
+  ${CMAKE_SOURCE_DIR}/net/butil/threading/non_thread_safe_impl.cc
+  ${CMAKE_SOURCE_DIR}/net/butil/threading/platform_thread_linux.cc
+  ${CMAKE_SOURCE_DIR}/net/butil/threading/platform_thread_posix.cc
+  ${CMAKE_SOURCE_DIR}/net/butil/threading/simple_thread.cc
+  ${CMAKE_SOURCE_DIR}/net/butil/threading/thread_checker_impl.cc
+  ${CMAKE_SOURCE_DIR}/net/butil/threading/thread_collision_warner.cc
+  ${CMAKE_SOURCE_DIR}/net/butil/threading/thread_id_name_manager.cc
+  ${CMAKE_SOURCE_DIR}/net/butil/threading/thread_local_posix.cc
+  ${CMAKE_SOURCE_DIR}/net/butil/threading/thread_local_storage.cc
+  ${CMAKE_SOURCE_DIR}/net/butil/threading/thread_local_storage_posix.cc
+  ${CMAKE_SOURCE_DIR}/net/butil/threading/thread_restrictions.cc
+  ${CMAKE_SOURCE_DIR}/net/butil/threading/watchdog.cc
+  ${CMAKE_SOURCE_DIR}/net/butil/time/clock.cc
+  ${CMAKE_SOURCE_DIR}/net/butil/time/default_clock.cc
+  ${CMAKE_SOURCE_DIR}/net/butil/time/default_tick_clock.cc
+  ${CMAKE_SOURCE_DIR}/net/butil/time/tick_clock.cc
+  ${CMAKE_SOURCE_DIR}/net/butil/time/time.cc
+  ${CMAKE_SOURCE_DIR}/net/butil/time/time_posix.cc
+  ${CMAKE_SOURCE_DIR}/net/butil/version.cc
+  ${CMAKE_SOURCE_DIR}/net/butil/logging.cc
+  ${CMAKE_SOURCE_DIR}/net/butil/class_name.cpp
+  ${CMAKE_SOURCE_DIR}/net/butil/errno.cpp
+  ${CMAKE_SOURCE_DIR}/net/butil/find_cstr.cpp
+  ${CMAKE_SOURCE_DIR}/net/butil/status.cpp
+  ${CMAKE_SOURCE_DIR}/net/butil/string_printf.cpp
+  ${CMAKE_SOURCE_DIR}/net/butil/thread_local.cpp
+  ${CMAKE_SOURCE_DIR}/net/butil/unix_socket.cpp
+  ${CMAKE_SOURCE_DIR}/net/butil/endpoint.cpp
+  ${CMAKE_SOURCE_DIR}/net/butil/fd_utility.cpp
+  ${CMAKE_SOURCE_DIR}/net/butil/files/temp_file.cpp
+  ${CMAKE_SOURCE_DIR}/net/butil/files/file_watcher.cpp
+  ${CMAKE_SOURCE_DIR}/net/butil/time.cpp
+  ${CMAKE_SOURCE_DIR}/net/butil/zero_copy_stream_as_streambuf.cpp
+  ${CMAKE_SOURCE_DIR}/net/butil/crc32c.cc
+  ${CMAKE_SOURCE_DIR}/net/butil/containers/case_ignored_flat_map.cpp
+  ${CMAKE_SOURCE_DIR}/net/butil/iobuf.cpp
+  ${CMAKE_SOURCE_DIR}/net/butil/popen.cpp
+  )
+
+file(GLOB_RECURSE BVAR_SOURCES "${CMAKE_SOURCE_DIR}/net/bvar/*.cpp")
+file(GLOB_RECURSE BTHREAD_SOURCES "${CMAKE_SOURCE_DIR}/net/bthread/*.cpp")
+file(GLOB_RECURSE JSON2PB_SOURCES "${CMAKE_SOURCE_DIR}/net/json2pb/*.cpp")
+file(GLOB_RECURSE BRPC_SOURCES "${CMAKE_SOURCE_DIR}/net/brpc/*.cpp")
+
+set(MCPACK2PB_SOURCES
+  ${CMAKE_SOURCE_DIR}/net/mcpack2pb/field_type.cpp
+  ${CMAKE_SOURCE_DIR}/net/mcpack2pb/mcpack2pb.cpp
+  ${CMAKE_SOURCE_DIR}/net/mcpack2pb/parser.cpp
+  ${CMAKE_SOURCE_DIR}/net/mcpack2pb/serializer.cpp
+  )
+
+file(GLOB PROTOS "*.proto")
+list(APPEND PROTO_FLAGS -I${CMAKE_CURRENT_BINARY_DIR})
+foreach(PROTO ${PROTOS})
+  get_filename_component(PROTO_WE ${PROTO} NAME_WE)
+  list(APPEND PROTO_SRCS "${CMAKE_CURRENT_BINARY_DIR}/${PROTO_WE}.pb.cc")
+  add_custom_command(
+    OUTPUT "${PROTO_WE}.pb.h" "${PROTO_WE}.pb.cc"
+    COMMAND protoc ${PROTO_FLAGS} --cpp_out=${CMAKE_CURRENT_BINARY_DIR} --proto_path=${PROTOBUF_INCLUDE_DIR} --proto_path=${CMAKE_SOURCE_DIR}/net ${PROTO}
+    DEPENDS ${PROTO}
+    )
+endforeach()
+
+file(GLOB BRPC_PROTOS "brpc/*.proto")
+foreach(PROTO ${BRPC_PROTOS})
+  get_filename_component(PROTO_WE ${PROTO} NAME_WE)
+  list(APPEND PROTO_SRCS "${CMAKE_CURRENT_BINARY_DIR}/brpc/${PROTO_WE}.pb.cc")
+  add_custom_command(
+    OUTPUT "brpc/${PROTO_WE}.pb.h" "brpc/${PROTO_WE}.pb.cc"
+    COMMAND protoc ${PROTO_FLAGS} --cpp_out=${CMAKE_CURRENT_BINARY_DIR} --proto_path=${PROTOBUF_INCLUDE_DIR} --proto_path=${CMAKE_SOURCE_DIR}/net --proto_path=${CMAKE_SOURCE_DIR}/net/brpc/ ${PROTO}
+    DEPENDS ${PROTO}
+    )
+endforeach()
+
+file(GLOB BRPC_POLICY_PROTOS "brpc/policy/*.proto")
+foreach(PROTO ${BRPC_POLICY_PROTOS})
+  get_filename_component(PROTO_WE ${PROTO} NAME_WE)
+  list(APPEND PROTO_SRCS "${CMAKE_CURRENT_BINARY_DIR}/brpc/policy/${PROTO_WE}.pb.cc")
+  add_custom_command(
+    OUTPUT "brpc/policy/${PROTO_WE}.pb.h" "brpc/policy/${PROTO_WE}.pb.cc"
+    COMMAND protoc ${PROTO_FLAGS} --cpp_out=${CMAKE_CURRENT_BINARY_DIR} --proto_path=${PROTOBUF_INCLUDE_DIR} --proto_path=${CMAKE_SOURCE_DIR}/net --proto_path=${CMAKE_SOURCE_DIR}/net/brpc/policy ${PROTO}
+    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+    )
+endforeach()
+
+set(SOURCES
+  ${BVAR_SOURCES}
+  ${BTHREAD_SOURCES}
+  ${JSON2PB_SOURCES}
+  ${MCPACK2PB_SOURCES}
+  ${BRPC_SOURCES}
+  ${PROTO_SRCS}
+  )
 
 add_library(BUTIL_LIB OBJECT ${BUTIL_SOURCES})
 add_library(OBJ_LIB OBJECT ${SOURCES})
@@ -16,13 +357,25 @@ add_library(OBJ_LIB OBJECT ${SOURCES})
 set_property(TARGET ${OBJ_LIB} PROPERTY POSITION_INDEPENDENT_CODE 1)
 set_property(TARGET ${BUTIL_LIB} PROPERTY POSITION_INDEPENDENT_CODE 1)
 
-#add_library(brpc-shared SHARED $<TARGET_OBJECTS:BUTIL_LIB> $<TARGET_OBJECTS:OBJ_LIB>)
+add_library(brpc-shared SHARED $<TARGET_OBJECTS:BUTIL_LIB> $<TARGET_OBJECTS:OBJ_LIB>)
 add_library(brpc-static STATIC $<TARGET_OBJECTS:BUTIL_LIB> $<TARGET_OBJECTS:OBJ_LIB>)
+#add_library(brpc-shared SHARED ${BUTIL_SOURCES} ${SOURCES})
+#add_library(brpc-static STATIC ${BUTIL_SOURCES} ${SOURCES})
 
 target_link_libraries(brpc-static ${DYNAMIC_LIB})
+target_link_libraries(brpc-shared ${DYNAMIC_LIB})
 
 SET_TARGET_PROPERTIES(brpc-static PROPERTIES OUTPUT_NAME brpc CLEAN_DIRECT_OUTPUT 1)
-#SET_TARGET_PROPERTIES(brpc-shared PROPERTIES OUTPUT_NAME brpc CLEAN_DIRECT_OUTPUT 1)
+SET_TARGET_PROPERTIES(brpc-shared PROPERTIES OUTPUT_NAME brpc CLEAN_DIRECT_OUTPUT 1)
+
+if(BUILD_UNIT_TESTS)
+  add_subdirectory(test)
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DUNIT_TEST -DBVAR_NOT_LINK_DEFAULT_VARIABLES")
+  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DUNIT_TEST")
+elseif(NOT DEBUG)
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DNDEBUG")
+  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DNDEBUG")
+endif()
 
 # for protoc-gen-mcpack
 set(EXECUTABLE_OUTPUT_PATH ${CMAKE_BINARY_DIR}/output/bin)
@@ -30,9 +383,35 @@ set(EXECUTABLE_OUTPUT_PATH ${CMAKE_BINARY_DIR}/output/bin)
 set(protoc_gen_mcpack_SOURCES
   ${CMAKE_SOURCE_DIR}/net/mcpack2pb/generator.cpp
   )
-add_executable(protoc-gen-mcpack ${protoc_gen_mcpack_SOURCES})
-target_link_libraries(protoc-gen-mcpack brpc-static gflags)
 
+add_executable(protoc-gen-mcpack ${protoc_gen_mcpack_SOURCES})
+target_link_libraries(protoc-gen-mcpack brpc-shared)
+
+if (${CMAKE_CURRENT_BINARY_DIR}/idl_options.h)
+  file(COPY ${CMAKE_CURRENT_BINARY_DIR}/idl_options.pb.h
+    DESTINATION ${CMAKE_BINARY_DIR}/output/include)
+endif()
+
+file(COPY ${CMAKE_CURRENT_BINARY_DIR}/brpc/
+  DESTINATION ${CMAKE_BINARY_DIR}/output/include/brpc/
+  FILES_MATCHING
+  PATTERN "*.h"
+  PATTERN "*.hpp"
+  )
+file(COPY ${CMAKE_SOURCE_DIR}/net/
+  DESTINATION ${CMAKE_BINARY_DIR}/output/include/
+  FILES_MATCHING
+  PATTERN "*.h"
+  PATTERN "*.hpp"
+  EXCLUDE REGEX "docs*"
+  )
+
+install(DIRECTORY ${CMAKE_BINARY_DIR}/output/include/
+  DESTINATION include
+  FILES_MATCHING
+  PATTERN "*.h"
+  PATTERN "*.hpp"
+  )
 get_property(LIB64 GLOBAL PROPERTY FIND_LIBRARY_USE_LIB64_PATHS)
 if ("${LIB64}" STREQUAL "TRUE")
   set(LIBSUFFIX 64)
@@ -42,14 +421,16 @@ endif()
 
 #install directory
 # cmake -DCMAKE_INSTALL_PREFIX=/usr
-#install(TARGETS brpc-shared
-#  RUNTIME DESTINATION bin
-#  LIBRARY DESTINATION lib${LIBSUFFIX}
-#  ARCHIVE DESTINATION lib${LIBSUFFIX}
-#  )
+install(TARGETS brpc-shared
+  RUNTIME DESTINATION bin
+  LIBRARY DESTINATION lib${LIBSUFFIX}
+  ARCHIVE DESTINATION lib${LIBSUFFIX}
+  )
 
 install(TARGETS brpc-static
   RUNTIME DESTINATION bin
   LIBRARY DESTINATION lib${LIBSUFFIX}
   ARCHIVE DESTINATION lib${LIBSUFFIX}
   )
+
+#add_subdirectory(tools)

@@ -1,5 +1,4 @@
-# Licensed to the Apache Software Foundation (ASF) under one
-# or more contributor license agreements.  See the NOTICE file
+
 # distributed with this work for additional information
 # regarding copyright ownership.  The ASF licenses this file
 # to you under the Apache License, Version 2.0 (the
@@ -16,7 +15,7 @@
 
 # URLs for each downloaded or bundled third-party dependency.
 #############################################################
-cmake_minimum_required(VERSION 3.9)
+cmake_minimum_required(VERSION 3.10)
 set(FETCH_URL ${CMAKE_CURRENT_SOURCE_DIR})
 
 # This adds our `EXTERNAL()` and `PATCH_CMD()` functions.
@@ -31,7 +30,7 @@ set(GPERFTOOLS_URL      ${FETCH_URL}/gperftools-${GPERFTOOLS_VERSION}.tar.gz)
 set(JSONCPP_URL         ${FETCH_URL}/jsoncpp-${JSONCPP_VERSION}.tar.gz)
 set(PROTOBUF_URL        ${FETCH_URL}/protobuf-${PROTOBUF_VERSION}.tar.gz)
 set(LEVELDB_URL         ${FETCH_URL}/leveldb-${LEVELDB_VERSION}.tar.gz)
-#set(BOOST_URL           ${FETCH_URL}/boost-${BOOST_VERSION}.tar.gz)
+set(BOOST_URL           ${FETCH_URL}/boost-${BOOST_VERSION}.tar.gz)
 set(CURL_URL            ${FETCH_URL}/curl-${CURL_VERSION}.tar.gz)
 set(HIREDIS_URL         ${FETCH_URL}/hiredis-${HIREDIS_VERSION}.tar.gz)
 # Helper utilities for dealing with third-party dependencies.
@@ -42,6 +41,8 @@ include(ExternalProject)
 
 # Variables for current specified linkage.
 # NOTE: Not all third-party dependencies will respect this.
+#option(BUILD_SHARED_LIBS "build shared lib" ON)
+option(CMAKE_POSITION_INDEPENDENT_CODE "independent code" ON)
 if (BUILD_SHARED_LIBS)
   set(LIBRARY_LINKAGE SHARED)
   set(LIBRARY_SUFFIX ${CMAKE_SHARED_LIBRARY_SUFFIX})
@@ -58,6 +59,15 @@ endif ()
 # cases where this isn't true, we have to "trick" CMake into skipping those
 # steps by giving it a noop command to run instead.
 set(CMAKE_NOOP ${CMAKE_COMMAND} -E echo)
+set(INSTALL_DIR ${CMAKE_SOURCE_DIR}/third_party_install)
+set(DEPS_CONFIG --prefix=${INSTALL_DIR} --with-pic)
+if(BUILD_SHARED_LIBS)
+else ()
+  list(APPEND DEPS_CONFIG --without-shared)
+endif()
+set(DEFAULT_BUILD_CMD make)
+#set(DEFAULT_INSTALL_CMD make install)
+set(DEFAULT_INSTALL_CMD ${CMAKE_NOOP})
 
 # This `CMAKE_FORWARD_ARGS` variable is sent as the `CMAKE_ARGS` argument to
 # the `ExternalProject_Add` macro (along with any per-project arguments), and
@@ -74,6 +84,8 @@ list(APPEND CMAKE_FORWARD_ARGS
   -G${CMAKE_GENERATOR}
   -DCMAKE_POSITION_INDEPENDENT_CODE=${CMAKE_POSITION_INDEPENDENT_CODE}
   -DBUILD_SHARED_LIBS=${BUILD_SHARED_LIBS}
+  #-DCMAKE_INSTALL_PREFIX=${INSTALL_DIR}
+  -DCMAKE_CXX_FLAGS=-fPIC
 )
 
 # This only matters for single-configuration generators.
@@ -145,14 +157,17 @@ target_link_libraries(googletest INTERFACE gmock gtest)
 # https://github.com/google/googletest/issues/930
 add_library(gmock STATIC IMPORTED GLOBAL)
 add_library(gtest STATIC IMPORTED GLOBAL)
+add_library(gtest_main STATIC IMPORTED GLOBAL)
 
 set_target_properties(
   gmock PROPERTIES
-  INTERFACE_INCLUDE_DIRECTORIES ${GOOGLETEST_ROOT}/googlemock/include)
+  INTERFACE_INCLUDE_DIRECTORIES ${GOOGLETEST_ROOT}/googlemock/include
+)
 
 set_target_properties(
   gtest PROPERTIES
-  INTERFACE_INCLUDE_DIRECTORIES ${GOOGLETEST_ROOT}/googletest/include)
+  INTERFACE_INCLUDE_DIRECTORIES ${GOOGLETEST_ROOT}/googletest/include
+)
 
 set(GOOGLETEST_CMAKE_FORWARD_ARGS ${CMAKE_FORWARD_ARGS})
 
@@ -164,6 +179,11 @@ set_target_properties(
 set_target_properties(
   gtest PROPERTIES
   IMPORTED_LOCATION ${GOOGLETEST_ROOT}-build/googlemock/gtest/libgtest${CMAKE_STATIC_LIBRARY_SUFFIX}
+)
+
+set_target_properties(
+  gtest_main PROPERTIES
+  IMPORTED_LOCATION ${GOOGLETEST_ROOT}-build/googlemock/gtest/libgtest_main${CMAKE_STATIC_LIBRARY_SUFFIX}
 )
 
 MAKE_INCLUDE_DIR(gmock)
@@ -184,11 +204,10 @@ ExternalProject_Add(
   PREFIX            ${GOOGLETEST_CMAKE_ROOT}
   BUILD_BYPRODUCTS  ${GMOCK_BYPRODUCTS};${GTEST_BYPRODUCTS}
   CMAKE_ARGS        ${GOOGLETEST_CMAKE_FORWARD_ARGS}
-  INSTALL_COMMAND   ${CMAKE_NOOP}
+  INSTALL_COMMAND   ${DEFAULT_INSTALL_CMD}
   URL               ${GOOGLETEST_URL}
   URL_HASH          ${GOOGLETEST_HASH}
 )
-
 
 # gflags: The gflags package contains a C++ library that implements commandline flags processing.
 # https://github.com/gflags/gflags
@@ -196,12 +215,16 @@ ExternalProject_Add(
 EXTERNAL(gflags ${GFLAGS_VERSION} ${CMAKE_CURRENT_BINARY_DIR})
 add_library(gflags ${LIBRARY_LINKAGE} IMPORTED GLOBAL)
 add_dependencies(gflags ${GFLAGS_TARGET})
-set(GFLAGS_BUILD_CMD make)
 
+set(GFLAGS_ARGS ${CMAKE_FORWARD_ARGS} -DGFLAGS_NAMESPACE=google -DBUILD_TESTING=OFF
+  -DBUILD_STATIC_LIBS=ON -DINSTALL_STATIC_LIBS=ON)
+
+set(GFLAGS_LIB_PATH ${GFLAGS_ROOT}-build/lib)
+set(GFLAGS_INCLUDE_PATH ${GFLAGS_ROOT}-build/include)
 set_target_properties(
   gflags PROPERTIES
-  IMPORTED_LOCATION ${GFLAGS_ROOT}-build/lib/libgflags${LIBRARY_SUFFIX}
-  INTERFACE_INCLUDE_DIRECTORIES ${GFLAGS_ROOT}-build/include
+  IMPORTED_LOCATION ${GFLAGS_LIB_PATH}/libgflags${LIBRARY_SUFFIX}
+  INTERFACE_INCLUDE_DIRECTORIES ${GFLAGS_INCLUDE_PATH}
 )
 
 MAKE_INCLUDE_DIR(gflags)
@@ -210,9 +233,9 @@ GET_BYPRODUCTS(gflags)
 ExternalProject_Add(
   ${GFLAGS_TARGET}
   PREFIX            ${GFLAGS_CMAKE_ROOT}
+  CMAKE_ARGS        ${GFLAGS_ARGS}
   BUILD_BYPRODUCTS  ${GFLAGS_BYPRODUCTS}
-  BUILD_COMMAND     ${GFLAGS_BUILD_CMD}
-  INSTALL_COMMAND   ${CMAKE_NOOP}
+  INSTALL_COMMAND   ${DEFAULT_INSTALL_CMD}
   URL               ${GFLAGS_URL}
   URL_HASH          ${GFLAGS_HASH}
 )
@@ -223,16 +246,23 @@ ExternalProject_Add(
 EXTERNAL(glog ${GLOG_VERSION} ${CMAKE_CURRENT_BINARY_DIR})
 add_library(glog ${LIBRARY_LINKAGE} IMPORTED GLOBAL)
 add_dependencies(glog ${GLOG_TARGET})
-
-set(GLOG_CONFIG_CMD  ${GLOG_ROOT}/configure --with-pic GTEST_CONFIG=no --prefix=${GLOG_ROOT}-build)
-set(GLOG_BUILD_CMD make)
-set(GLOG_INSTALL_CMD make install)
+target_link_libraries(glog INTERFACE gflags)
 
 set_target_properties(
   glog PROPERTIES
-  IMPORTED_LOCATION ${GLOG_ROOT}-build/lib/libglog${LIBRARY_SUFFIX}
+  IMPORTED_LOCATION ${GLOG_ROOT}-build/.libs/libglog${LIBRARY_SUFFIX}
   INTERFACE_INCLUDE_DIRECTORIES ${GLOG_ROOT}-build/include
 )
+
+#set(GLOG_CONFIG_CMD ${GLOG_ROOT}/configure ${DEPS_CONFIG} GTEST_CONFIG=no)
+set(GLOG_CONFIG_CMD ${GLOG_ROOT}/configure --with-pic GTEST_CONFIG=no
+  --prefix=${GLOG_ROOT}-build CPPFLAGS=-I${GFLAGS_INCLUDE_PATH}
+  LDFLAGS=-L${GFLAGS_LIB_PATH}
+)
+
+set(GLOG_CMAKE_ARGS ${CMAKE_FORWARD_ARGS} -DCMAKE_INSTALL_PREFIX=${GLOG_ROOT}-build
+  -DBUILD_TESTING=OFF -DCMAKE_INCLUDE_PATH="${GFLAGS_INCLUDE_PATH}"
+  -DCMAKE_LIBRARY_PATH="${GFLAGS_LIB_PATH}")
 
 MAKE_INCLUDE_DIR(glog)
 GET_BYPRODUCTS(glog)
@@ -241,10 +271,10 @@ ExternalProject_Add(
   ${GLOG_TARGET}
   PREFIX            ${GLOG_CMAKE_ROOT}
   BUILD_BYPRODUCTS  ${GLOG_BYPRODUCTS}
-  CMAKE_ARGS        ${CMAKE_FORWARD_ARGS};-DBUILD_TESTING=OFF
+  #CMAKE_ARGS        ${GLOG_CMAKE_ARGS}
   CONFIGURE_COMMAND ${GLOG_CONFIG_CMD}
-  BUILD_COMMAND     ${GLOG_BUILD_CMD}
-  INSTALL_COMMAND   ${GLOG_INSTALL_CMD}
+  BUILD_COMMAND     ${DEFAULT_BUILD_CMD}
+  INSTALL_COMMAND   make install
   URL               ${GLOG_URL}
   URL_HASH          ${GLOG_HASH}
 )
@@ -256,13 +286,11 @@ EXTERNAL(gperftools ${GPERFTOOLS_VERSION} ${CMAKE_CURRENT_BINARY_DIR})
 add_library(gperftools ${LIBRARY_LINKAGE} IMPORTED GLOBAL)
 add_dependencies(gperftools ${GPERFTOOLS_TARGET})
 
-set(GPERFTOOLS_CONFIG_CMD ${GPERFTOOLS_ROOT}/configure --prefix=${GPERFTOOLS_ROOT}-build)
-set(GPERFTOOLS_BUILD_CMD make)
-set(GPERFTOOLS_INSTALL_CMD make install)
+set(GPERFTOOLS_CONFIG_CMD ${GPERFTOOLS_ROOT}/configure ${DEPS_CONFIG})
 
 set_target_properties(
   gperftools PROPERTIES
-  IMPORTED_LOCATION ${GPERFTOOLS_ROOT}-build/lib/libtcmalloc_and_profiler${LIBRARY_SUFFIX}
+  IMPORTED_LOCATION ${GPERFTOOLS_ROOT}-build/.libs/libtcmalloc_and_profiler${LIBRARY_SUFFIX}
   INTERFACE_INCLUDE_DIRECTORIES ${GPERFTOOLS_ROOT}-build/include)
 
 MAKE_INCLUDE_DIR(gperftools)
@@ -273,8 +301,8 @@ ExternalProject_Add(
   PREFIX            ${GPERFTOOLS_CMAKE_ROOT}
   CONFIGURE_COMMAND ${GPERFTOOLS_CONFIG_CMD}
   BUILD_BYPRODUCTS  ${GPERFTOOLS_BYPRODUCTS}
-  BUILD_COMMAND     ${GPERFTOOLS_BUILD_CMD}
-  INSTALL_COMMAND   ${GPERFTOOLS_INSTALL_CMD}
+  BUILD_COMMAND     ${DEFAULT_BUILD_CMD}
+  INSTALL_COMMAND   ${DEFAULT_INSTALL_CMD}
   URL               ${GPERFTOOLS_URL}
   URL_HASH          ${GPERFTOOLS_HASH}
 )
@@ -282,48 +310,49 @@ ExternalProject_Add(
 # JSONCPP: JSON parser / serializer.
 # https://github.com/open-source-parsers/jsoncpp
 #####################################
-EXTERNAL(jsoncpp ${JSONCPP_VERSION} ${CMAKE_CURRENT_BINARY_DIR})
-add_library(jsoncpp ${LIBRARY_LINKAGE} IMPORTED GLOBAL)
-add_dependencies(jsoncpp ${JSONCPP_TARGET})
-
-set_target_properties(
-  jsoncpp PROPERTIES
-  IMPORTED_LOCATION ${JSONCPP_ROOT}-build/src/lib_json/libjsoncpp${LIBRARY_SUFFIX}
-  INTERFACE_INCLUDE_DIRECTORIES ${JSONCPP_ROOT}/include
-)
-
-set(JSONCPP_BUILD_CMD  make)
-
-MAKE_INCLUDE_DIR(jsoncpp)
-GET_BYPRODUCTS(jsoncpp)
-
-ExternalProject_Add(
-  ${JSONCPP_TARGET}
-  PREFIX            ${JSONCPP_CMAKE_ROOT}
-  CMAKE_ARGS        ${CMAKE_FORWARD_ARGS};-DJSONCPP_WITH_TESTS=OFF
-  BUILD_COMMAND     ${CMAKE_NOOP}
-  INSTALL_COMMAND   ${JSONCPP_BUILD_CMD}
-  URL               ${JSONCPP_URL}
-  URL_HASH          ${JSONCPP_HASH}
-)
-
+#EXTERNAL(jsoncpp ${JSONCPP_VERSION} ${CMAKE_CURRENT_BINARY_DIR})
+#add_library(jsoncpp ${LIBRARY_LINKAGE} IMPORTED GLOBAL)
+#add_dependencies(jsoncpp ${JSONCPP_TARGET})
+#
+#set_target_properties(
+#  jsoncpp PROPERTIES
+#  IMPORTED_LOCATION ${JSONCPP_ROOT}-build/src/lib_json/libjsoncpp${LIBRARY_SUFFIX}
+#  INTERFACE_INCLUDE_DIRECTORIES ${JSONCPP_ROOT}/include
+#)
+#
+#MAKE_INCLUDE_DIR(jsoncpp)
+#GET_BYPRODUCTS(jsoncpp)
+#
+#ExternalProject_Add(
+#  ${JSONCPP_TARGET}
+#  PREFIX            ${JSONCPP_CMAKE_ROOT}
+#  CMAKE_ARGS        ${CMAKE_FORWARD_ARGS};-DJSONCPP_WITH_TESTS=OFF
+#  BUILD_COMMAND     ${CMAKE_NOOP}
+#  INSTALL_COMMAND   ${DEFAULT_INSTALL_CMD}
+#  URL               ${JSONCPP_URL}
+#  URL_HASH          ${JSONCPP_HASH}
+#)
+#
 # Protocol Buffers: Google's data interchange format.
 # https://developers.google.com/protocol-buffers/
 #####################################################
 EXTERNAL(protobuf ${PROTOBUF_VERSION} ${CMAKE_CURRENT_BINARY_DIR})
 add_library(protobuf ${LIBRARY_LINKAGE} IMPORTED GLOBAL)
 add_dependencies(protobuf ${PROTOBUF_TARGET})
+add_library(libprotoc ${LIBRARY_LINKAGE} IMPORTED GLOBAL)
+
 add_executable(protoc IMPORTED GLOBAL)
 add_dependencies(protoc ${PROTOBUF_TARGET})
-
-set(PROTOBUF_CONFIG_CMD ${PROTOBUF_ROOT}/configure --prefix=${PROTOBUF_ROOT}-build)
-set(PROTOBUF_BUILD_CMD make)
-set(PROTOBUF_INSTALL_CMD make install)
 
 set_target_properties(
   protobuf PROPERTIES
   INTERFACE_INCLUDE_DIRECTORIES ${PROTOBUF_ROOT}/src
-  IMPORTED_LOCATION ${PROTOBUF_ROOT}-build/src/.libs/libprotobuf${PROTOBUF_SUFFIX}${LIBRARY_SUFFIX}
+  IMPORTED_LOCATION ${PROTOBUF_ROOT}-build/src/.libs/libprotobuf${LIBRARY_SUFFIX}
+)
+
+set_target_properties(
+  libprotoc PROPERTIES
+  IMPORTED_LOCATION ${PROTOBUF_ROOT}-build/src/.libs/libprotoc${LIBRARY_SUFFIX}
 )
 
 set_target_properties(
@@ -334,13 +363,15 @@ set_target_properties(
 MAKE_INCLUDE_DIR(protobuf)
 GET_BYPRODUCTS(protobuf)
 
+set(PROTOBUF_CONFIG_CMD ${PROTOBUF_ROOT}/configure ${DEPS_CONFIG})
 ExternalProject_Add(
   ${PROTOBUF_TARGET}
   PREFIX            ${PROTOBUF_CMAKE_ROOT}
-  CONFIGURE_COMMAND ${PROTOBUF_CONFIG_CMD}
   BUILD_BYPRODUCTS  ${PROTOBUF_BYPRODUCTS}
-  CMAKE_ARGS        ${CMAKE_FORWARD_ARGS};-Dprotobuf_BUILD_TESTS=OFF
-  INSTALL_COMMAND   ${CMAKE_NOOP}
+  #CMAKE_ARGS        ${CMAKE_FORWARD_ARGS};-Dprotobuf_BUILD_TESTS=OFF
+  #SOURCE_SUBDIR     cmake
+  CONFIGURE_COMMAND ${PROTOBUF_CONFIG_CMD}
+  INSTALL_COMMAND   ${DEFAULT_INSTALL_CMD}
   URL               ${PROTOBUF_URL}
   URL_HASH          ${PROTOBUF_HASH}
 )
@@ -351,11 +382,10 @@ ExternalProject_Add(
 EXTERNAL(leveldb ${LEVELDB_VERSION} ${CMAKE_CURRENT_BINARY_DIR})
 add_library(leveldb ${LIBRARY_LINKAGE} IMPORTED GLOBAL)
 add_dependencies(leveldb ${LEVELDB_TARGET})
-set(LEVELDB_BUILD_CMD make OPT=-O2\ -DNDEBUG\ -fPIC all)
 
 set_target_properties(
   leveldb PROPERTIES
-  IMPORTED_LOCATION ${LEVELDB_ROOT}/out-static/libleveldb${LIBRARY_SUFFIX}
+  IMPORTED_LOCATION ${LEVELDB_ROOT}/libleveldb${LIBRARY_SUFFIX}
   INTERFACE_INCLUDE_DIRECTORIES ${LEVELDB_ROOT}/include
 )
 
@@ -365,11 +395,11 @@ GET_BYPRODUCTS(leveldb)
 ExternalProject_Add(
   ${LEVELDB_TARGET}
   PREFIX            ${LEVELDB_CMAKE_ROOT}
-  CONFIGURE_COMMAND ${CMAKE_NOOP}
+  CMAKE_ARGS        ${CMAKE_FORWARD_ARGS}
   BUILD_BYPRODUCTS  ${LEVELDB_BYPRODUCTS}
   BUILD_IN_SOURCE   1
-  BUILD_COMMAND     ${LEVELDB_BUILD_CMD}
-  INSTALL_COMMAND   ${CMAKE_NOOP}
+  BUILD_COMMAND     ${DEFAULT_BUILD_CMD}
+  INSTALL_COMMAND   ${DEFAULT_INSTALL_CMD}
   URL               ${LEVELDB_URL}
   URL_HASH          ${LEVELDB_HASH}
 )
@@ -377,77 +407,70 @@ ExternalProject_Add(
 # cURL: Command line tool and library for transferring data with URLs.
 # https://curl.haxx.se
 ######################################################################
-EXTERNAL(curl ${CURL_VERSION} ${CMAKE_CURRENT_BINARY_DIR})
-
-# This is named `libcurl` to not conflict with the executable.
-add_library(libcurl ${LIBRARY_LINKAGE} IMPORTED GLOBAL)
-add_dependencies(libcurl ${CURL_TARGET})
-
-set(CURL_CMAKE_ARGS
-  ${CMAKE_FORWARD_ARGS}
-  -DCMAKE_USE_WINSSL=ON
-  -DCURL_DISABLE_LDAP=ON
-  -DBUILD_TESTING=OFF
-)
-
-list(APPEND CURL_CMAKE_ARGS -DCURL_STATICLIB=ON)
-
-set_target_properties(
-  libcurl PROPERTIES
-  INTERFACE_COMPILE_DEFINITIONS CURL_STATICLIB
-)
-
-set_target_properties(
-  libcurl PROPERTIES
-  IMPORTED_LOCATION ${CURL_ROOT}-build/lib/libcurl${LIBRARY_SUFFIX}
-  INTERFACE_INCLUDE_DIRECTORIES ${CURL_ROOT}/include
-)
-
-set(CURL_CONFIG_CMD   ${CURL_ROOT}/configure --prefix=${CURL_ROOT}-build)
-set(CURL_BUILD_CMD   make)
-set(CURL_INSTALL_CMD make install)
-
-MAKE_INCLUDE_DIR(libcurl)
-GET_BYPRODUCTS(libcurl)
-
-ExternalProject_Add(
-  ${CURL_TARGET}
-  PREFIX            ${CURL_CMAKE_ROOT}
-  BUILD_BYPRODUCTS  ${LIBCURL_BYPRODUCTS};${CURL_BYPRODUCTS}
-  CMAKE_ARGS        ${CURL_CMAKE_ARGS}
-  CONFIGURE_COMMAND ${CURL_CONFIG_CMD}
-  BUILD_COMMAND     ${CURL_BUILD_CMD}
-  INSTALL_COMMAND   ${CURL_INSTALL_CMD}
-  URL               ${CURL_URL}
-  URL_HASH          ${CURL_HASH}
-)
-
-
+#EXTERNAL(curl ${CURL_VERSION} ${CMAKE_CURRENT_BINARY_DIR})
+#
+## This is named `libcurl` to not conflict with the executable.
+#add_library(libcurl ${LIBRARY_LINKAGE} IMPORTED GLOBAL)
+#add_dependencies(libcurl ${CURL_TARGET})
+#
+#set(CURL_CMAKE_ARGS ${CMAKE_FORWARD_ARGS}
+#  -DBUILD_TESTING=OFF
+#  -DCURL_STATICLIB=ON
+#)
+#
+#set_target_properties(
+#  libcurl PROPERTIES
+#  INTERFACE_COMPILE_DEFINITIONS CURL_STATICLIB
+#)
+#
+#set_target_properties(
+#  libcurl PROPERTIES
+#  IMPORTED_LOCATION ${CURL_ROOT}-build/lib/libcurl${LIBRARY_SUFFIX}
+#  INTERFACE_INCLUDE_DIRECTORIES ${CURL_ROOT}/include
+#)
+#
+#set(CURL_CONFIG_CMD ${CURL_ROOT}/configure ${DEPS_CONFIG})
+#
+#MAKE_INCLUDE_DIR(libcurl)
+#GET_BYPRODUCTS(libcurl)
+#
+#ExternalProject_Add(
+#  ${CURL_TARGET}
+#  PREFIX            ${CURL_CMAKE_ROOT}
+#  BUILD_BYPRODUCTS  ${LIBCURL_BYPRODUCTS};${CURL_BYPRODUCTS}
+#  CMAKE_ARGS        ${CURL_CMAKE_ARGS}
+#  #CONFIGURE_COMMAND ${CURL_CONFIG_CMD}
+#  BUILD_COMMAND     ${DEFAULT_BUILD_CMD}
+#  INSTALL_COMMAND   ${DEFAULT_INSTALL_CMD}
+#  URL               ${CURL_URL}
+#  URL_HASH          ${CURL_HASH}
+#)
+#
+#
 # Hiredis: Hiredis is a minimalistic C client library for the Redis database.
 # https://github.com/redis/hiredis
 ################################
-EXTERNAL(hiredis ${HIREDIS_VERSION} ${CMAKE_CURRENT_BINARY_DIR})
-add_library(hiredis ${LIBRARY_LINKAGE} IMPORTED GLOBAL)
-add_dependencies(hiredis ${HIREDIS_TARGET})
-set(HIREDIS_BUILD_CMD make)
-
-set_target_properties(
-  hiredis PROPERTIES
-  IMPORTED_LOCATION ${HIREDIS_ROOT}-build/libhiredis${LIBRARY_SUFFIX}
-  INTERFACE_INCLUDE_DIRECTORIES ${HIREDIS_ROOT})
-
-MAKE_INCLUDE_DIR(hiredis)
-GET_BYPRODUCTS(hiredis)
-
-ExternalProject_Add(
-  ${HIREDIS_TARGET}
-  PREFIX            ${HIREDIS_CMAKE_ROOT}
-  BUILD_BYPRODUCTS  ${HIREDIS_BYPRODUCTS}
-  BUILD_COMMAND     ${HIREDIS_BUILD_CMD}
-  INSTALL_COMMAND   ${CMAKE_NOOP}
-  URL               ${HIREDIS_URL}
-  URL_HASH          ${HIREDIS_HASH})
-
-# TODO (wpenghuang) merge *attr
+#EXTERNAL(hiredis ${HIREDIS_VERSION} ${CMAKE_CURRENT_BINARY_DIR})
+#add_library(hiredis ${LIBRARY_LINKAGE} IMPORTED GLOBAL)
+#add_dependencies(hiredis ${HIREDIS_TARGET})
+#
+#set_target_properties(
+#  hiredis PROPERTIES
+#  IMPORTED_LOCATION ${HIREDIS_ROOT}-build/libhiredis${LIBRARY_SUFFIX}
+#  INTERFACE_INCLUDE_DIRECTORIES ${HIREDIS_ROOT})
+#
+#MAKE_INCLUDE_DIR(hiredis)
+#GET_BYPRODUCTS(hiredis)
+#
+#ExternalProject_Add(
+#  ${HIREDIS_TARGET}
+#  PREFIX            ${HIREDIS_CMAKE_ROOT}
+#  BUILD_BYPRODUCTS  ${HIREDIS_BYPRODUCTS}
+#  CMAKE_ARGS        ${CMAKE_FORWARD_ARGS}
+#  BUILD_COMMAND     ${DEFAULT_BUILD_CMD}
+#  INSTALL_COMMAND   ${CMAKE_NOOP}
+#  URL               ${HIREDIS_URL}
+#  URL_HASH          ${HIREDIS_HASH})
+#
 # In-tree dependencies.
 #######################

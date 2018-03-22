@@ -1,5 +1,5 @@
 
-load("//:bazel/brpc.bzl", "brpc_proto_library")
+load("//:build_tools/bazel/brpc.bzl", "brpc_proto_library")
 
 COPTS = [
     "-D__STDC_FORMAT_MACROS",

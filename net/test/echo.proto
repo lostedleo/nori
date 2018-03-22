@@ -1,6 +1,6 @@
 syntax="proto2";
-import "idl_options.proto";
-option (idl_support) = true;
+// import "idl_options.proto";
+// option (idl_support) = true;
 option cc_generic_services = true;
 package test;
 
