@@ -84,7 +84,7 @@ include_directories(
   ${GFLAGS_INCLUDE_PATH}
   ${PROTOBUF_INCLUDE_DIR}
   ${LEVELDB_INCLUDE_PATH}
-  ) 
+  )
 execute_process(
   COMMAND bash -c "git rev-parse --short HEAD | tr -d '\n'"
   OUTPUT_VARIABLE BRPC_REVISION
@@ -152,6 +152,7 @@ endif()
 
 set(DYNAMIC_LIB
   ${CMAKE_THREAD_LIBS_INIT}
+  snappy
   gflags
   protobuf
   libprotoc
@@ -352,6 +353,14 @@ set(SOURCES
 
 add_library(BUTIL_LIB OBJECT ${BUTIL_SOURCES})
 add_library(OBJ_LIB OBJECT ${SOURCES})
+
+add_dependencies(BUTIL_LIB gflags protobuf leveldb)
+add_dependencies(OBJ_LIB gflags protobuf leveldb)
+
+if (BRPC_WITH_GLOG)
+  add_dependencies(BUTIL_LIB glog)
+  add_dependencies(OBJ_LIB glog)
+endif()
 
 # shared library needs POSITION_INDEPENDENT_CODE
 set_property(TARGET ${OBJ_LIB} PROPERTY POSITION_INDEPENDENT_CODE 1)

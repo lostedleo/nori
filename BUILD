@@ -185,16 +185,7 @@ BUTIL_SRCS = [
 
 cc_library(
     name = "butil",
-    srcs = glob([
-      "net/butil/*.h",
-      "net/butil/*.hpp",
-      "net/butil/**/*.h",
-      "net/butil/**/*.hpp",
-      "net/butil/**/**/*.h",
-      "net/butil/**/**/*.hpp",
-      "net/butil/**/**/**/*.h",
-      "net/butil/**/**/**/*.hpp",
-    ]),
+    srcs = BUTIL_SRCS,
     hdrs = glob([
       "net/butil/*.h",
       "net/butil/*.hpp",

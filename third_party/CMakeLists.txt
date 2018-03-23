@@ -16,6 +16,9 @@
 # URLs for each downloaded or bundled third-party dependency.
 #############################################################
 cmake_minimum_required(VERSION 3.10)
+
+project(third_party)
+
 set(FETCH_URL ${CMAKE_CURRENT_SOURCE_DIR})
 
 # This adds our `EXTERNAL()` and `PATCH_CMD()` functions.
@@ -245,8 +248,8 @@ ExternalProject_Add(
 ################################
 EXTERNAL(glog ${GLOG_VERSION} ${CMAKE_CURRENT_BINARY_DIR})
 add_library(glog ${LIBRARY_LINKAGE} IMPORTED GLOBAL)
+add_dependencies(glog ${GFLAGS_TARGET})
 add_dependencies(glog ${GLOG_TARGET})
-target_link_libraries(glog INTERFACE gflags)
 
 set_target_properties(
   glog PROPERTIES
@@ -395,7 +398,7 @@ GET_BYPRODUCTS(leveldb)
 ExternalProject_Add(
   ${LEVELDB_TARGET}
   PREFIX            ${LEVELDB_CMAKE_ROOT}
-  CMAKE_ARGS        ${CMAKE_FORWARD_ARGS}
+  CMAKE_ARGS        ${CMAKE_FORWARD_ARGS};-DLEVELDB_BUILD_TESTS=OFF
   BUILD_BYPRODUCTS  ${LEVELDB_BYPRODUCTS}
   BUILD_IN_SOURCE   1
   BUILD_COMMAND     ${DEFAULT_BUILD_CMD}
