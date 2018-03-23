@@ -31,10 +31,13 @@ int main(int argc, char* argv[]) {
         std::cerr << "Fail to set -socket_max_unwritten_bytes" << std::endl;
         return -1;
     }
+#if BRPC_WITH_GLOG 
+#else
     if (google::SetCommandLineOption("crash_on_fatal_log", "true").empty()) {
         std::cerr << "Fail to set -crash_on_fatal_log" << std::endl;
         return -1;
     }
+#endif
     return RUN_ALL_TESTS();
 }
 
@@ -225,7 +228,7 @@ TEST_F(HttpTest, parse_http_address) {
     }
     {
         butil::EndPoint ep;
-        EXPECT_FALSE(brpc::policy::ParseHttpServerAddress(
+        EXPECT_TRUE(brpc::policy::ParseHttpServerAddress(
             &ep, "https://no.such.machine:9090"));
     }
 }
