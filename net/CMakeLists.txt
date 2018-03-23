@@ -47,6 +47,7 @@ option(BRPC_WITH_GLOG "With glog" ON)
 option(DEBUG "Print debug logs" OFF)
 option(WITH_DEBUG_SYMBOLS "With debug symbols" OFF)
 option(BUILD_UNIT_TESTS "Whether to build unit tests" ON)
+option(BUILD_EXAMPLES "Whether to build examples" ON)
 
 set(WITH_GLOG_VAL "0")
 if(BRPC_WITH_GLOG)
@@ -129,26 +130,6 @@ endif()
 #if ((NOT LEVELDB_INCLUDE_PATH) OR (NOT LEVELDB_LIB))
 #    message(FATAL_ERROR "Fail to find leveldb")
 #endif()
-#
-#if(BRPC_WITH_GLOG)
-#    find_path(GLOG_INCLUDE_PATH NAMES glog/logging.h)
-#    find_library(GLOG_LIB NAMES glog)
-#    if((NOT GLOG_INCLUDE_PATH) OR (NOT GLOG_LIB))
-#        message(FATAL_ERROR "Fail to find glog")
-#    endif()
-#    include_directories(${GLOG_INCLUDE_PATH})
-#endif()
-#
-#find_library(PROTOC_LIB NAMES protoc)
-#if(NOT PROTOC_LIB)
-#    message(FATAL_ERROR "Fail to find protoc lib")
-#endif()
-
-#include_directories(
-#        ${GFLAGS_INCLUDE_PATH}
-#        ${PROTOBUF_INCLUDE_DIR}
-#        ${LEVELDB_INCLUDE_PATH}
-#        )
 
 set(DYNAMIC_LIB
   ${CMAKE_THREAD_LIBS_INIT}
@@ -317,7 +298,7 @@ foreach(PROTO ${PROTOS})
     OUTPUT "${PROTO_WE}.pb.h" "${PROTO_WE}.pb.cc"
     COMMAND protoc ${PROTO_FLAGS} --cpp_out=${CMAKE_CURRENT_BINARY_DIR} --proto_path=${PROTOBUF_INCLUDE_DIR} --proto_path=${CMAKE_SOURCE_DIR}/net ${PROTO}
     DEPENDS ${PROTO}
-    )
+  )
 endforeach()
 
 file(GLOB BRPC_PROTOS "brpc/*.proto")
@@ -328,7 +309,7 @@ foreach(PROTO ${BRPC_PROTOS})
     OUTPUT "brpc/${PROTO_WE}.pb.h" "brpc/${PROTO_WE}.pb.cc"
     COMMAND protoc ${PROTO_FLAGS} --cpp_out=${CMAKE_CURRENT_BINARY_DIR} --proto_path=${PROTOBUF_INCLUDE_DIR} --proto_path=${CMAKE_SOURCE_DIR}/net --proto_path=${CMAKE_SOURCE_DIR}/net/brpc/ ${PROTO}
     DEPENDS ${PROTO}
-    )
+  )
 endforeach()
 
 file(GLOB BRPC_POLICY_PROTOS "brpc/policy/*.proto")
@@ -339,7 +320,7 @@ foreach(PROTO ${BRPC_POLICY_PROTOS})
     OUTPUT "brpc/policy/${PROTO_WE}.pb.h" "brpc/policy/${PROTO_WE}.pb.cc"
     COMMAND protoc ${PROTO_FLAGS} --cpp_out=${CMAKE_CURRENT_BINARY_DIR} --proto_path=${PROTOBUF_INCLUDE_DIR} --proto_path=${CMAKE_SOURCE_DIR}/net --proto_path=${CMAKE_SOURCE_DIR}/net/brpc/policy ${PROTO}
     WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-    )
+  )
 endforeach()
 
 set(SOURCES
@@ -386,16 +367,6 @@ elseif(NOT DEBUG)
   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DNDEBUG")
 endif()
 
-# for protoc-gen-mcpack
-set(EXECUTABLE_OUTPUT_PATH ${CMAKE_BINARY_DIR}/output/bin)
-
-set(protoc_gen_mcpack_SOURCES
-  ${CMAKE_SOURCE_DIR}/net/mcpack2pb/generator.cpp
-  )
-
-add_executable(protoc-gen-mcpack ${protoc_gen_mcpack_SOURCES})
-target_link_libraries(protoc-gen-mcpack brpc-shared)
-
 if (${CMAKE_CURRENT_BINARY_DIR}/idl_options.h)
   file(COPY ${CMAKE_CURRENT_BINARY_DIR}/idl_options.pb.h
     DESTINATION ${CMAKE_BINARY_DIR}/output/include)
@@ -406,21 +377,21 @@ file(COPY ${CMAKE_CURRENT_BINARY_DIR}/brpc/
   FILES_MATCHING
   PATTERN "*.h"
   PATTERN "*.hpp"
-  )
+)
 file(COPY ${CMAKE_SOURCE_DIR}/net/
   DESTINATION ${CMAKE_BINARY_DIR}/output/include/
   FILES_MATCHING
   PATTERN "*.h"
   PATTERN "*.hpp"
   EXCLUDE REGEX "docs*"
-  )
+)
 
 install(DIRECTORY ${CMAKE_BINARY_DIR}/output/include/
   DESTINATION include
   FILES_MATCHING
   PATTERN "*.h"
   PATTERN "*.hpp"
-  )
+)
 get_property(LIB64 GLOBAL PROPERTY FIND_LIBRARY_USE_LIB64_PATHS)
 if ("${LIB64}" STREQUAL "TRUE")
   set(LIBSUFFIX 64)
@@ -434,12 +405,16 @@ install(TARGETS brpc-shared
   RUNTIME DESTINATION bin
   LIBRARY DESTINATION lib${LIBSUFFIX}
   ARCHIVE DESTINATION lib${LIBSUFFIX}
-  )
+)
 
 install(TARGETS brpc-static
   RUNTIME DESTINATION bin
   LIBRARY DESTINATION lib${LIBSUFFIX}
   ARCHIVE DESTINATION lib${LIBSUFFIX}
-  )
+)
 
-#add_subdirectory(tools)
+add_subdirectory(mcpack2pb)
+add_subdirectory(tools)
+if(BUILD_EXAMPLES)
+  add_subdirectory(example)
+endif()
