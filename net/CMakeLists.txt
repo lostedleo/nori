@@ -58,26 +58,8 @@ if(WITH_DEBUG_SYMBOLS)
   set(DEBUG_SYMBOL "-g")
 endif()
 
-configure_file(${CMAKE_SOURCE_DIR}/build_tools/config.h.in ${CMAKE_SOURCE_DIR}/net/butil/config.h @ONLY)
-
-# CMAKE MODULE SETUP.
-list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/build_tools/cmake)
-
 include(FindThreads)
-include(CppLint)
-
-#find_package(GFLAGS REQUIRED)
-
-#execute_process(
-#    COMMAND bash -c "grep \"namespace [_A-Za-z0-9]\\+ {\" ${GFLAGS_INCLUDE_PATH}/gflags/gflags_declare.h | head -1 | awk '{print $2}' | tr -d '\n'"
-#    OUTPUT_VARIABLE GFLAGS_NS
-#)
-#if(${GFLAGS_NS} STREQUAL "GFLAGS_NAMESPACE")
-#    execute_process(
-#        COMMAND bash -c "grep \"#define GFLAGS_NAMESPACE [_A-Za-z0-9]\\+\" ${GFLAGS_INCLUDE_PATH}/gflags/gflags_declare.h | head -1 | awk '{print $3}' | tr -d '\n'"
-#        OUTPUT_VARIABLE GFLAGS_NS
-#    )
-#endif()
+configure_file(${CMAKE_SOURCE_DIR}/build_tools/config.h.in ${CMAKE_SOURCE_DIR}/net/butil/config.h @ONLY)
 
 include_directories(
   ${CMAKE_SOURCE_DIR}/net
@@ -97,8 +79,6 @@ set(CMAKE_CPP_FLAGS "${CMAKE_CPP_FLAGS} ${DEBUG_SYMBOL}")
 set(CMAKE_CXX_FLAGS "${CMAKE_CPP_FLAGS} -O2 -pipe -Wall -W -fPIC -fstrict-aliasing -Wno-invalid-offsetof -Wno-unused-parameter -fno-omit-frame-pointer")
 set(CMAKE_C_FLAGS "${CMAKE_CPP_FLAGS} -O2 -pipe -Wall -W -fPIC -fstrict-aliasing -Wno-unused-parameter -fno-omit-frame-pointer")
 
-#set(CMAKE_CXX_STANDARD 11)
-#set(CMAKE_CXX_STANDARD_REQUIRED ON)
 macro(use_cxx11)
   if(CMAKE_VERSION VERSION_LESS "3.1.3")
     if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")

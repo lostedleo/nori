@@ -18,6 +18,12 @@
 #############################################################
 cmake_minimum_required(VERSION 3.10.0)
 
+# CMAKE MODULE SETUP.
+list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/build_tools/cmake)
+
+include(CppLint)
+include(NoriProtobufGenerate)
+
 # In-tree dependencies.
 #######################
 add_subdirectory(third_party)
