@@ -20,24 +20,36 @@
 function(NORI_PROTOBUF_GENERATE SRCS HDRS)
   cmake_parse_arguments(nori_protobuf_generate "" "EXPORT_MACRO" "" ${ARGN})
 
-  set(_PROTO_FILES "${nori_protobuf_generate_UNPARSED_ARGUMENTS}")
-  if(NOT _PROTO_FILES)
+  set(PROTO_FILES "${nori_protobuf_generate_UNPARSED_ARGUMENTS}")
+  if(NOT PROTO_FILES)
     message(SEND_ERROR "Error: NORI_PROTOBUF_GENERATE() called without any proto files")
     return()
   endif()
 
   set(${SRCS})
   set(${HDRS})
-  list(APPEND PROTO_FLAGS -I${CMAKE_CURRENT_BINARY_DIR})
-  foreach(PROTO ${_PROTO_FILES})
+  # Create an include path for each file specified
+  foreach(_file ${PROTO_FILES})
+    get_filename_component(_abs_file ${_file} ABSOLUTE)
+    get_filename_component(_abs_path ${_abs_file} PATH)
+    list(FIND _protobuf_include_path ${_abs_path} _contains_already)
+    if(${_contains_already} EQUAL -1)
+      list(APPEND _protobuf_include_path -I ${_abs_path})
+    endif()
+  endforeach()
+
+  foreach(PROTO ${PROTO_FILES})
     get_filename_component(PROTO_WE ${PROTO} NAME_WE)
     get_filename_component(ABS_FILE ${PROTO} ABSOLUTE)
+    set(_generated_srcs)
+    list(APPEND _generated_srcs "${CMAKE_CURRENT_BINARY_DIR}/${PROTO_WE}.pb.cc")
+    list(APPEND _generated_srcs "${CMAKE_CURRENT_BINARY_DIR}/${PROTO_WE}.pb.h")
     list(APPEND SRCS "${CMAKE_CURRENT_BINARY_DIR}/${PROTO_WE}.pb.cc")
     list(APPEND HDRS "${CMAKE_CURRENT_BINARY_DIR}/${PROTO_WE}.pb.h")
+
     add_custom_command(
-      OUTPUT "${PROTO_WE}.pb.h" "${PROTO_WE}.pb.cc"
-      COMMAND protoc ${PROTO_FLAGS} --cpp_out=${CMAKE_CURRENT_BINARY_DIR}
-      --proto_path=${CMAKE_CURRENT_SOURCE_DIR} ${ABS_FILE}
+      OUTPUT ${_generated_srcs}
+      COMMAND protoc --cpp_out=${CMAKE_CURRENT_BINARY_DIR} ${_protobuf_include_path} ${ABS_FILE}
       DEPENDS ${ABS_FILE} protoc
       COMMENT "Running nori_protobuf_generate protocol buffer compiler on ${PROTO}"
       VERBATIM
