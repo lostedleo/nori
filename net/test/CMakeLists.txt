@@ -1,6 +1,6 @@
 #find_package(Gperftools)
-get_target_property(GPERFTOOLS_INCLUDE_DIR gperftools INTERFACE_INCLUDE_DIRECTORIES)
-include_directories(${GPERFTOOLS_INCLUDE_DIR})
+#get_target_property(GPERFTOOLS_INCLUDE_DIR gperftools INTERFACE_INCLUDE_DIRECTORIES)
+#include_directories(${GPERFTOOLS_INCLUDE_DIR})
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 file(GLOB PROTOS "*.proto")
 list(APPEND PROTO_FLAGS -I${CMAKE_CURRENT_BINARY_DIR})
@@ -12,7 +12,7 @@ foreach(PROTO ${PROTOS})
     COMMAND protoc --cpp_out=${CMAKE_CURRENT_BINARY_DIR}
             --proto_path=${PROTOBUF_INCLUDE_DIR}
             --proto_path=${CMAKE_CURRENT_SOURCE_DIR} ${PROTO}
-    DEPENDS ${PROTO}
+    DEPENDS ${PROTO} protoc
     WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
     )
 endforeach()

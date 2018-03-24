@@ -67,11 +67,12 @@ include_directories(
   ${GFLAGS_INCLUDE_PATH}
   ${PROTOBUF_INCLUDE_DIR}
   ${LEVELDB_INCLUDE_PATH}
-  )
+)
+
 execute_process(
   COMMAND bash -c "git rev-parse --short HEAD | tr -d '\n'"
   OUTPUT_VARIABLE BRPC_REVISION
-  )
+)
 
 set(CMAKE_CPP_FLAGS "-DBRPC_WITH_GLOG=${WITH_GLOG_VAL}")
 set(CMAKE_CPP_FLAGS "${CMAKE_CPP_FLAGS} -DBTHREAD_USE_FAST_PTHREAD_MUTEX -D__const__= -D_GNU_SOURCE -DUSE_SYMBOLIZE -D__STDC_FORMAT_MACROS -D__STDC_LIMIT_MACROS -D__STDC_CONSTANT_MACROS -DBRPC_REVISION=\\\"${BRPC_REVISION}\\\" -D__STRICT_ANSI__")
@@ -105,12 +106,6 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
   endif()
 endif()
 
-#find_path(LEVELDB_INCLUDE_PATH NAMES leveldb/db.h)
-#find_library(LEVELDB_LIB NAMES leveldb)
-#if ((NOT LEVELDB_INCLUDE_PATH) OR (NOT LEVELDB_LIB))
-#    message(FATAL_ERROR "Fail to find leveldb")
-#endif()
-
 set(DYNAMIC_LIB
   ${CMAKE_THREAD_LIBS_INIT}
   snappy
@@ -133,11 +128,6 @@ if(BRPC_WITH_GLOG)
   get_target_property(GLOG_INCLUDE_PATH glog INTERFACE_INCLUDE_DIRECTORIES)
   include_directories(${GLOG_INCLUDE_PATH})
 endif()
-
-# for *.so
-set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/output/lib)
-# for *.a
-set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/output/lib)
 
 ## list all source files
 set(BUTIL_SOURCES
@@ -269,37 +259,42 @@ set(MCPACK2PB_SOURCES
   ${CMAKE_SOURCE_DIR}/net/mcpack2pb/serializer.cpp
   )
 
+set(BRPC_OUTPUT ${CMAKE_BINARY_DIR}/output)
+set(BRPC_OUTPUT_INCLUDE ${BRPC_OUTPUT}/include)
+set(BRPC_OUTPUT_LIB ${BRPC_OUTPUT}/lib)
+include_directories(${BRPC_OUTPUT_INCLUDE})
+
 file(GLOB PROTOS "*.proto")
 list(APPEND PROTO_FLAGS -I${CMAKE_CURRENT_BINARY_DIR})
 foreach(PROTO ${PROTOS})
   get_filename_component(PROTO_WE ${PROTO} NAME_WE)
-  list(APPEND PROTO_SRCS "${CMAKE_CURRENT_BINARY_DIR}/${PROTO_WE}.pb.cc")
+  list(APPEND PROTO_SRCS "${BRPC_OUTPUT_INCLUDE}/${PROTO_WE}.pb.cc")
   add_custom_command(
-    OUTPUT "${PROTO_WE}.pb.h" "${PROTO_WE}.pb.cc"
-    COMMAND protoc ${PROTO_FLAGS} --cpp_out=${CMAKE_CURRENT_BINARY_DIR} --proto_path=${PROTOBUF_INCLUDE_DIR} --proto_path=${CMAKE_SOURCE_DIR}/net ${PROTO}
-    DEPENDS ${PROTO}
-  )
+    OUTPUT "${BRPC_OUTPUT_INCLUDE}/${PROTO_WE}.pb.h" "${BRPC_OUTPUT_INCLUDE}/${PROTO_WE}.pb.cc"
+    COMMAND protoc ${PROTO_FLAGS} --cpp_out=${BRPC_OUTPUT_INCLUDE} --proto_path=${PROTOBUF_INCLUDE_DIR} --proto_path=${CMAKE_SOURCE_DIR}/net ${PROTO}
+    DEPENDS ${PROTO} protoc
+)
 endforeach()
 
 file(GLOB BRPC_PROTOS "brpc/*.proto")
 foreach(PROTO ${BRPC_PROTOS})
   get_filename_component(PROTO_WE ${PROTO} NAME_WE)
-  list(APPEND PROTO_SRCS "${CMAKE_CURRENT_BINARY_DIR}/brpc/${PROTO_WE}.pb.cc")
+  list(APPEND PROTO_SRCS "${BRPC_OUTPUT_INCLUDE}/brpc/${PROTO_WE}.pb.cc")
   add_custom_command(
-    OUTPUT "brpc/${PROTO_WE}.pb.h" "brpc/${PROTO_WE}.pb.cc"
-    COMMAND protoc ${PROTO_FLAGS} --cpp_out=${CMAKE_CURRENT_BINARY_DIR} --proto_path=${PROTOBUF_INCLUDE_DIR} --proto_path=${CMAKE_SOURCE_DIR}/net --proto_path=${CMAKE_SOURCE_DIR}/net/brpc/ ${PROTO}
-    DEPENDS ${PROTO}
+    OUTPUT "${BRPC_OUTPUT_INCLUDE}/brpc/${PROTO_WE}.pb.h" "${BRPC_OUTPUT_INCLUDE}/brpc/${PROTO_WE}.pb.cc"
+    COMMAND protoc ${PROTO_FLAGS} --cpp_out=${BRPC_OUTPUT_INCLUDE} --proto_path=${PROTOBUF_INCLUDE_DIR} --proto_path=${CMAKE_SOURCE_DIR}/net --proto_path=${CMAKE_SOURCE_DIR}/net/brpc/ ${PROTO}
+    DEPENDS ${PROTO} protoc
   )
 endforeach()
 
 file(GLOB BRPC_POLICY_PROTOS "brpc/policy/*.proto")
 foreach(PROTO ${BRPC_POLICY_PROTOS})
   get_filename_component(PROTO_WE ${PROTO} NAME_WE)
-  list(APPEND PROTO_SRCS "${CMAKE_CURRENT_BINARY_DIR}/brpc/policy/${PROTO_WE}.pb.cc")
+  list(APPEND PROTO_SRCS "${BRPC_OUTPUT_INCLUDE}/brpc/policy/${PROTO_WE}.pb.cc")
   add_custom_command(
-    OUTPUT "brpc/policy/${PROTO_WE}.pb.h" "brpc/policy/${PROTO_WE}.pb.cc"
-    COMMAND protoc ${PROTO_FLAGS} --cpp_out=${CMAKE_CURRENT_BINARY_DIR} --proto_path=${PROTOBUF_INCLUDE_DIR} --proto_path=${CMAKE_SOURCE_DIR}/net --proto_path=${CMAKE_SOURCE_DIR}/net/brpc/policy ${PROTO}
-    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+    OUTPUT "${BRPC_OUTPUT_INCLUDE}/brpc/policy/${PROTO_WE}.pb.h" "${BRPC_OUTPUT_INCLUDE}/brpc/policy/${PROTO_WE}.pb.cc"
+    COMMAND protoc ${PROTO_FLAGS} --cpp_out=${BRPC_OUTPUT_INCLUDE} --proto_path=${PROTOBUF_INCLUDE_DIR} --proto_path=${CMAKE_SOURCE_DIR}/net --proto_path=${CMAKE_SOURCE_DIR}/net/brpc/policy ${PROTO}
+    DEPENDS ${PROTO} protoc
   )
 endforeach()
 
@@ -310,7 +305,12 @@ set(SOURCES
   ${MCPACK2PB_SOURCES}
   ${BRPC_SOURCES}
   ${PROTO_SRCS}
-  )
+)
+
+# for *.so
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${BRPC_OUTPUT_LIB})
+# for *.a
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${BRPC_OUTPUT_LIB})
 
 add_library(BUTIL_LIB OBJECT ${BUTIL_SOURCES})
 add_library(OBJ_LIB OBJECT ${SOURCES})
@@ -329,15 +329,23 @@ set_property(TARGET ${BUTIL_LIB} PROPERTY POSITION_INDEPENDENT_CODE 1)
 
 add_library(butil-shared SHARED $<TARGET_OBJECTS:BUTIL_LIB>)
 add_library(butil-static STATIC $<TARGET_OBJECTS:BUTIL_LIB>)
-SET_TARGET_PROPERTIES(butil-static PROPERTIES OUTPUT_NAME butil CLEAN_DIRECT_OUTPUT 1)
-SET_TARGET_PROPERTIES(butil-shared PROPERTIES OUTPUT_NAME butil CLEAN_DIRECT_OUTPUT 1)
+SET_TARGET_PROPERTIES(butil-static PROPERTIES OUTPUT_NAME butil CLEAN_DIRECT_OUTPUT 1
+  INTERFACE_INCLUDE_DIRECTORIES ${BRPC_OUTPUT_INCLUDE}
+)
+SET_TARGET_PROPERTIES(butil-shared PROPERTIES OUTPUT_NAME butil CLEAN_DIRECT_OUTPUT 1
+  INTERFACE_INCLUDE_DIRECTORIES ${BRPC_OUTPUT_INCLUDE}
+)
 target_link_libraries(butil-static ${DYNAMIC_LIB})
 target_link_libraries(butil-shared ${DYNAMIC_LIB})
 
 add_library(brpc-shared SHARED $<TARGET_OBJECTS:BUTIL_LIB> $<TARGET_OBJECTS:OBJ_LIB>)
 add_library(brpc-static STATIC $<TARGET_OBJECTS:BUTIL_LIB> $<TARGET_OBJECTS:OBJ_LIB>)
-SET_TARGET_PROPERTIES(brpc-static PROPERTIES OUTPUT_NAME brpc CLEAN_DIRECT_OUTPUT 1)
-SET_TARGET_PROPERTIES(brpc-shared PROPERTIES OUTPUT_NAME brpc CLEAN_DIRECT_OUTPUT 1)
+SET_TARGET_PROPERTIES(brpc-static PROPERTIES OUTPUT_NAME brpc CLEAN_DIRECT_OUTPUT 1
+  INTERFACE_INCLUDE_DIRECTORIES ${BRPC_OUTPUT_INCLUDE}
+)
+SET_TARGET_PROPERTIES(brpc-shared PROPERTIES OUTPUT_NAME brpc CLEAN_DIRECT_OUTPUT 1
+  INTERFACE_INCLUDE_DIRECTORIES ${BRPC_OUTPUT_INCLUDE}
+)
 #add_library(brpc-shared SHARED ${BUTIL_SOURCES} ${SOURCES})
 #add_library(brpc-static STATIC ${BUTIL_SOURCES} ${SOURCES})
 
@@ -353,26 +361,18 @@ elseif(NOT DEBUG)
   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DNDEBUG")
 endif()
 
-if (${CMAKE_CURRENT_BINARY_DIR}/idl_options.h)
-  file(COPY ${CMAKE_CURRENT_BINARY_DIR}/idl_options.pb.h
-    DESTINATION ${CMAKE_BINARY_DIR}/output/include)
-endif()
-
-file(COPY ${CMAKE_CURRENT_BINARY_DIR}/brpc/
-  DESTINATION ${CMAKE_BINARY_DIR}/output/include/brpc/
-  FILES_MATCHING
-  PATTERN "*.h"
-  PATTERN "*.hpp"
-)
 file(COPY ${CMAKE_SOURCE_DIR}/net/
-  DESTINATION ${CMAKE_BINARY_DIR}/output/include/
+  DESTINATION ${BRPC_OUTPUT_INCLUDE}
   FILES_MATCHING
   PATTERN "*.h"
   PATTERN "*.hpp"
-  EXCLUDE REGEX "docs*"
+  PATTERN "test" EXCLUDE
+  PATTERN "tools" EXCLUDE
+  PATTERN "example" EXCLUDE
+  PATTERN "docs" EXCLUDE
 )
 
-install(DIRECTORY ${CMAKE_BINARY_DIR}/output/include/
+install(DIRECTORY ${BRPC_OUTPUT_INCLUDE}
   DESTINATION include
   FILES_MATCHING
   PATTERN "*.h"

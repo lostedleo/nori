@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8.10)
-project(multi_threaded_echo_c++ C CXX)
+project(kv_server C CXX)
 
 option(EXAMPLE_LINK_SO "Whether examples are linked dynamically" OFF)
 
