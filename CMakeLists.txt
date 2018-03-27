@@ -24,7 +24,38 @@ list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/build_tools/cmake)
 include(CppLint)
 include(NoriProtobufGenerate)
 
+if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+  # require at least gcc 4.8
+  if(CMAKE_CXX_COMPILER_VERSION VERSION_LESS 4.8)
+    message(FATAL_ERROR "GCC is too old, please install a newer version supporting C++11")
+  endif()
+elseif(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+  # require at least clang 3.3
+  if(CMAKE_CXX_COMPILER_VERSION VERSION_LESS 3.3)
+    message(FATAL_ERROR "Clang is too old, please install a newer version supporting C++11")
+  endif()
+else()
+  message(WARNING "You are using an unsupported compiler! Compilation has only been tested with Clang and GCC.")
+endif()
+
+macro(use_cxx11)
+  if(CMAKE_VERSION VERSION_LESS "3.1.3")
+    if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+      set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+    endif()
+    if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+      set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+    endif()
+  else()
+    set(CMAKE_CXX_STANDARD 11)
+    set(CMAKE_CXX_STANDARD_REQUIRED ON)
+  endif()
+endmacro(use_cxx11)
+
+use_cxx11()
 # In-tree dependencies.
 #######################
 add_subdirectory(third_party)
 add_subdirectory(net)
+add_subdirectory(raft)
+add_subdirectory(storage)

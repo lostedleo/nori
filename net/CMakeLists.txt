@@ -29,24 +29,10 @@ get_target_property(PROTOBUF_INCLUDE_DIR protobuf INTERFACE_INCLUDE_DIRECTORIES)
 get_target_property(GFLAGS_INCLUDE_PATH gflags INTERFACE_INCLUDE_DIRECTORIES)
 get_target_property(LEVELDB_INCLUDE_PATH leveldb INTERFACE_INCLUDE_DIRECTORIES)
 
-if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
-  # require at least gcc 4.8
-  if(CMAKE_CXX_COMPILER_VERSION VERSION_LESS 4.8)
-    message(FATAL_ERROR "GCC is too old, please install a newer version supporting C++11")
-  endif()
-elseif(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
-  # require at least clang 3.3
-  if(CMAKE_CXX_COMPILER_VERSION VERSION_LESS 3.3)
-    message(FATAL_ERROR "Clang is too old, please install a newer version supporting C++11")
-  endif()
-else()
-  message(WARNING "You are using an unsupported compiler! Compilation has only been tested with Clang and GCC.")
-endif()
-
 option(BRPC_WITH_GLOG "With glog" ON)
 option(DEBUG "Print debug logs" OFF)
 option(WITH_DEBUG_SYMBOLS "With debug symbols" OFF)
-option(BUILD_UNIT_TESTS "Whether to build unit tests" ON)
+option(BUILD_UNIT_TESTS "Whether to build unit tests" OFF)
 option(BUILD_EXAMPLES "Whether to build examples" ON)
 
 set(WITH_GLOG_VAL "0")
@@ -79,22 +65,6 @@ set(CMAKE_CPP_FLAGS "${CMAKE_CPP_FLAGS} -DBTHREAD_USE_FAST_PTHREAD_MUTEX -D__con
 set(CMAKE_CPP_FLAGS "${CMAKE_CPP_FLAGS} ${DEBUG_SYMBOL}")
 set(CMAKE_CXX_FLAGS "${CMAKE_CPP_FLAGS} -O2 -pipe -Wall -W -fPIC -fstrict-aliasing -Wno-invalid-offsetof -Wno-unused-parameter -fno-omit-frame-pointer")
 set(CMAKE_C_FLAGS "${CMAKE_CPP_FLAGS} -O2 -pipe -Wall -W -fPIC -fstrict-aliasing -Wno-unused-parameter -fno-omit-frame-pointer")
-
-macro(use_cxx11)
-  if(CMAKE_VERSION VERSION_LESS "3.1.3")
-    if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
-      set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
-    endif()
-    if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
-      set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
-    endif()
-  else()
-    set(CMAKE_CXX_STANDARD 11)
-    set(CMAKE_CXX_STANDARD_REQUIRED ON)
-  endif()
-endmacro(use_cxx11)
-
-use_cxx11()
 
 if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
   #required by butil/crc32.cc to boost performance for 10x
@@ -259,7 +229,7 @@ set(MCPACK2PB_SOURCES
   ${CMAKE_SOURCE_DIR}/net/mcpack2pb/serializer.cpp
   )
 
-set(BRPC_OUTPUT ${CMAKE_BINARY_DIR}/output)
+set(BRPC_OUTPUT ${CMAKE_BINARY_DIR}/output_brpc)
 set(BRPC_OUTPUT_INCLUDE ${BRPC_OUTPUT}/include)
 set(BRPC_OUTPUT_LIB ${BRPC_OUTPUT}/lib)
 include_directories(${BRPC_OUTPUT_INCLUDE})
