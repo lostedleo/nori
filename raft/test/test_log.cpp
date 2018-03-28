@@ -659,11 +659,11 @@ TEST_F(LogStorageTest, configuration) {
     braft::ConfigurationEntry pair;
     configuration_manager->get(2 + 100000*5, &pair);
     ASSERT_EQ(2, pair.id.index);
-    LOG(NOTICE) << pair.conf;
+    LOG(INFO) << pair.conf;
 
     configuration_manager->get(2 + 100000*5 + 1, &pair);
     ASSERT_EQ(2+100000*5+1, pair.id.index);
-    LOG(NOTICE) << pair.conf;
+    LOG(INFO) << pair.conf;
 
     storage2->truncate_suffix(400000);
     configuration_manager->get(400000, &pair);

@@ -1,5 +1,5 @@
 # for protoc-gen-mcpack
-set(EXECUTABLE_OUTPUT_PATH ${CMAKE_BINARY_DIR}/output/bin)
+set(EXECUTABLE_OUTPUT_PATH ${BRPC_OUTPUT_BIN})
 
 set(protoc_gen_mcpack_SOURCES
   ${CMAKE_SOURCE_DIR}/net/mcpack2pb/generator.cpp

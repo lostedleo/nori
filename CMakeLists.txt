@@ -24,6 +24,8 @@ list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/build_tools/cmake)
 include(CppLint)
 include(NoriProtobufGenerate)
 
+#option(BUILD_SHARED_LIBS "build shared lib" ON)
+
 if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
   # require at least gcc 4.8
   if(CMAKE_CXX_COMPILER_VERSION VERSION_LESS 4.8)
@@ -58,4 +60,4 @@ use_cxx11()
 add_subdirectory(third_party)
 add_subdirectory(net)
 add_subdirectory(raft)
-add_subdirectory(storage)
+#add_subdirectory(storage)

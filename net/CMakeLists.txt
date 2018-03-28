@@ -26,13 +26,11 @@ project(net C CXX)
 # get third_party property
 # get protobuf include and protoc path
 get_target_property(PROTOBUF_INCLUDE_DIR protobuf INTERFACE_INCLUDE_DIRECTORIES)
-get_target_property(GFLAGS_INCLUDE_PATH gflags INTERFACE_INCLUDE_DIRECTORIES)
-get_target_property(LEVELDB_INCLUDE_PATH leveldb INTERFACE_INCLUDE_DIRECTORIES)
 
 option(BRPC_WITH_GLOG "With glog" ON)
 option(DEBUG "Print debug logs" OFF)
 option(WITH_DEBUG_SYMBOLS "With debug symbols" OFF)
-option(BUILD_UNIT_TESTS "Whether to build unit tests" OFF)
+option(BUILD_UNIT_TESTS "Whether to build unit tests" ON)
 option(BUILD_EXAMPLES "Whether to build examples" ON)
 
 set(WITH_GLOG_VAL "0")
@@ -50,9 +48,6 @@ configure_file(${CMAKE_SOURCE_DIR}/build_tools/config.h.in ${CMAKE_SOURCE_DIR}/n
 include_directories(
   ${CMAKE_SOURCE_DIR}/net
   ${CMAKE_CURRENT_BINARY_DIR}
-  ${GFLAGS_INCLUDE_PATH}
-  ${PROTOBUF_INCLUDE_DIR}
-  ${LEVELDB_INCLUDE_PATH}
 )
 
 execute_process(
@@ -78,7 +73,6 @@ endif()
 
 set(DYNAMIC_LIB
   ${CMAKE_THREAD_LIBS_INIT}
-  snappy
   gflags
   protobuf
   libprotoc
@@ -95,8 +89,6 @@ if(BRPC_WITH_GLOG)
     ${DYNAMIC_LIB}
     glog
     )
-  get_target_property(GLOG_INCLUDE_PATH glog INTERFACE_INCLUDE_DIRECTORIES)
-  include_directories(${GLOG_INCLUDE_PATH})
 endif()
 
 ## list all source files
@@ -232,6 +224,7 @@ set(MCPACK2PB_SOURCES
 set(BRPC_OUTPUT ${CMAKE_BINARY_DIR}/output_brpc)
 set(BRPC_OUTPUT_INCLUDE ${BRPC_OUTPUT}/include)
 set(BRPC_OUTPUT_LIB ${BRPC_OUTPUT}/lib)
+set(BRPC_OUTPUT_BIN ${BRPC_OUTPUT}/bin)
 include_directories(${BRPC_OUTPUT_INCLUDE})
 
 file(GLOB PROTOS "*.proto")
@@ -282,23 +275,8 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${BRPC_OUTPUT_LIB})
 # for *.a
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${BRPC_OUTPUT_LIB})
 
-add_library(BUTIL_LIB OBJECT ${BUTIL_SOURCES})
-add_library(OBJ_LIB OBJECT ${SOURCES})
-
-add_dependencies(BUTIL_LIB gflags protobuf leveldb)
-add_dependencies(OBJ_LIB gflags protobuf leveldb)
-
-if (BRPC_WITH_GLOG)
-  add_dependencies(BUTIL_LIB glog)
-  add_dependencies(OBJ_LIB glog)
-endif()
-
-# shared library needs POSITION_INDEPENDENT_CODE
-set_property(TARGET ${OBJ_LIB} PROPERTY POSITION_INDEPENDENT_CODE 1)
-set_property(TARGET ${BUTIL_LIB} PROPERTY POSITION_INDEPENDENT_CODE 1)
-
-add_library(butil-shared SHARED $<TARGET_OBJECTS:BUTIL_LIB>)
-add_library(butil-static STATIC $<TARGET_OBJECTS:BUTIL_LIB>)
+add_library(butil-shared SHARED ${BUTIL_SOURCES})
+add_library(butil-static STATIC ${BUTIL_SOURCES})
 SET_TARGET_PROPERTIES(butil-static PROPERTIES OUTPUT_NAME butil CLEAN_DIRECT_OUTPUT 1
   INTERFACE_INCLUDE_DIRECTORIES ${BRPC_OUTPUT_INCLUDE}
 )
@@ -308,19 +286,17 @@ SET_TARGET_PROPERTIES(butil-shared PROPERTIES OUTPUT_NAME butil CLEAN_DIRECT_OUT
 target_link_libraries(butil-static ${DYNAMIC_LIB})
 target_link_libraries(butil-shared ${DYNAMIC_LIB})
 
-add_library(brpc-shared SHARED $<TARGET_OBJECTS:BUTIL_LIB> $<TARGET_OBJECTS:OBJ_LIB>)
-add_library(brpc-static STATIC $<TARGET_OBJECTS:BUTIL_LIB> $<TARGET_OBJECTS:OBJ_LIB>)
+add_library(brpc-shared SHARED ${SOURCES})
+add_library(brpc-static STATIC ${SOURCES})
 SET_TARGET_PROPERTIES(brpc-static PROPERTIES OUTPUT_NAME brpc CLEAN_DIRECT_OUTPUT 1
   INTERFACE_INCLUDE_DIRECTORIES ${BRPC_OUTPUT_INCLUDE}
 )
 SET_TARGET_PROPERTIES(brpc-shared PROPERTIES OUTPUT_NAME brpc CLEAN_DIRECT_OUTPUT 1
   INTERFACE_INCLUDE_DIRECTORIES ${BRPC_OUTPUT_INCLUDE}
 )
-#add_library(brpc-shared SHARED ${BUTIL_SOURCES} ${SOURCES})
-#add_library(brpc-static STATIC ${BUTIL_SOURCES} ${SOURCES})
 
-target_link_libraries(brpc-static ${DYNAMIC_LIB})
-target_link_libraries(brpc-shared ${DYNAMIC_LIB})
+target_link_libraries(brpc-static ${DYNAMIC_LIB} butil-static)
+target_link_libraries(brpc-shared ${DYNAMIC_LIB} butil-shared)
 
 if(BUILD_UNIT_TESTS)
   add_subdirectory(test)

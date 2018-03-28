@@ -70,7 +70,7 @@ public:
 
     virtual void on_apply(braft::Iterator& iter) {
         for (; iter.valid(); iter.next()) {
-            LOG_IF(TRACE, !g_dont_print_apply_log) << "addr " << address << " apply " << iter.index();
+            LOG_IF(INFO, !g_dont_print_apply_log) << "addr " << address << " apply " << iter.index();
             ::brpc::ClosureGuard guard(iter.done());
             lock();
             logs.push_back(iter.data());
@@ -80,7 +80,7 @@ public:
     }
 
     virtual void on_shutdown() {
-        LOG(TRACE) << "addr " << address << " shutdowned";
+        LOG(INFO) << "addr " << address << " shutdowned";
     }
 
     virtual void on_snapshot_save(braft::SnapshotWriter* writer, braft::Closure* done) {
@@ -88,7 +88,7 @@ public:
         file_path.append("/data");
         brpc::ClosureGuard done_guard(done);
 
-        LOG(NOTICE) << "on_snapshot_save to " << file_path;
+        LOG(INFO) << "on_snapshot_save to " << file_path;
 
         int fd = ::creat(file_path.c_str(), 0644);
         if (fd < 0) {
@@ -143,19 +143,19 @@ public:
     }
 
     virtual void on_start_following(const braft::LeaderChangeContext& start_following_context) {
-        LOG(TRACE) << "address " << address << " start following new leader: " 
+        LOG(INFO) << "address " << address << " start following new leader: " 
                    <<  start_following_context;
         ++_on_start_following_times;
     }
 
     virtual void on_stop_following(const braft::LeaderChangeContext& stop_following_context) {
-        LOG(TRACE) << "address " << address << " stop following old leader: " 
+        LOG(INFO) << "address " << address << " stop following old leader: " 
                    <<  stop_following_context;
         ++_on_stop_following_times;
     }
 
     virtual void on_configuration_committed(const ::braft::Configuration& conf) {
-        LOG(TRACE) << "address " << address << " commit conf: " << conf;
+        LOG(INFO) << "address " << address << " commit conf: " << conf;
     }
 
 };
@@ -248,7 +248,7 @@ public:
             LOG(WARNING) << "init_node failed, server: " << listen_addr;
             return ret;
         } else {
-            LOG(NOTICE) << "init node " << listen_addr;
+            LOG(INFO) << "init node " << listen_addr;
         }
 
         {
@@ -591,7 +591,7 @@ TEST_F(NodeTest, NoLeader) {
     cond.reset(1);
     follower->add_peer(peer3, NEW_ADDPEERCLOSURE(&cond, EPERM));
     cond.wait();
-    LOG(NOTICE) << "add peer " << peer3;
+    LOG(INFO) << "add peer " << peer3;
 
     // remove peer1
     braft::PeerId peer0;
@@ -602,7 +602,7 @@ TEST_F(NodeTest, NoLeader) {
     cond.reset(1);
     follower->remove_peer(peer0, NEW_REMOVEPEERCLOSURE(&cond, EPERM));
     cond.wait();
-    LOG(NOTICE) << "remove peer " << peer0;
+    LOG(INFO) << "remove peer " << peer0;
 }
 
 TEST_F(NodeTest, TripleNode) {
@@ -671,7 +671,7 @@ TEST_F(NodeTest, TripleNode) {
 
             channel.CallMethod(NULL, &cntl, NULL, NULL, NULL/*done*/);
 
-            LOG(NOTICE) << "http return: \n" << cntl.response_attachment();
+            LOG(INFO) << "http return: \n" << cntl.response_attachment();
         }
 
         {
@@ -681,7 +681,7 @@ TEST_F(NodeTest, TripleNode) {
 
             channel.CallMethod(NULL, &cntl, NULL, NULL, NULL/*done*/);
 
-            LOG(NOTICE) << "http return: \n" << cntl.response_attachment();
+            LOG(INFO) << "http return: \n" << cntl.response_attachment();
         }
     }
 
@@ -818,7 +818,7 @@ TEST_F(NodeTest, JoinNode) {
     peers.push_back(peer0);
     Cluster cluster("unittest", peers);
     ASSERT_EQ(0, cluster.start(peer0.addr));
-    LOG(NOTICE) << "start single cluster " << peer0;
+    LOG(INFO) << "start single cluster " << peer0;
 
     cluster.wait_leader();
 
@@ -848,7 +848,7 @@ TEST_F(NodeTest, JoinNode) {
     peer1.addr.port = 5006 + 1;
     peer1.idx = 0;
     ASSERT_EQ(0, cluster.start(peer1.addr, true));
-    LOG(NOTICE) << "start peer " << peer1;
+    LOG(INFO) << "start peer " << peer1;
     // wait until started successfully
     usleep(1000* 1000);
 
@@ -856,7 +856,7 @@ TEST_F(NodeTest, JoinNode) {
     cond.reset(1);
     leader->add_peer(peer1, NEW_ADDPEERCLOSURE(&cond, 0));
     cond.wait();
-    LOG(NOTICE) << "add peer " << peer1;
+    LOG(INFO) << "add peer " << peer1;
 
     cluster.ensure_same();
 
@@ -874,7 +874,7 @@ TEST_F(NodeTest, JoinNode) {
     // start peer2 after some seconds wait 
     sleep(2);
     ASSERT_EQ(0, cluster.start(peer2.addr, true));
-    LOG(NOTICE) << "start peer " << peer2;
+    LOG(INFO) << "start peer " << peer2;
 
     usleep(1000 * 1000L);
 
@@ -1935,7 +1935,7 @@ TEST_F(NodeTest, shutdown_and_join_work_after_init_fails) {
 }
 
 TEST_F(NodeTest, shutting_leader_triggers_timeout_now) {
-    GFLAGS_NS::SetCommandLineOption("raft_sync", "false");
+    google::SetCommandLineOption("raft_sync", "false");
     std::vector<braft::PeerId> peers;
     for (int i = 0; i < 3; i++) {
         braft::PeerId peer;
@@ -1959,11 +1959,11 @@ TEST_F(NodeTest, shutting_leader_triggers_timeout_now) {
     usleep(100 * 1000);
     leader = cluster.leader();
     ASSERT_TRUE(leader != NULL);
-    GFLAGS_NS::SetCommandLineOption("raft_sync", "true");
+    google::SetCommandLineOption("raft_sync", "true");
 }
 
 TEST_F(NodeTest, removing_leader_triggers_timeout_now) {
-    GFLAGS_NS::SetCommandLineOption("raft_sync", "false");
+    google::SetCommandLineOption("raft_sync", "false");
     std::vector<braft::PeerId> peers;
     for (int i = 0; i < 3; i++) {
         braft::PeerId peer;
@@ -1989,7 +1989,7 @@ TEST_F(NodeTest, removing_leader_triggers_timeout_now) {
     leader = cluster.leader();
     ASSERT_TRUE(leader != NULL);
     ASSERT_NE(old_leader_id, leader->node_id().peer_id);
-    GFLAGS_NS::SetCommandLineOption("raft_sync", "true");
+    google::SetCommandLineOption("raft_sync", "true");
 }
 
 TEST_F(NodeTest, transfer_should_work_after_install_snapshot) {
@@ -2525,7 +2525,7 @@ TEST_F(NodeTest, change_peers) {
     peers.push_back(peer0);
     Cluster cluster("unittest", peers);
     ASSERT_EQ(0, cluster.start(peer0.addr));
-    LOG(NOTICE) << "start single cluster " << peer0;
+    LOG(INFO) << "start single cluster " << peer0;
     cluster.wait_leader();
     braft::Node* leader = cluster.leader();
     bthread::CountdownEvent cond(10);
@@ -2574,7 +2574,7 @@ TEST_F(NodeTest, change_peers_add_multiple_node) {
     peers.push_back(peer0);
     Cluster cluster("unittest", peers);
     ASSERT_EQ(0, cluster.start(peer0.addr));
-    LOG(NOTICE) << "start single cluster " << peer0;
+    LOG(INFO) << "start single cluster " << peer0;
     cluster.wait_leader();
     braft::Node* leader = cluster.leader();
     bthread::CountdownEvent cond(10);
@@ -2627,7 +2627,7 @@ TEST_F(NodeTest, change_peers_steps_down_in_joint_consensus) {
     peers.push_back(peer0);
     Cluster cluster("unittest", peers);
     ASSERT_EQ(0, cluster.start(peer0.addr));
-    LOG(NOTICE) << "start single cluster " << peer0;
+    LOG(INFO) << "start single cluster " << peer0;
     cluster.wait_leader();
     braft::Node* leader = cluster.leader();
     bthread::CountdownEvent cond(10);
@@ -2717,9 +2717,9 @@ static void* change_routine(void* arg) {
 
 TEST_F(NodeTest, change_peers_chaos_with_snapshot) {
     g_dont_print_apply_log = true;
-    GFLAGS_NS::SetCommandLineOption("raft_sync", "false");
-    ASSERT_FALSE(GFLAGS_NS::SetCommandLineOption("crash_on_fatal_log", "true").empty());
-    GFLAGS_NS::SetCommandLineOption("minloglevel", "3");
+    google::SetCommandLineOption("raft_sync", "false");
+    ASSERT_FALSE(google::SetCommandLineOption("crash_on_fatal_log", "true").empty());
+    google::SetCommandLineOption("minloglevel", "3");
     std::vector<braft::PeerId> peers;
     // start cluster
     peers.push_back(braft::PeerId("127.0.0.1:5006"));
@@ -2760,15 +2760,15 @@ TEST_F(NodeTest, change_peers_chaos_with_snapshot) {
     }
     arg.stop = true;
     pthread_join(tid, NULL);
-    GFLAGS_NS::SetCommandLineOption("raft_sync", "true");
-    GFLAGS_NS::SetCommandLineOption("minloglevel", "3");
+    google::SetCommandLineOption("raft_sync", "true");
+    google::SetCommandLineOption("minloglevel", "3");
 }
 
 TEST_F(NodeTest, change_peers_chaos_without_snapshot) {
     g_dont_print_apply_log = true;
-    GFLAGS_NS::SetCommandLineOption("minloglevel", "3");
-    GFLAGS_NS::SetCommandLineOption("raft_sync", "false");
-    ASSERT_FALSE(GFLAGS_NS::SetCommandLineOption("crash_on_fatal_log", "true").empty());
+    google::SetCommandLineOption("minloglevel", "3");
+    google::SetCommandLineOption("raft_sync", "false");
+    ASSERT_FALSE(google::SetCommandLineOption("crash_on_fatal_log", "true").empty());
     std::vector<braft::PeerId> peers;
     // start cluster
     peers.push_back(braft::PeerId("127.0.0.1:5006"));
@@ -2818,6 +2818,6 @@ TEST_F(NodeTest, change_peers_chaos_without_snapshot) {
     cluster.ensure_same();
     std::cout << "Stopping cluster" << std::endl;
     cluster.stop_all();
-    GFLAGS_NS::SetCommandLineOption("raft_sync", "true");
-    GFLAGS_NS::SetCommandLineOption("minloglevel", "0");
+    google::SetCommandLineOption("raft_sync", "true");
+    google::SetCommandLineOption("minloglevel", "0");
 }

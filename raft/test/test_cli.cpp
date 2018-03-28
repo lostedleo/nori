@@ -14,7 +14,7 @@
 class CliTest : public testing::Test {
 public:
     void SetUp() {
-        GFLAGS_NS::SetCommandLineOption("raft_sync", "false");
+        google::SetCommandLineOption("raft_sync", "false");
         ::system("rm -rf data");
     }
     void TearDown() {

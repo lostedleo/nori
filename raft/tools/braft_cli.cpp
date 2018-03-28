@@ -229,8 +229,8 @@ int main(int argc , char* argv[]) {
                         "  snapshot --group=$group_id --peer=$target_peer\n"
                         "  transfer_leader --group=$group_id --peer=$target_leader --conf=$current_conf\n",
                         proc_name);
-    GFLAGS_NS::SetUsageMessage(help_str);
-    GFLAGS_NS::ParseCommandLineFlags(&argc, &argv, true);
+    google::SetUsageMessage(help_str);
+    google::ParseCommandLineFlags(&argc, &argv, true);
     if (argc != 2) {
         std::cerr << help_str;
         return -1;
