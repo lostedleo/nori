@@ -14,7 +14,7 @@ else()
     set(BRPC_LIB brpc-static)
 endif()
 set(GPERFTOOLS_LIBRARIES gperftools)
-
+ 
 set(CMAKE_CXX_FLAGS "${CMAKE_CPP_FLAGS} -DNDEBUG -O2 -D__const__= -pipe -W -Wall -Wno-unused-parameter -fPIC -fno-omit-frame-pointer")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DBRPC_ENABLE_CPU_PROFILER")
 
