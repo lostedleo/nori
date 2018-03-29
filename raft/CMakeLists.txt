@@ -82,8 +82,8 @@ endif()
 
 add_library(braft-shared SHARED ${SOURCES})
 add_library(braft-static STATIC ${SOURCES})
-target_link_libraries(braft-shared ${DYNAMIC_LIB})
-target_link_libraries(braft-static ${DYNAMIC_LIB})
+target_link_libraries(braft-shared brpc-shared)
+target_link_libraries(braft-static brpc-static)
 
 SET_TARGET_PROPERTIES(braft-static PROPERTIES OUTPUT_NAME braft CLEAN_DIRECT_OUTPUT 1
   INTERFACE_INCLUDE_DIRECTORIES ${BRAFT_OUTPUT_INCLUDE}

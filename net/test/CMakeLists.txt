@@ -18,10 +18,9 @@ set(GPERFTOOLS_LIBRARIES gperftools)
 set(GTEST_LIB gtest)
 set(GTEST_MAIN_LIB gtest_main)
 
-set(CMAKE_CPP_FLAGS "-DBRPC_WITH_GLOG=${WITH_GLOG_VAL} -DFLAGS_NS=${google}")
+set(CMAKE_CPP_FLAGS "-DBRPC_WITH_GLOG=${WITH_GLOG_VAL}")
 set(CMAKE_CPP_FLAGS "${CMAKE_CPP_FLAGS} -DBTHREAD_USE_FAST_PTHREAD_MUTEX -D__const__= -D_GNU_SOURCE -DUSE_SYMBOLIZE -DNO_TCMALLOC -D__STDC_FORMAT_MACROS -D__STDC_LIMIT_MACROS -D__STDC_CONSTANT_MACROS -DUNIT_TEST -Dprivate=public -Dprotected=public -DBVAR_NOT_LINK_DEFAULT_VARIABLES -D__STRICT_ANSI__ -include ${CMAKE_CURRENT_SOURCE_DIR}/sstream_workaround.h")
 set(CMAKE_CXX_FLAGS "${CMAKE_CPP_FLAGS} -O2 -pipe -Wall -W -fPIC -fstrict-aliasing -Wno-invalid-offsetof -Wno-unused-parameter -fno-omit-frame-pointer")
-use_cxx11()
 
 if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
   #required by butil/crc32.cc to boost performance for 10x
@@ -150,13 +149,12 @@ add_executable(test_bvar
   ${TEST_BVAR_SRCS})
 target_link_libraries(test_bvar ${GTEST_LIB}
   ${GPERFTOOLS_LIBRARIES}
-  ${DYNAMIC_LIB}
   butil-static)
 
 add_library(test_proto ${TEST_PROTO_SRCS})
 target_link_libraries(test_proto protobuf)
 add_executable(test_butil ${TEST_BUTIL_SOURCES})
-target_link_libraries(test_butil ${GTEST_LIB} ${GPERFTOOLS_LIBRARIES} ${DYNAMIC_LIB} brpc-static test_proto)
+target_link_libraries(test_butil ${GTEST_LIB} ${GPERFTOOLS_LIBRARIES} brpc-static test_proto)
 
 file(GLOB BTHREAD_UNITTESTS "bthread*unittest.cpp")
 foreach(BTHREAD_UT ${BTHREAD_UNITTESTS})
@@ -166,7 +164,6 @@ foreach(BTHREAD_UT ${BTHREAD_UNITTESTS})
     ${GTEST_MAIN_LIB}
     ${GTEST_LIB}
     ${GPERFTOOLS_LIBRARIES}
-    ${DYNAMIC_LIB}
     brpc-static
     test_proto
   )
@@ -180,7 +177,6 @@ foreach(BRPC_UT ${BRPC_UNITTESTS})
     ${GTEST_MAIN_LIB}
     ${GPERFTOOLS_LIBRARIES}
     ${GTEST_LIB}
-    ${DYNAMIC_LIB}
     brpc-static
     test_proto
   )

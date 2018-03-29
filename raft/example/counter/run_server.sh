@@ -60,7 +60,7 @@ for ((i=0; i<$FLAGS_server_num; ++i)); do
     cd runtime/$i
     ${VALGRIND} ./counter_server \
         -bthread_concurrency=${FLAGS_bthread_concurrency}\
-        -crash_on_fatal_log=${FLAGS_crash_on_fatal} \
+        #-crash_on_fatal_log=${FLAGS_crash_on_fatal} \
         -raft_max_segment_size=${FLAGS_max_segment_size} \
         -raft_sync=${FLAGS_sync} \
         -port=$((${FLAGS_port}+i)) -conf="${raft_peers}" > std.log 2>&1 &
