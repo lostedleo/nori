@@ -73,6 +73,7 @@ endif()
 
 set(DYNAMIC_LIB
   ${CMAKE_THREAD_LIBS_INIT}
+  snappy
   gflags
   protobuf
   libprotoc
@@ -88,7 +89,7 @@ if(BRPC_WITH_GLOG)
   set(DYNAMIC_LIB
     ${DYNAMIC_LIB}
     glog
-    )
+  )
 endif()
 
 ## list all source files
@@ -270,6 +271,14 @@ set(SOURCES
   ${PROTO_SRCS}
 )
 
+if(BUILD_UNIT_TESTS)
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DUNIT_TEST -DBVAR_NOT_LINK_DEFAULT_VARIABLES")
+  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DUNIT_TEST")
+elseif(NOT DEBUG)
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DNDEBUG")
+  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DNDEBUG")
+endif()
+
 # for *.so
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${BRPC_OUTPUT_LIB})
 # for *.a
@@ -297,15 +306,6 @@ SET_TARGET_PROPERTIES(brpc-shared PROPERTIES OUTPUT_NAME brpc CLEAN_DIRECT_OUTPU
 
 target_link_libraries(brpc-static ${DYNAMIC_LIB} butil-static)
 target_link_libraries(brpc-shared ${DYNAMIC_LIB} butil-shared)
-
-if(BUILD_UNIT_TESTS)
-  add_subdirectory(test)
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DUNIT_TEST -DBVAR_NOT_LINK_DEFAULT_VARIABLES")
-  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DUNIT_TEST")
-elseif(NOT DEBUG)
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DNDEBUG")
-  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DNDEBUG")
-endif()
 
 file(COPY ${CMAKE_SOURCE_DIR}/net/
   DESTINATION ${BRPC_OUTPUT_INCLUDE}
@@ -347,6 +347,9 @@ install(TARGETS brpc-static
 
 add_subdirectory(mcpack2pb)
 add_subdirectory(tools)
+if(BUILD_UNIT_TESTS)
+  add_subdirectory(test)
+endif()
 if(BUILD_EXAMPLES)
   add_subdirectory(example)
 endif()

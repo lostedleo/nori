@@ -6,5 +6,4 @@ include_directories(${CMAKE_CURRENT_BINARY_DIR})
 add_executable(braft_cli braft_cli.cpp)
 target_link_libraries(braft_cli
                       braft-static
-                      ${DYNAMIC_LIB}
                       )

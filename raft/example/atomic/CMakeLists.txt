@@ -4,17 +4,13 @@ project(atomic C CXX)
 option(EXAMPLE_LINK_SO "Whether examples are linked dynamically" OFF)
 option(LINK_TCMALLOC "Link tcmalloc if possible" ON)
 
-include(FindThreads)
-
 nori_protobuf_generate(PROTO_SRC PROTO_HEADER atomic.proto)
 # include PROTO_HEADER
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
 if(EXAMPLE_LINK_SO)
-  set(BRPC_LIB brpc-shared)
   set(BRAFT_LIB braft-shared)
 else()
-  set(BRPC_LIB brpc-static)
   set(BRAFT_LIB braft-static)
 endif()
 
@@ -30,19 +26,14 @@ add_executable(atomic_server server.cpp ${PROTO_SRC} ${PROTO_HEADER})
 add_executable(atomic_test test.cpp ${PROTO_SRC} ${PROTO_HEADER})
 
 set(DYNAMIC_LIB
-  ${CMAKE_THREAD_LIBS_INIT}
   ${GPERFTOOLS_LIBRARIES}
   ${BRAFT_LIB}
-  ${BRPC_LIB}
-  gflags
-  glog
-  protobuf
-  leveldb
-  rt
-  ssl
-  crypto
-  dl
-  z
+)
+
+file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/
+  DESTINATION ${CMAKE_CURRENT_BINARY_DIR}
+  FILES_MATCHING
+  PATTERN "*.sh"
 )
 
 target_link_libraries(atomic_client

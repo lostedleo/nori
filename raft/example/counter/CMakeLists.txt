@@ -4,17 +4,13 @@ project(counter C CXX)
 option(EXAMPLE_LINK_SO "Whether examples are linked dynamically" OFF)
 option(LINK_TCMALLOC "Link tcmalloc if possible" ON)
 
-include(FindThreads)
-
 nori_protobuf_generate(PROTO_SRC PROTO_HEADER counter.proto)
 # include PROTO_HEADER
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
 if(EXAMPLE_LINK_SO)
-  set(BRPC_LIB brpc-shared)
   set(BRAFT_LIB braft-shared)
 else()
-  set(BRPC_LIB brpc-static)
   set(BRAFT_LIB braft-static)
 endif()
 
@@ -28,20 +24,16 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${CMAKE_CPP_FLAGS} -DNDEBUG -O2 -D__cons
 add_executable(counter_client client.cpp ${PROTO_SRC} ${PROTO_HEADER})
 add_executable(counter_server server.cpp ${PROTO_SRC} ${PROTO_HEADER})
 
+file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/
+  DESTINATION ${CMAKE_CURRENT_BINARY_DIR}
+  FILES_MATCHING
+  PATTERN "*.sh"
+)
+
 set(DYNAMIC_LIB
-  ${CMAKE_THREAD_LIBS_INIT}
   ${GPERFTOOLS_LIBRARIES}
   ${BRAFT_LIB}
-  ${BRPC_LIB}
-  gflags
-  glog
-  leveldb
-  rt
-  ssl
-  crypto
-  dl
-  z
-  )
+)
 
 target_link_libraries(counter_client
   ${DYNAMIC_LIB}
