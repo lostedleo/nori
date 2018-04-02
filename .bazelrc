@@ -1,0 +1,41 @@
+# +------------------------------------------------------------+
+# | Startup Options                                            |
+# +------------------------------------------------------------+
+startup --batch_cpu_scheduling
+
+# +------------------------------------------------------------+
+# | Test Configurations                                        |
+# +------------------------------------------------------------+
+
+# +------------------------------------------------------------+
+# | CPP Lint Tests & Unit Tests                                |
+# +------------------------------------------------------------+
+# By default, cpplint tests are run as part of `bazel test` alongside all of
+# the other compilation and test targets.  This is a convenience shortcut to
+# only do the cpplint testing and nothing else.
+# Do bazel test --config=cpplint <target> to enable this configuration.
+# To enable the lint test, the BUILD *must* load the cpplint.bzl by having
+# 'load("//tools:cpplint.bzl", "cpplint")' at the beginning and 'cpplint()'
+# at the end.
+test:cpplint --test_tag_filters=cpplint
+test:cpplint --build_tests_only
+
+# Regular unit tests.
+test:unit_test --test_tag_filters=-cpplint
+
+# +------------------------------------------------------------+
+# | Build Configurations                                       |
+# +------------------------------------------------------------+
+# Do not show warnings from external dependencies.
+build --copt -DHAVE_ZLIB=1
+#build --define=with_glog=true
+build -c opt
+test --define=unittest=true
+
+# build with profiling
+build:cpu_prof --linkopt=-lprofiler
+
+# Enable C++14
+# build --cxxopt="-std=c++14"
+# Enable colorful output of GCC
+# build --cxxopt="-fdiagnostics-color=always"

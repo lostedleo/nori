@@ -10,7 +10,7 @@ COPTS = [
     "-fPIC",
     "-Wno-unused-parameter",
     "-fno-omit-frame-pointer",
-    "-Dgoogle=google",
+    "-DGFLAGS_NS=google",
 ] + select({
     "//:with_glog": ["-DBRPC_WITH_GLOG=1"],
     "//conditions:default": ["-DBRPC_WITH_GLOG=0"],
