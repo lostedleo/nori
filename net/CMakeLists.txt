@@ -73,7 +73,6 @@ endif()
 
 set(DYNAMIC_LIB
   ${CMAKE_THREAD_LIBS_INIT}
-  snappy
   gflags
   protobuf
   libprotoc
