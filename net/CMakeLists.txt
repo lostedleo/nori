@@ -30,7 +30,7 @@ get_target_property(PROTOBUF_INCLUDE_DIR protobuf INTERFACE_INCLUDE_DIRECTORIES)
 option(BRPC_WITH_GLOG "With glog" ON)
 option(DEBUG "Print debug logs" OFF)
 option(WITH_DEBUG_SYMBOLS "With debug symbols" OFF)
-option(BUILD_UNIT_TESTS "Whether to build unit tests" ON)
+option(BUILD_UNIT_TESTS "Whether to build unit tests" OFF)
 option(BUILD_EXAMPLES "Whether to build examples" ON)
 
 set(WITH_GLOG_VAL "0")
@@ -171,6 +171,7 @@ set(BUTIL_SOURCES
   ${CMAKE_SOURCE_DIR}/net/butil/synchronization/cancellation_flag.cc
   ${CMAKE_SOURCE_DIR}/net/butil/synchronization/condition_variable_posix.cc
   ${CMAKE_SOURCE_DIR}/net/butil/synchronization/waitable_event_posix.cc
+  ${CMAKE_SOURCE_DIR}/net/butil/synchronization/rw_mutex.cc
   ${CMAKE_SOURCE_DIR}/net/butil/threading/non_thread_safe_impl.cc
   ${CMAKE_SOURCE_DIR}/net/butil/threading/platform_thread_linux.cc
   ${CMAKE_SOURCE_DIR}/net/butil/threading/platform_thread_posix.cc

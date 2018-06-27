@@ -469,7 +469,8 @@ private:
 
 int main(int argc, char* argv[]) {
     google::ParseCommandLineFlags(&argc, &argv, true);
-    google::InitGoogleLogging(argv[0]);
+    // google::InitGoogleLogging(argv[0]);
+    butil::AtExitManager exit_manager;
 
     // Generally you only need one Server.
     brpc::Server server;

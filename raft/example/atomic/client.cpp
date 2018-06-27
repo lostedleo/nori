@@ -40,6 +40,8 @@ struct SendArg {
 static void* sender(void* arg) {
     SendArg* sa = (SendArg*)arg;
     int64_t value = 0;
+    brpc::Channel channel;
+    braft::PeerId last_leader;
     while (!brpc::IsAskedToQuit()) {
         braft::PeerId leader;
         // Select leader of the target group from RouteTable
@@ -58,12 +60,14 @@ static void* sender(void* arg) {
 
         // Now we known who is the leader, construct Stub and then sending
         // rpc
-        brpc::Channel channel;
-        if (channel.Init(leader.addr, NULL) != 0) {
+        if (last_leader != leader) {
+          if (channel.Init(leader.addr, NULL) != 0) {
             LOG(ERROR) << "Fail to init channel to " << leader;
             bthread_usleep(FLAGS_timeout_ms * 1000L);
             continue;
+          }
         }
+        last_leader = leader;
         example::AtomicService_Stub stub(&channel);
 
         brpc::Controller cntl;
@@ -124,6 +128,7 @@ static void* sender(void* arg) {
 
 int main(int argc, char* argv[]) {
     google::ParseCommandLineFlags(&argc, &argv, true);
+    butil::AtExitManager exit_manager;
 
     // Register configuration of target group to RouteTable
     if (braft::rtb::update_configuration(FLAGS_group, FLAGS_conf) != 0) {

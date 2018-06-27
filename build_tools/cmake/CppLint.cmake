@@ -38,8 +38,8 @@ set(STYLE_FILTER ${STYLE_FILTER}-legal/copyright,)
 #set(STYLE_FILTER ${STYLE_FILTER}-whitespace/newline,)
 #set(STYLE_FILTER ${STYLE_FILTER}-whitespace/tab,)
 #
-set(STYLE_FILTER ${STYLE_FILTER}-build/header_guard,)
-set(STYLE_FILTER ${STYLE_FILTER}-build/include,)
+#set(STYLE_FILTER ${STYLE_FILTER}-build/header_guard,)
+#set(STYLE_FILTER ${STYLE_FILTER}-build/include,)
 #set(STYLE_FILTER ${STYLE_FILTER}-build/include_order,)
 #set(STYLE_FILTER ${STYLE_FILTER}-build/namespaces,)
 #set(STYLE_FILTER ${STYLE_FILTER}-build/include_what_you_use,)
@@ -81,6 +81,6 @@ function(add_style_check_target TARGET_NAME SOURCES_LIST)
     DEPENDS ${SOURCES_LIST}
     COMMENT "Linting ${TARGET_NAME}"
     VERBATIM
-    )
+  )
 
 endfunction()
