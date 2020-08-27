@@ -18,13 +18,15 @@
 #############################################################
 cmake_minimum_required(VERSION 3.10.0)
 
+project(NORI)
+
 # CMAKE MODULE SETUP.
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/build_tools/cmake)
 
 include(CppLint)
 include(NoriProtobufGenerate)
 
-#option(BUILD_SHARED_LIBS "build shared lib" ON)
+option(BUILD_SHARED_LIBS "build shared lib" ON)
 
 if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
   # require at least gcc 4.8
