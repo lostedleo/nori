@@ -1,11 +1,11 @@
 // Copyright (c) 2014 Baidu, Inc.
-// 
+//
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
-// 
+//
 //     http://www.apache.org/licenses/LICENSE-2.0
-// 
+//
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -91,9 +91,9 @@ public:
             }
         }
 
-        // Create the http channel on-the-fly. Notice that we've set 
+        // Create the http channel on-the-fly. Notice that we've set
         // `defer_close_second' in main() so that dtor of channels do not
-        // close connections immediately and ad-hoc creation of channels 
+        // close connections immediately and ad-hoc creation of channels
         // often reuses the not-yet-closed connections.
         brpc::Channel http_chan;
         brpc::ChannelOptions http_chan_opt;
@@ -141,7 +141,7 @@ public:
 
         // Keep content as it is.
         client_cntl->request_attachment() = server_cntl->request_attachment();
-        
+
         http_chan.CallMethod(NULL, client_cntl, NULL, NULL,
                              brpc::NewCallback(
                                  handle_response, client_cntl, target,
@@ -152,7 +152,7 @@ public:
 int main(int argc, char* argv[]) {
     google::ParseCommandLineFlags(&argc, &argv, true);
     if (FLAGS_target.empty() &&
-        (argc != 2 || 
+        (argc != 2 ||
          google::SetCommandLineOption("target", argv[1]).empty())) {
         LOG(ERROR) << "Usage: ./rpc_view <ip>:<port>";
         return -1;

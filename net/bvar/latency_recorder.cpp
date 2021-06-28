@@ -1,18 +1,20 @@
-// Copyright (c) 2014 Baidu, Inc.
-// 
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-// 
-//     http://www.apache.org/licenses/LICENSE-2.0
-// 
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+// Licensed to the Apache Software Foundation (ASF) under one
+// or more contributor license agreements.  See the NOTICE file
+// distributed with this work for additional information
+// regarding copyright ownership.  The ASF licenses this file
+// to you under the Apache License, Version 2.0 (the
+// "License"); you may not use this file except in compliance
+// with the License.  You may obtain a copy of the License at
+//
+//   http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing,
+// software distributed under the License is distributed on an
+// "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+// KIND, either express or implied.  See the License for the
+// specific language governing permissions and limitations
+// under the License.
 
-// Author: Ge,Jun (gejun@baidu.com)
 // Date: 2014/09/22 11:57:43
 
 #include <gflags/gflags.h>
@@ -30,11 +32,11 @@ DEFINE_int32(bvar_latency_p3, 99, "Third latency percentile");
 static bool valid_percentile(const char*, int32_t v) {
     return v > 0 && v < 100;
 }
-const bool ALLOW_UNUSED dummy_bvar_latency_p1 = ::google::RegisterFlagValidator(
+const bool ALLOW_UNUSED dummy_bvar_latency_p1 = ::GFLAGS_NS::RegisterFlagValidator(
     &FLAGS_bvar_latency_p1, valid_percentile);
-const bool ALLOW_UNUSED dummy_bvar_latency_p2 = ::google::RegisterFlagValidator(
+const bool ALLOW_UNUSED dummy_bvar_latency_p2 = ::GFLAGS_NS::RegisterFlagValidator(
     &FLAGS_bvar_latency_p2, valid_percentile);
-const bool ALLOW_UNUSED dummy_bvar_latency_p3 = ::google::RegisterFlagValidator(
+const bool ALLOW_UNUSED dummy_bvar_latency_p3 = ::GFLAGS_NS::RegisterFlagValidator(
     &FLAGS_bvar_latency_p3, valid_percentile);
 
 namespace detail {
@@ -265,6 +267,8 @@ void LatencyRecorder::hide() {
     _latency_p3.hide();
     _latency_999.hide();
     _latency_9999.hide();
+    _latency_cdf.hide();
+    _latency_percentiles.hide();
 }
 
 LatencyRecorder& LatencyRecorder::operator<<(int64_t latency) {

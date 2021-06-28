@@ -1,18 +1,20 @@
-// Copyright (c) 2014 Baidu, Inc.
-// 
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-// 
-//     http://www.apache.org/licenses/LICENSE-2.0
-// 
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+// Licensed to the Apache Software Foundation (ASF) under one
+// or more contributor license agreements.  See the NOTICE file
+// distributed with this work for additional information
+// regarding copyright ownership.  The ASF licenses this file
+// to you under the Apache License, Version 2.0 (the
+// "License"); you may not use this file except in compliance
+// with the License.  You may obtain a copy of the License at
+//
+//   http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing,
+// software distributed under the License is distributed on an
+// "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+// KIND, either express or implied.  See the License for the
+// specific language governing permissions and limitations
+// under the License.
 
-// Authors: Ge,Jun (gejun@baidu.com)
 
 #include <gflags/gflags.h>
 #include <butil/logging.h>
@@ -58,7 +60,7 @@ public:
         }
         return NULL;
     }
-    
+
 private:
     std::vector<brpc::Channel*> _chans;
 };
@@ -75,7 +77,7 @@ int ChannelGroup::Init() {
         max_protocol_size = std::max(max_protocol_size,
                                      (size_t)protocols[i].first);
     }
-    _chans.resize(max_protocol_size);
+    _chans.resize(max_protocol_size + 1);
     for (size_t i = 0; i < protocols.size(); ++i) {
         if (protocols[i].second.support_client() &&
             protocols[i].second.support_server()) {
@@ -106,7 +108,7 @@ ChannelGroup::~ChannelGroup() {
 
 static void handle_response(brpc::Controller* cntl, int64_t start_time,
                             bool sleep_on_error/*note*/) {
-    // TODO(gejun): some bthreads are starved when new bthreads are created 
+    // TODO(gejun): some bthreads are starved when new bthreads are created
     // continuously, which happens when server is down and RPC keeps failing.
     // Sleep a while on error to avoid that now.
     const int64_t end_time = butil::gettimeofday_us();
@@ -147,21 +149,21 @@ static void* replay_thread(void* arg) {
                 continue;
             }
             brpc::Channel* chan =
-                chan_group->channel(sample->protocol_type());
+                chan_group->channel(sample->meta.protocol_type());
             if (chan == NULL) {
                 LOG(ERROR) << "No channel on protocol="
-                           << sample->protocol_type();
+                           << sample->meta.protocol_type();
                 continue;
             }
-            
+
             brpc::Controller* cntl = new brpc::Controller;
             req.Clear();
-            
-            cntl->reset_rpc_dump_meta(sample_guard.release());
-            if (sample->attachment_size() > 0) {
+
+            cntl->reset_sampled_request(sample_guard.release());
+            if (sample->meta.attachment_size() > 0) {
                 sample->request.cutn(
                     &req.serialized_data(),
-                    sample->request.size() - sample->attachment_size());
+                    sample->request.size() - sample->meta.attachment_size());
                 cntl->request_attachment() = sample->request.movable();
             } else {
                 req.serialized_data() = sample->request.movable();
@@ -200,7 +202,7 @@ static void* replay_thread(void* arg) {
 
 int main(int argc, char* argv[]) {
     // Parse gflags. We recommend you to use gflags as well.
-    google::ParseCommandLineFlags(&argc, &argv, true);
+    GFLAGS_NS::ParseCommandLineFlags(&argc, &argv, true);
 
     if (FLAGS_dir.empty() ||
         !butil::DirectoryExists(butil::FilePath(FLAGS_dir))) {
@@ -211,7 +213,7 @@ int main(int argc, char* argv[]) {
     if (FLAGS_dummy_port >= 0) {
         brpc::StartDummyServerAt(FLAGS_dummy_port);
     }
-    
+
     ChannelGroup chan_group;
     if (chan_group.Init() != 0) {
         LOG(ERROR) << "Fail to init ChannelGroup";
@@ -232,19 +234,21 @@ int main(int argc, char* argv[]) {
         }
     }
 
-    std::vector<bthread_t> tids;
-    tids.resize(FLAGS_thread_num);
+    std::vector<bthread_t> bids;
+    std::vector<pthread_t> pids;
     if (!FLAGS_use_bthread) {
+        pids.resize(FLAGS_thread_num);
         for (int i = 0; i < FLAGS_thread_num; ++i) {
-            if (pthread_create(&tids[i], NULL, replay_thread, &chan_group) != 0) {
+            if (pthread_create(&pids[i], NULL, replay_thread, &chan_group) != 0) {
                 LOG(ERROR) << "Fail to create pthread";
                 return -1;
             }
         }
     } else {
+        bids.resize(FLAGS_thread_num);
         for (int i = 0; i < FLAGS_thread_num; ++i) {
             if (bthread_start_background(
-                    &tids[i], NULL, replay_thread, &chan_group) != 0) {
+                    &bids[i], NULL, replay_thread, &chan_group) != 0) {
                 LOG(ERROR) << "Fail to create bthread";
                 return -1;
             }
@@ -255,7 +259,7 @@ int main(int argc, char* argv[]) {
     info_thr_opt.latency_recorder = &g_latency_recorder;
     info_thr_opt.error_count = &g_error_count;
     info_thr_opt.sent_count = &g_sent_count;
-    
+
     if (!info_thr.start(info_thr_opt)) {
         LOG(ERROR) << "Fail to create info_thread";
         return -1;
@@ -263,9 +267,9 @@ int main(int argc, char* argv[]) {
 
     for (int i = 0; i < FLAGS_thread_num; ++i) {
         if (!FLAGS_use_bthread) {
-            pthread_join(tids[i], NULL);
+            pthread_join(pids[i], NULL);
         } else {
-            bthread_join(tids[i], NULL);
+            bthread_join(bids[i], NULL);
         }
     }
     info_thr.stop();

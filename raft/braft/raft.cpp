@@ -48,7 +48,14 @@ static pthread_once_t global_init_once = PTHREAD_ONCE_INIT;
 struct GlobalExtension {
     SegmentLogStorage local_log;
     MemoryLogStorage memory_log;
-    LocalRaftMetaStorage local_meta;
+    
+    // manage only one raft instance
+    FileBasedSingleMetaStorage single_meta;
+    // manage a batch of raft instances
+    KVBasedMergedMetaStorage merged_meta;
+    // mix two types for double write when upgrade and downgrade  
+    MixedMetaStorage mixed_meta;
+
     LocalSnapshotStorage local_snapshot;
 };
 
@@ -57,7 +64,17 @@ static void global_init_or_die_impl() {
 
     log_storage_extension()->RegisterOrDie("local", &s_ext.local_log);
     log_storage_extension()->RegisterOrDie("memory", &s_ext.memory_log);
-    meta_storage_extension()->RegisterOrDie("local", &s_ext.local_meta);
+  
+    // uri = local://{single_path}
+    // |single_path| usually ends with `/meta'
+    // NOTICE: not change "local" to "local-single" because of compatibility
+    meta_storage_extension()->RegisterOrDie("local", &s_ext.single_meta);
+    // uri = local-merged://{merged_path}
+    // |merged_path| usually ends with `/merged_meta'
+    meta_storage_extension()->RegisterOrDie("local-merged", &s_ext.merged_meta);
+    // uri = local-mixed://merged_path={merged_path}&&single_path={single_path}
+    meta_storage_extension()->RegisterOrDie("local-mixed", &s_ext.mixed_meta);
+ 
     snapshot_storage_extension()->RegisterOrDie("local", &s_ext.local_snapshot);
 }
 
@@ -71,13 +88,14 @@ void global_init_once_or_die() {
 
 int add_service(brpc::Server* server, const butil::EndPoint& listen_addr) {
     global_init_once_or_die();
-    return NodeManager::GetInstance()->add_service(server, listen_addr);
+    return global_node_manager->add_service(server, listen_addr);
 }
 
 int add_service(brpc::Server* server, int port) {
     butil::EndPoint addr(butil::IP_ANY, port);
     return add_service(server, addr);
 }
+
 int add_service(brpc::Server* server, const char* listen_ip_and_port) {
     butil::EndPoint addr;
     if (butil::str2endpoint(listen_ip_and_port, &addr) != 0) {
@@ -87,6 +105,34 @@ int add_service(brpc::Server* server, const char* listen_ip_and_port) {
     return add_service(server, addr);
 }
 
+// GC 
+int gc_raft_data(const GCOptions& gc_options) {
+    const VersionedGroupId vgid = gc_options.vgid;
+    const std::string log_uri = gc_options.log_uri;
+    const std::string raft_meta_uri = gc_options.raft_meta_uri;
+    const std::string snapshot_uri = gc_options.snapshot_uri;
+    bool is_success = true;
+
+    butil::Status status = LogStorage::destroy(log_uri);
+    if (!status.ok()) {
+        is_success = false;
+        LOG(WARNING) << "Group " << vgid << " failed to gc raft log, uri " << log_uri; 
+    }
+    // TODO encode vgid into raft_meta_uri ?
+    status = RaftMetaStorage::destroy(raft_meta_uri, vgid);
+    if (!status.ok()) {
+        is_success = false;
+        LOG(WARNING) << "Group " << vgid << " failed to gc raft stable, uri " << raft_meta_uri; 
+    }
+    status = SnapshotStorage::destroy(snapshot_uri);
+    if (!status.ok()) {
+        is_success = false;
+        LOG(WARNING) << "Group " << vgid << " failed to gc raft snapshot, uri " << snapshot_uri; 
+    }
+    return is_success ? 0 : -1; 
+}
+
+// ------------- Node
 Node::Node(const GroupId& group_id, const PeerId& peer_id) {
     _impl = new NodeImpl(group_id, peer_id);
 }
@@ -110,6 +156,14 @@ PeerId Node::leader_id() {
 
 bool Node::is_leader() {
     return _impl->is_leader();
+}
+
+bool Node::is_leader_lease_valid() {
+    return _impl->is_leader_lease_valid();
+}
+
+void Node::get_leader_lease_status(LeaderLeaseStatus* status) {
+    return _impl->get_leader_lease_status(status);
 }
 
 int Node::init(const NodeOptions& options) {
@@ -152,8 +206,16 @@ void Node::snapshot(Closure* done) {
     _impl->snapshot(done);
 }
 
-void Node::reset_election_timeout_ms(int election_timeout_ms) {
-    _impl->reset_election_timeout_ms(election_timeout_ms);
+butil::Status Node::vote(int election_timeout) {
+    return _impl->vote(election_timeout);
+}
+
+butil::Status Node::reset_election_timeout_ms(int election_timeout_ms) {
+    return _impl->reset_election_timeout_ms(election_timeout_ms);
+}
+
+void Node::reset_election_timeout_ms(int election_timeout_ms, int max_clock_drift_ms) {
+    _impl->reset_election_timeout_ms(election_timeout_ms, max_clock_drift_ms);
 }
 
 int Node::transfer_leadership_to(const PeerId& peer) {
@@ -162,6 +224,22 @@ int Node::transfer_leadership_to(const PeerId& peer) {
 
 butil::Status Node::read_committed_user_log(const int64_t index, UserLog* user_log) {
     return _impl->read_committed_user_log(index, user_log);
+}
+
+void Node::get_status(NodeStatus* status) {
+    return _impl->get_status(status);
+}
+
+void Node::enter_readonly_mode() {
+    return _impl->enter_readonly_mode();
+}
+
+void Node::leave_readonly_mode() {
+    return _impl->leave_readonly_mode();
+}
+
+bool Node::readonly() {
+    return _impl->readonly();
 }
 
 // ------------- Iterator
@@ -191,7 +269,7 @@ void Iterator::set_error_and_rollback(size_t ntail, const butil::Status* st) {
     return _impl->set_error_and_rollback(ntail, st);
 }
 
-// ----------------- Default Implementation of StateMachine
+// ------------- Default Implementation of StateMachine
 StateMachine::~StateMachine() {}
 void StateMachine::on_shutdown() {}
 
@@ -226,6 +304,11 @@ void StateMachine::on_error(const Error& e) {
 void StateMachine::on_configuration_committed(const Configuration& conf) {
     (void)conf;
     return;
+}
+
+void StateMachine::on_configuration_committed(const Configuration& conf, int64_t index) {
+    (void)index;
+    return on_configuration_committed(conf);
 }
 
 void StateMachine::on_stop_following(const LeaderChangeContext&) {}

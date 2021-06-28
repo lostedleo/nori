@@ -1,19 +1,22 @@
-// bthread - A M:N threading library to make applications more concurrent.
-// Copyright (c) 2012 Baidu, Inc.
-// 
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-// 
-//     http://www.apache.org/licenses/LICENSE-2.0
-// 
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+// Licensed to the Apache Software Foundation (ASF) under one
+// or more contributor license agreements.  See the NOTICE file
+// distributed with this work for additional information
+// regarding copyright ownership.  The ASF licenses this file
+// to you under the Apache License, Version 2.0 (the
+// "License"); you may not use this file except in compliance
+// with the License.  You may obtain a copy of the License at
+//
+//   http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing,
+// software distributed under the License is distributed on an
+// "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+// KIND, either express or implied.  See the License for the
+// specific language governing permissions and limitations
+// under the License.
 
-// Author: Ge,Jun (gejun@baidu.com)
+// bthread - A M:N threading library to make applications more concurrent.
+
 // Date: Tue Jul 10 17:40:58 CST 2012
 
 #include <sys/types.h>
@@ -45,17 +48,20 @@ DEFINE_bool(show_bthread_creation_in_vars, false, "When this flags is on, The ti
             "from bthread creation to first run will be recorded and shown "
             "in /vars");
 const bool ALLOW_UNUSED dummy_show_bthread_creation_in_vars =
-    ::google::RegisterFlagValidator(&FLAGS_show_bthread_creation_in_vars,
+    ::GFLAGS_NS::RegisterFlagValidator(&FLAGS_show_bthread_creation_in_vars,
                                     pass_bool);
 
 DEFINE_bool(show_per_worker_usage_in_vars, false,
             "Show per-worker usage in /vars/bthread_per_worker_usage_<tid>");
 const bool ALLOW_UNUSED dummy_show_per_worker_usage_in_vars =
-    ::google::RegisterFlagValidator(&FLAGS_show_per_worker_usage_in_vars,
+    ::GFLAGS_NS::RegisterFlagValidator(&FLAGS_show_per_worker_usage_in_vars,
                                     pass_bool);
 
 __thread TaskGroup* tls_task_group = NULL;
-__thread LocalStorage tls_bls = BTHREAD_LOCAL_STORAGE_INITIALIZER;
+// Sync with TaskMeta::local_storage when a bthread is created or destroyed.
+// During running, the two fields may be inconsistent, use tls_bls as the
+// groundtruth.
+thread_local LocalStorage tls_bls = BTHREAD_LOCAL_STORAGE_INITIALIZER;
 
 // defined in bthread/key.cpp
 extern void return_keytable(bthread_keytable_pool_t*, KeyTable*);
@@ -113,7 +119,7 @@ bool TaskGroup::wait_task(bthread_t* tid) {
     do {
 #ifndef BTHREAD_DONT_SAVE_PARKING_STATE
         if (_last_pl_state.stopped()) {
-            return -1;
+            return false;
         }
         _pl->wait(_last_pl_state);
         if (steal_task(tid)) {
@@ -122,7 +128,7 @@ bool TaskGroup::wait_task(bthread_t* tid) {
 #else
         const ParkingLot::State st = _pl->get_state();
         if (st.stopped()) {
-            return -1;
+            return false;
         }
         if (steal_task(tid)) {
             return true;
@@ -140,7 +146,7 @@ void TaskGroup::run_main_task() {
     bvar::PassiveStatus<double> cumulated_cputime(
         get_cumulated_cputime_from_this, this);
     std::unique_ptr<bvar::PerSecond<bvar::PassiveStatus<double> > > usage_bvar;
-    
+
     TaskGroup* dummy = this;
     bthread_t tid;
     while (wait_task(&tid)) {
@@ -163,7 +169,6 @@ void TaskGroup::run_main_task() {
                              (name, &cumulated_cputime, 1));
         }
     }
-    // stop_main_task() was called.
     // Don't forget to add elapse of last wait_task.
     current_task()->stat.cputime_ns += butil::cpuwide_time_ns() - _last_run_ns;
 }
@@ -182,7 +187,7 @@ TaskGroup::TaskGroup(TaskControl* c)
     , _nswitch(0)
     , _last_context_remained(NULL)
     , _last_context_remained_arg(NULL)
-    , _pl(NULL) 
+    , _pl(NULL)
     , _main_stack(NULL)
     , _main_tid(0)
     , _remote_num_nosignal(0)
@@ -229,14 +234,7 @@ int TaskGroup::init(size_t runqueue_capacity) {
     m->about_to_quit = false;
     m->fn = NULL;
     m->arg = NULL;
-    // In current implementation, even if we set m->local_storage to empty,
-    // everything should be fine because a non-worker pthread never context
-    // switches to a bthread, inconsistency between m->local_storage and tls_bls
-    // does not result in bug. However to avoid potential future bug,
-    // TaskMeta.local_storage is better to be sync with tls_bls otherwise
-    // context switching back to this main bthread will restore tls_bls
-    // with NULL values which is incorrect.
-    m->local_storage = tls_bls;
+    m->local_storage = LOCAL_STORAGE_INIT;
     m->cpuwide_start_ns = butil::cpuwide_time_ns();
     m->stat = EMPTY_STAT;
     m->attr = BTHREAD_ATTR_TASKGROUP;
@@ -276,7 +274,7 @@ void TaskGroup::task_runner(intptr_t skip_remained) {
         // user function is never called, the variables will be unchanged
         // however they'd better reflect failures because the task is stopped
         // abnormally.
-        
+
         // Meta and identifier of the task is persistent in this run.
         TaskMeta* const m = g->_cur_meta;
 
@@ -287,25 +285,25 @@ void TaskGroup::task_runner(intptr_t skip_remained) {
             g->_control->exposed_pending_time() <<
                 (butil::cpuwide_time_ns() - m->cpuwide_start_ns) / 1000L;
         }
-        
+
         // Not catch exceptions except ExitException which is for implementing
-        // bthread_exit(). User code is intended to crash when an exception is 
-        // not caught explicitly. This is consistent with other threading 
+        // bthread_exit(). User code is intended to crash when an exception is
+        // not caught explicitly. This is consistent with other threading
         // libraries.
         void* thread_return;
         try {
             thread_return = m->fn(m->arg);
         } catch (ExitException& e) {
             thread_return = e.value();
-        } 
-        
+        }
+
         // Group is probably changed
         g = tls_task_group;
 
         // TODO: Save thread_return
         (void)thread_return;
 
-        // Logging must be done before returning the keytable, since the logging lib 
+        // Logging must be done before returning the keytable, since the logging lib
         // use bthread local storage internally, or will cause memory leak.
         // FIXME: the time from quiting fn to here is not counted into cputime
         if (m->attr.flags & BTHREAD_LOG_START_AND_FINISH) {
@@ -316,14 +314,14 @@ void TaskGroup::task_runner(intptr_t skip_remained) {
         // Clean tls variables, must be done before changing version_butex
         // otherwise another thread just joined this thread may not see side
         // effects of destructing tls variables.
-        KeyTable* kt = m->local_storage.keytable;
+        KeyTable* kt = tls_bls.keytable;
         if (kt != NULL) {
             return_keytable(m->attr.keytable_pool, kt);
             // After deletion: tls may be set during deletion.
-            m->local_storage.keytable = NULL;
             tls_bls.keytable = NULL;
+            m->local_storage.keytable = NULL; // optional
         }
-        
+
         // Increase the version and wake up all joiners, if resulting version
         // is 0, change it to 1 to make bthread_t never be 0. Any access
         // or join to the bthread after changing version will be rejected.
@@ -339,9 +337,9 @@ void TaskGroup::task_runner(intptr_t skip_remained) {
         g->_control->_nbthreads << -1;
         g->set_remained(TaskGroup::_release_last_context, m);
         ending_sched(&g);
-        
+
     } while (g->_cur_meta->tid != g->_main_tid);
-    
+
     // Was called from a pthread and we don't have BTHREAD_STACKTYPE_PTHREAD
     // tasks to run, quit for more tasks.
 }
@@ -588,9 +586,11 @@ void TaskGroup::sched_to(TaskGroup** pg, TaskMeta* next_meta) {
     // Switch to the task
     if (__builtin_expect(next_meta != cur_meta, 1)) {
         g->_cur_meta = next_meta;
+        // Switch tls_bls
+        cur_meta->local_storage = tls_bls;
         tls_bls = next_meta->local_storage;
 
-        // Logging must be done after switching the local storage, since the logging lib 
+        // Logging must be done after switching the local storage, since the logging lib
         // use bthread local storage internally, or will cause memory leak.
         if ((cur_meta->attr.flags & BTHREAD_LOG_CONTEXT_SWITCH) ||
             (next_meta->attr.flags & BTHREAD_LOG_CONTEXT_SWITCH)) {
@@ -740,7 +740,7 @@ void TaskGroup::_add_sleep_event(void* void_args) {
     // will be gone.
     SleepArgs e = *static_cast<SleepArgs*>(void_args);
     TaskGroup* g = e.group;
-    
+
     TimerThread::TaskId sleep_id;
     sleep_id = get_global_timer_thread()->schedule(
         ready_to_run_from_timer_thread, void_args,
@@ -751,7 +751,7 @@ void TaskGroup::_add_sleep_event(void* void_args) {
         g->ready_to_run(e.tid);
         return;
     }
-    
+
     // Set TaskMeta::current_sleep which is for interruption.
     const uint32_t given_ver = get_version(e.tid);
     {
@@ -930,7 +930,7 @@ void print_task(std::ostream& os, bthread_t tid) {
            << "\narg=" << (void*)arg
            << "\nattr={stack_type=" << attr.stack_type
            << " flags=" << attr.flags
-           << " keytable_pool=" << attr.keytable_pool 
+           << " keytable_pool=" << attr.keytable_pool
            << "}\nhas_tls=" << has_tls
            << "\nuptime_ns=" << butil::cpuwide_time_ns() - cpuwide_start_ns
            << "\ncputime_ns=" << stat.cputime_ns

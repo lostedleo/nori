@@ -1,23 +1,25 @@
-// Copyright (c) 2015 Baidu, Inc.
-// 
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-// 
-//     http://www.apache.org/licenses/LICENSE-2.0
-// 
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+// Licensed to the Apache Software Foundation (ASF) under one
+// or more contributor license agreements.  See the NOTICE file
+// distributed with this work for additional information
+// regarding copyright ownership.  The ASF licenses this file
+// to you under the Apache License, Version 2.0 (the
+// "License"); you may not use this file except in compliance
+// with the License.  You may obtain a copy of the License at
+//
+//   http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing,
+// software distributed under the License is distributed on an
+// "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+// KIND, either express or implied.  See the License for the
+// specific language governing permissions and limitations
+// under the License.
 
-// Authors: Ge,Jun (gejun@baidu.com)
 
 #include <ostream>
 #include <vector>                           // std::vector
 #include <set>
-#include <gflags/gflags.h>                  // GetAllFlags 
+#include <gflags/gflags.h>                  // GetAllFlags
                                             // CommandLineFlagInfo
 #include "butil/string_printf.h"
 #include "butil/string_splitter.h"
@@ -61,7 +63,7 @@ static std::string HtmlReplace(const std::string& s) {
     }
 }
 
-static void PrintFlag(std::ostream& os, const google::CommandLineFlagInfo& flag,
+static void PrintFlag(std::ostream& os, const GFLAGS_NS::CommandLineFlagInfo& flag,
                       bool use_html) {
     if (use_html) {
         os << "<tr><td>";
@@ -89,7 +91,7 @@ static void PrintFlag(std::ostream& os, const google::CommandLineFlagInfo& flag,
         if (flag.default_value != flag.current_value) {
             os << " (default:" << (use_html ?
                                    HtmlReplace(flag.default_value) :
-                                   flag.current_value) << ')';
+                                   flag.default_value) << ')';
         }
         if (use_html) {
             os << "</span>";
@@ -106,8 +108,8 @@ void FlagsService::set_value_page(Controller* cntl,
                                   ::google::protobuf::Closure* done) {
     ClosureGuard done_guard(done);
     const std::string& name = cntl->http_request().unresolved_path();
-    google::CommandLineFlagInfo info;
-    if (!google::GetCommandLineFlagInfo(name.c_str(), &info)) {
+    GFLAGS_NS::CommandLineFlagInfo info;
+    if (!GFLAGS_NS::GetCommandLineFlagInfo(name.c_str(), &info)) {
         cntl->SetFailed(ENOMETHOD, "No such gflag");
         return;
     }
@@ -153,8 +155,8 @@ void FlagsService::default_method(::google::protobuf::RpcController* cntl_base,
         if (use_html && cntl->http_request().uri().GetQuery("withform")) {
             return set_value_page(cntl, done_guard.release());
         }
-        google::CommandLineFlagInfo info;
-        if (!google::GetCommandLineFlagInfo(constraint.c_str(), &info)) {
+        GFLAGS_NS::CommandLineFlagInfo info;
+        if (!GFLAGS_NS::GetCommandLineFlagInfo(constraint.c_str(), &info)) {
             cntl->SetFailed(ENOMETHOD, "No such gflag");
             return;
         }
@@ -167,7 +169,7 @@ void FlagsService::default_method(::google::protobuf::RpcController* cntl_base,
                             constraint.c_str());
             return;
         }
-        if (google::SetCommandLineOption(constraint.c_str(),
+        if (GFLAGS_NS::SetCommandLineOption(constraint.c_str(),
                                          value_str->c_str()).empty()) {
             cntl->SetFailed(EPERM, "Fail to set `%s' to %s",
                             constraint.c_str(),
@@ -216,8 +218,8 @@ void FlagsService::default_method(::google::protobuf::RpcController* cntl_base,
         // Only exact names. We don't have to iterate all flags in this case.
         for (std::set<std::string>::iterator it = exact.begin();
              it != exact.end(); ++it) {
-            google::CommandLineFlagInfo info;
-            if (google::GetCommandLineFlagInfo(it->c_str(), &info)) {
+            GFLAGS_NS::CommandLineFlagInfo info;
+            if (GFLAGS_NS::GetCommandLineFlagInfo(it->c_str(), &info)) {
                 PrintFlag(os, info, use_html);
                 os << '\n';
             }
@@ -225,10 +227,10 @@ void FlagsService::default_method(::google::protobuf::RpcController* cntl_base,
 
     } else {
         // Iterate all flags and filter.
-        std::vector<google::CommandLineFlagInfo> flag_list;
+        std::vector<GFLAGS_NS::CommandLineFlagInfo> flag_list;
         flag_list.reserve(128);
-        google::GetAllFlags(&flag_list);
-        for (std::vector<google::CommandLineFlagInfo>::iterator
+        GFLAGS_NS::GetAllFlags(&flag_list);
+        for (std::vector<GFLAGS_NS::CommandLineFlagInfo>::iterator
                  it = flag_list.begin(); it != flag_list.end(); ++it) {
             if (!constraint.empty() &&
                 exact.find(it->name) == exact.end() &&

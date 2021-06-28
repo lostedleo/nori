@@ -1,19 +1,22 @@
-// bthread - A M:N threading library to make applications more concurrent.
-// Copyright (c) 2014 Baidu, Inc.
-// 
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-// 
-//     http://www.apache.org/licenses/LICENSE-2.0
-// 
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+// Licensed to the Apache Software Foundation (ASF) under one
+// or more contributor license agreements.  See the NOTICE file
+// distributed with this work for additional information
+// regarding copyright ownership.  The ASF licenses this file
+// to you under the Apache License, Version 2.0 (the
+// "License"); you may not use this file except in compliance
+// with the License.  You may obtain a copy of the License at
+//
+//   http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing,
+// software distributed under the License is distributed on an
+// "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+// KIND, either express or implied.  See the License for the
+// specific language governing permissions and limitations
+// under the License.
 
-// Author: Ge,Jun (gejun@baidu.com)
+// bthread - A M:N threading library to make applications more concurrent.
+
 // Date: Sun Aug  3 12:46:15 CST 2014
 
 #include <pthread.h>
@@ -65,9 +68,9 @@ struct SampledContention : public bvar::Collected {
     void* stack[26];      // backtrace.
 
     // Implement bvar::Collected
-    void dump_and_destroy(size_t round);
-    void destroy();
-    bvar::CollectorSpeedLimit* speed_limit() { return &g_cp_sl; }
+    void dump_and_destroy(size_t round) override;
+    void destroy() override;
+    bvar::CollectorSpeedLimit* speed_limit() override { return &g_cp_sl; }
 
     // For combining samples with hashmap.
     size_t hash_code() const {
@@ -402,10 +405,16 @@ static pthread_once_t init_sys_mutex_lock_once = PTHREAD_ONCE_INIT;
 // Call _dl_sym which is a private function in glibc to workaround the malloc
 // causing deadlock temporarily. This fix is hardly portable.
 static void init_sys_mutex_lock() {
+#if defined(OS_LINUX)
     // TODO: may need dlvsym when GLIBC has multiple versions of a same symbol.
     // http://blog.fesnel.com/blog/2009/08/25/preloading-with-multiple-symbol-versions
     sys_pthread_mutex_lock = (MutexOp)_dl_sym(RTLD_NEXT, "pthread_mutex_lock", (void*)init_sys_mutex_lock);
     sys_pthread_mutex_unlock = (MutexOp)_dl_sym(RTLD_NEXT, "pthread_mutex_unlock", (void*)init_sys_mutex_lock);
+#elif defined(OS_MACOSX)
+    // TODO: look workaround for dlsym on mac
+    sys_pthread_mutex_lock = (MutexOp)dlsym(RTLD_NEXT, "pthread_mutex_lock");
+    sys_pthread_mutex_unlock = (MutexOp)dlsym(RTLD_NEXT, "pthread_mutex_unlock");
+#endif
 }
 
 // Make sure pthread functions are ready before main().

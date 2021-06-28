@@ -1,5 +1,21 @@
+// Licensed to the Apache Software Foundation (ASF) under one
+// or more contributor license agreements.  See the NOTICE file
+// distributed with this work for additional information
+// regarding copyright ownership.  The ASF licenses this file
+// to you under the Apache License, Version 2.0 (the
+// "License"); you may not use this file except in compliance
+// with the License.  You may obtain a copy of the License at
+//
+//   http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing,
+// software distributed under the License is distributed on an
+// "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+// KIND, either express or implied.  See the License for the
+// specific language governing permissions and limitations
+// under the License.
+
 // brpc - A framework to host and access services throughout Baidu.
-// Copyright (c) 2014 Baidu, Inc.
 
 // Date: Fri May 20 15:52:22 CST 2016
 
@@ -21,7 +37,7 @@
 
 int main(int argc, char* argv[]) {
     testing::InitGoogleTest(&argc, argv);
-    google::ParseCommandLineFlags(&argc, &argv, true);
+    GFLAGS_NS::ParseCommandLineFlags(&argc, &argv, true);
     return RUN_ALL_TESTS();
 }
 
@@ -837,7 +853,7 @@ TEST(RtmpTest, retrying_stream) {
     LOG(INFO) << "Stopping server";
     server.Stop(0);
     server.Join();
-    LOG(INFO) << "Stopped server and sleep for awhile";
+    LOG(INFO) << "Stopped server and sleep for a while";
     sleep(3);
     ASSERT_EQ(0, server.Start(8576, &server_opt));
     sleep(3);

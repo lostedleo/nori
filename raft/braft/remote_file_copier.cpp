@@ -33,6 +33,14 @@ namespace braft {
 DEFINE_int32(raft_max_byte_count_per_rpc, 1024 * 128 /*128K*/,
              "Maximum of block size per RPC");
 BRPC_VALIDATE_GFLAG(raft_max_byte_count_per_rpc, brpc::PositiveInteger);
+DEFINE_bool(raft_allow_read_partly_when_install_snapshot, true,
+            "Whether allowing read snapshot data partly");
+BRPC_VALIDATE_GFLAG(raft_allow_read_partly_when_install_snapshot,
+                    ::brpc::PassValidate);
+DEFINE_bool(raft_enable_throttle_when_install_snapshot, true,
+            "enable throttle when install snapshot, for both leader and follower");
+BRPC_VALIDATE_GFLAG(raft_enable_throttle_when_install_snapshot,
+                    ::brpc::PassValidate);
 
 RemoteFileCopier::RemoteFileCopier()
     : _reader_id(0)
@@ -174,13 +182,15 @@ RemoteFileCopier::Session::Session()
     , _buf(NULL)
     , _timer()
     , _throttle(NULL)
+    , _throttle_token_acquire_time_us(1)
 {
     _done.owner = this;
 }
 
 RemoteFileCopier::Session::~Session() {
     if (_file) {
-        _file->destroy();
+        _file->close();
+        delete _file;
         _file = NULL;
     }
 }
@@ -188,30 +198,34 @@ RemoteFileCopier::Session::~Session() {
 void RemoteFileCopier::Session::send_next_rpc() {
     _cntl.Reset();
     _response.Clear();
-    // Not clear request as we need some fields of the previouse RPC
+    // Not clear request as we need some fields of the previous RPC
     off_t offset = _request.offset() + _request.count();
     const size_t max_count = 
             (!_buf) ? FLAGS_raft_max_byte_count_per_rpc : UINT_MAX;
     _cntl.set_timeout_ms(_options.timeout_ms);
     _request.set_offset(offset);
     // Read partly when throttled
-    _request.set_read_partly(true);
+    _request.set_read_partly(FLAGS_raft_allow_read_partly_when_install_snapshot);
     std::unique_lock<raft_mutex_t> lck(_mutex);
     if (_finished) {
         return;
     }
     // throttle
     size_t new_max_count = max_count;
-    if (_throttle) {
+    if (_throttle && FLAGS_raft_enable_throttle_when_install_snapshot) {
+        _throttle_token_acquire_time_us = butil::cpuwide_time_us();
         new_max_count = _throttle->throttled_by_throughput(max_count);
         if (new_max_count == 0) {
             // Reset count to make next rpc retry the previous one
+            BRAFT_VLOG << "Copy file throttled, path: " << _dest_path;
             _request.set_count(0);
             AddRef();
+            int64_t retry_interval_ms_when_throttled = 
+                                    _throttle->get_retry_interval_ms();
             if (bthread_timer_add(
-                        &_timer, 
-                        butil::milliseconds_from_now(_options.retry_interval_ms),
-                        on_timer, this) != 0) {
+                    &_timer, 
+                    butil::milliseconds_from_now(retry_interval_ms_when_throttled),
+                    on_timer, this) != 0) {
                 lck.unlock();
                 LOG(ERROR) << "Fail to add timer";
                 return on_timer(this);
@@ -236,6 +250,7 @@ void RemoteFileCopier::Session::on_rpc_returned() {
     }
     if (_cntl.Failed()) {
         // Reset count to make next rpc retry the previous one
+        int64_t request_count = _request.count();
         _request.set_count(0);
         if (_cntl.ErrorCode() == ECANCELED) {
             if (_st.ok()) {
@@ -250,10 +265,21 @@ void RemoteFileCopier::Session::on_rpc_returned() {
                 return on_finished();
             }
         }
+        // set retry time interval
+        int64_t retry_interval_ms = _options.retry_interval_ms; 
+        if (_cntl.ErrorCode() == EAGAIN && _throttle) {
+            retry_interval_ms = _throttle->get_retry_interval_ms();
+            // No token consumed, just return back, other nodes maybe able to use them
+            if (FLAGS_raft_enable_throttle_when_install_snapshot) {
+                _throttle->return_unused_throughput(
+                        request_count, 0,
+                        butil::cpuwide_time_us() - _throttle_token_acquire_time_us);
+            }
+        }
         AddRef();
         if (bthread_timer_add(
                     &_timer, 
-                    butil::milliseconds_from_now(_options.retry_interval_ms),
+                    butil::milliseconds_from_now(retry_interval_ms),
                     on_timer, this) != 0) {
             lck.unlock();
             LOG(ERROR) << "Fail to add timer";
@@ -261,9 +287,16 @@ void RemoteFileCopier::Session::on_rpc_returned() {
         }
         return;
     }
+    if (_throttle && FLAGS_raft_enable_throttle_when_install_snapshot &&
+        _request.count() > (int64_t)_cntl.response_attachment().size()) {
+        _throttle->return_unused_throughput(
+                _request.count(), _cntl.response_attachment().size(),
+                butil::cpuwide_time_us() - _throttle_token_acquire_time_us);
+    }
     _retry_times = 0;
     // Reset count to |real_read_size| to make next rpc get the right offset
-    if (_response.has_read_size() && (_response.read_size() != 0)) {
+    if (_response.has_read_size() && (_response.read_size() != 0)
+            && FLAGS_raft_allow_read_partly_when_install_snapshot) {
         _request.set_count(_response.read_size());
     }
     if (_file) {
@@ -316,7 +349,10 @@ void RemoteFileCopier::Session::on_timer(void* arg) {
 void RemoteFileCopier::Session::on_finished() {
     if (!_finished) {
         if (_file) {
-            _file->destroy();
+            if (!_file->sync() || !_file->close()) {
+                _st.set_error(EIO, "%s", berror(EIO));
+            }
+            delete _file;
             _file = NULL;
         }
         _finished = true;

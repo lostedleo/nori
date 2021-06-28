@@ -1,19 +1,22 @@
-// Copyright (c) 2015 Baidu, Inc.
-// 
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-// 
-//     http://www.apache.org/licenses/LICENSE-2.0
-// 
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+// Licensed to the Apache Software Foundation (ASF) under one
+// or more contributor license agreements.  See the NOTICE file
+// distributed with this work for additional information
+// regarding copyright ownership.  The ASF licenses this file
+// to you under the Apache License, Version 2.0 (the
+// "License"); you may not use this file except in compliance
+// with the License.  You may obtain a copy of the License at
+//
+//   http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing,
+// software distributed under the License is distributed on an
+// "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+// KIND, either express or implied.  See the License for the
+// specific language governing permissions and limitations
+// under the License.
 
-// Authors: Ge,Jun (gejun@baidu.com)
 
+#include "bthread/bthread.h"                  // bthread_id_xx
 #include "bthread/unstable.h"                 // bthread_timer_add
 #include "butil/atomicops.h"
 #include "butil/time.h"
@@ -657,18 +660,18 @@ void ParallelChannel::CallMethod(
         cntl->set_timeout_ms(_options.timeout_ms);
     }
     if (cntl->timeout_ms() >= 0) {
-        cntl->_abstime_us = cntl->timeout_ms() * 1000L + cntl->_begin_time_us;
+        cntl->_deadline_us = cntl->timeout_ms() * 1000L + cntl->_begin_time_us;
         // Setup timer for RPC timetout
         const int rc = bthread_timer_add(
             &cntl->_timeout_id,
-            butil::microseconds_to_timespec(cntl->_abstime_us),
+            butil::microseconds_to_timespec(cntl->_deadline_us),
             HandleTimeout, (void*)cid.value);
         if (rc != 0) {
             cntl->SetFailed(rc, "Fail to add timer");
             goto FAIL;
         }
     } else {
-        cntl->_abstime_us = -1;
+        cntl->_deadline_us = -1;
     }
     d->SaveThreadInfoOfCallsite();
     CHECK_EQ(0, bthread_id_unlock(cid));
@@ -677,6 +680,8 @@ void ParallelChannel::CallMethod(
     for (int i = 0, j = 0; i < nchan; ++i) {
         if (!aps[i].is_skip()) {
             ParallelChannelDone::SubDone* sd = d->sub_done(j++);
+            // Forward the attachment to each sub call
+            sd->cntl.request_attachment().append(cntl->request_attachment());
             _chans[i].chan->CallMethod(sd->ap.method, &sd->cntl,
                                        sd->ap.request, sd->ap.response, sd);
         }

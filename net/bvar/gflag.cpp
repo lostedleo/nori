@@ -1,18 +1,20 @@
-// Copyright (c) 2015 Baidu, Inc.
-// 
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-// 
-//     http://www.apache.org/licenses/LICENSE-2.0
-// 
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+// Licensed to the Apache Software Foundation (ASF) under one
+// or more contributor license agreements.  See the NOTICE file
+// distributed with this work for additional information
+// regarding copyright ownership.  The ASF licenses this file
+// to you under the Apache License, Version 2.0 (the
+// "License"); you may not use this file except in compliance
+// with the License.  You may obtain a copy of the License at
+//
+//   http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing,
+// software distributed under the License is distributed on an
+// "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+// KIND, either express or implied.  See the License for the
+// specific language governing permissions and limitations
+// under the License.
 
-// Author: Ge,Jun (gejun@baidu.com)
 // Date: Sun Aug  9 12:26:03 CST 2015
 
 #include <stdlib.h>
@@ -32,8 +34,8 @@ GFlag::GFlag(const butil::StringPiece& prefix,
 }
 
 void GFlag::describe(std::ostream& os, bool quote_string) const {
-    google::CommandLineFlagInfo info;
-    if (!google::GetCommandLineFlagInfo(gflag_name().c_str(), &info)) {
+    GFLAGS_NS::CommandLineFlagInfo info;
+    if (!GFLAGS_NS::GetCommandLineFlagInfo(gflag_name().c_str(), &info)) {
         if (quote_string) {
             os << '"';
         }
@@ -52,8 +54,8 @@ void GFlag::describe(std::ostream& os, bool quote_string) const {
 
 #ifdef BAIDU_INTERNAL
 void GFlag::get_value(boost::any* value) const {
-    google::CommandLineFlagInfo info;
-    if (!google::GetCommandLineFlagInfo(gflag_name().c_str(), &info)) {
+    GFLAGS_NS::CommandLineFlagInfo info;
+    if (!GFLAGS_NS::GetCommandLineFlagInfo(gflag_name().c_str(), &info)) {
         *value = "Unknown gflag=" + gflag_name();
     } else if (info.type == "string") {
         *value = info.current_value;
@@ -76,14 +78,14 @@ void GFlag::get_value(boost::any* value) const {
 
 std::string GFlag::get_value() const {
     std::string str;
-    if (!google::GetCommandLineOption(gflag_name().c_str(), &str)) {
+    if (!GFLAGS_NS::GetCommandLineOption(gflag_name().c_str(), &str)) {
         return "Unknown gflag=" + gflag_name();
     }
     return str;
 }
 
 bool GFlag::set_value(const char* value) {
-    return !google::SetCommandLineOption(gflag_name().c_str(), value).empty();
+    return !GFLAGS_NS::SetCommandLineOption(gflag_name().c_str(), value).empty();
 }
 
 }  // namespace bvar

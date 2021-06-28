@@ -1,4 +1,3 @@
-cmake_minimum_required(VERSION 2.8.10)
 project(counter C CXX)
 
 option(EXAMPLE_LINK_SO "Whether examples are linked dynamically" OFF)

@@ -1,4 +1,3 @@
-cmake_minimum_required(VERSION 2.8.10)
 project(multi_threaded_echo_c++ C CXX)
 
 option(EXAMPLE_LINK_SO "Whether examples are linked dynamically" OFF)
@@ -14,7 +13,7 @@ else()
     set(BRPC_LIB brpc-static)
 endif()
 set(GPERFTOOLS_LIBRARIES gperftools)
- 
+
 set(CMAKE_CXX_FLAGS "${CMAKE_CPP_FLAGS} -DNDEBUG -O2 -D__const__= -pipe -W -Wall -Wno-unused-parameter -fPIC -fno-omit-frame-pointer")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DBRPC_ENABLE_CPU_PROFILER")
 

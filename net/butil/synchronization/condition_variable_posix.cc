@@ -33,7 +33,7 @@ void ConditionVariable::Wait() {
   DCHECK_EQ(0, rv);
 }
 
-bool ConditionVariable::TimedWait(const TimeDelta& max_time) {
+void ConditionVariable::TimedWait(const TimeDelta& max_time) {
   butil::ThreadRestrictions::AssertWaitAllowed();
   int64_t usecs = max_time.InMicroseconds();
   struct timespec relative_time;
@@ -61,10 +61,6 @@ bool ConditionVariable::TimedWait(const TimeDelta& max_time) {
 #endif  // OS_MACOSX
 
   DCHECK(rv == 0 || rv == ETIMEDOUT);
-  if (0 == rv) {
-    return true;
-  }
-  return false;
 }
 
 void ConditionVariable::Broadcast() {

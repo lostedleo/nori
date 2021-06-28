@@ -1,19 +1,22 @@
-// bthread - A M:N threading library to make applications more concurrent.
-// Copyright (c) 2012 Baidu, Inc.
-// 
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-// 
-//     http://www.apache.org/licenses/LICENSE-2.0
-// 
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+// Licensed to the Apache Software Foundation (ASF) under one
+// or more contributor license agreements.  See the NOTICE file
+// distributed with this work for additional information
+// regarding copyright ownership.  The ASF licenses this file
+// to you under the Apache License, Version 2.0 (the
+// "License"); you may not use this file except in compliance
+// with the License.  You may obtain a copy of the License at
+//
+//   http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing,
+// software distributed under the License is distributed on an
+// "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+// KIND, either express or implied.  See the License for the
+// specific language governing permissions and limitations
+// under the License.
 
-// Author: Ge,Jun (gejun@baidu.com)
+// bthread - A M:N threading library to make applications more concurrent.
+
 // Date: Tue Jul 10 17:40:58 CST 2012
 
 #ifndef BTHREAD_UNSTABLE_H
@@ -56,7 +59,7 @@ extern int bthread_timer_del(bthread_timer_t id);
 // current implementation relies on EPOLL_CTL_ADD and EPOLL_CTL_DEL which
 // are not scalable, don't use bthread_fd_*wait functions in performance
 // critical scenario.
-extern int bthread_fd_wait(int fd, unsigned epoll_events);
+extern int bthread_fd_wait(int fd, unsigned events);
 
 // Suspend caller thread until the file descriptor `fd' has `epoll_events'
 // or CLOCK_REALTIME reached `abstime' if abstime is not NULL.
@@ -94,7 +97,7 @@ extern int bthread_key_create2(bthread_key_t* key,
                                void (*destructor)(void* data, const void* dtor_arg),
                                const void* dtor_arg);
 
-// CAUTION: functions marked with [PRC INTERNAL] are NOT supposed to be called
+// CAUTION: functions marked with [RPC INTERNAL] are NOT supposed to be called
 // by RPC users.
 
 // [RPC INTERNAL]

@@ -26,7 +26,7 @@ list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/build_tools/cmake)
 include(CppLint)
 include(NoriProtobufGenerate)
 
-option(BUILD_SHARED_LIBS "build shared lib" ON)
+option(BUILD_SHARED_LIBS "build shared lib" OFF)
 
 if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
   # require at least gcc 4.8
@@ -38,8 +38,6 @@ elseif(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
   if(CMAKE_CXX_COMPILER_VERSION VERSION_LESS 3.3)
     message(FATAL_ERROR "Clang is too old, please install a newer version supporting C++11")
   endif()
-else()
-  message(WARNING "You are using an unsupported compiler! Compilation has only been tested with Clang and GCC.")
 endif()
 
 macro(use_cxx11)

@@ -1,4 +1,19 @@
-// Copyright (c) 2014 Baidu, Inc.
+// Licensed to the Apache Software Foundation (ASF) under one
+// or more contributor license agreements.  See the NOTICE file
+// distributed with this work for additional information
+// regarding copyright ownership.  The ASF licenses this file
+// to you under the Apache License, Version 2.0 (the
+// "License"); you may not use this file except in compliance
+// with the License.  You may obtain a copy of the License at
+//
+//   http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing,
+// software distributed under the License is distributed on an
+// "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+// KIND, either express or implied.  See the License for the
+// specific language governing permissions and limitations
+// under the License.
 
 #include <sys/time.h>
 #include <gtest/gtest.h>
@@ -1293,7 +1308,7 @@ TEST_F(ProtobufJsonTest, pb_to_json_encode_decode_perf_case) {
 }
 
 TEST_F(ProtobufJsonTest, pb_to_json_complex_perf_case) {
-    
+
     std::ifstream in("jsonout", std::ios::in);
     std::ostringstream tmp;
     tmp << in.rdbuf();
@@ -1302,8 +1317,8 @@ TEST_F(ProtobufJsonTest, pb_to_json_complex_perf_case) {
 
     printf("----------test pb to json performance------------\n\n");
 
-    std::string error; 
-  
+    std::string error;
+
     butil::Timer timer;
     bool res;
     float avg_time1 = 0;
@@ -1316,7 +1331,7 @@ TEST_F(ProtobufJsonTest, pb_to_json_complex_perf_case) {
     res = JsonToProtoMessage(info3, &data, option, &error);
     timer.stop();
     avg_time1 += timer.u_elapsed();
-    ASSERT_TRUE(res);
+    ASSERT_TRUE(res) << error;
     ProfilerStart("pb_to_json_complex_perf.prof");
     for (int i = 0; i < times; i++) { 
         std::string error1;
@@ -1443,6 +1458,17 @@ TEST_F(ProtobufJsonTest, extension_case) {
     std::string output;
     ASSERT_TRUE(json2pb::ProtoMessageToJson(person, &output));
     ASSERT_EQ("{\"hobby\":\"coding\",\"name\":\"hello\",\"id\":9,\"datadouble\":2.2,\"datafloat\":1.0}", output);
+}
+
+TEST_F(ProtobufJsonTest, string_to_int64) {
+    auto json = R"({"name":"hello", "id":9, "data": "123456", "datadouble":2.2, "datafloat":1.0})";
+    Person person;
+    std::string err;
+    ASSERT_TRUE(json2pb::JsonToProtoMessage(json, &person, &err)) << err;
+    ASSERT_EQ(person.data(), 123456);
+    json = R"({"name":"hello", "id":9, "data": 1234567, "datadouble":2.2, "datafloat":1.0})";
+    ASSERT_TRUE(json2pb::JsonToProtoMessage(json, &person));
+    ASSERT_EQ(person.data(), 1234567);
 }
 
 }

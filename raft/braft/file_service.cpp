@@ -16,6 +16,7 @@
 
 #include "braft/file_service.h"
 
+#include <inttypes.h>
 #include <stack>
 #include <butil/file_util.h>
 #include <butil/files/file_path.h>
@@ -39,15 +40,15 @@ void FileServiceImpl::get_file(::google::protobuf::RpcController* controller,
     Map::const_iterator iter = _reader_map.find(request->reader_id());
     if (iter == _reader_map.end()) {
         lck.unlock();
-        cntl->SetFailed(ENOENT, "Fail to find reader=%ld", request->reader_id());
+        cntl->SetFailed(ENOENT, "Fail to find reader=%" PRId64, request->reader_id());
         return;
     }
     // Don't touch iter ever after
     reader = iter->second;
     lck.unlock();
-    BRAFT_VLOG << "get_file from " << cntl->remote_side() << " path=" << reader->path() 
-         << " filename=" << request->filename()
-         << " offset=" << request->offset() << " count=" << request->count();
+    BRAFT_VLOG << "get_file for " << cntl->remote_side() << " path=" << reader->path()
+               << " filename=" << request->filename()
+               << " offset=" << request->offset() << " count=" << request->count();
 
     if (request->count() <= 0 || request->offset() < 0) {
         cntl->SetFailed(brpc::EREQUEST, "Invalid request=%s",
@@ -57,10 +58,13 @@ void FileServiceImpl::get_file(::google::protobuf::RpcController* controller,
 
     butil::IOBuf buf;
     bool is_eof = false;
+    size_t read_count = 0;
+
     const int rc = reader->read_file(
                             &buf, request->filename(),
                             request->offset(), request->count(), 
                             request->read_partly(),
+                            &read_count,
                             &is_eof);
     if (rc != 0) {
         cntl->SetFailed(rc, "Fail to read from path=%s filename=%s : %s",
@@ -69,7 +73,7 @@ void FileServiceImpl::get_file(::google::protobuf::RpcController* controller,
     }
 
     response->set_eof(is_eof);
-    response->set_read_size(buf.size());      
+    response->set_read_size(read_count);      
     // skip empty data
     if (buf.size() == 0) {
         return;

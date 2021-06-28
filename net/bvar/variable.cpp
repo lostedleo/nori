@@ -1,18 +1,20 @@
-// Copyright (c) 2014 Baidu, Inc.
-// 
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-// 
-//     http://www.apache.org/licenses/LICENSE-2.0
-// 
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+// Licensed to the Apache Software Foundation (ASF) under one
+// or more contributor license agreements.  See the NOTICE file
+// distributed with this work for additional information
+// regarding copyright ownership.  The ASF licenses this file
+// to you under the Apache License, Version 2.0 (the
+// "License"); you may not use this file except in compliance
+// with the License.  You may obtain a copy of the License at
+//
+//   http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing,
+// software distributed under the License is distributed on an
+// "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+// KIND, either express or implied.  See the License for the
+// specific language governing permissions and limitations
+// under the License.
 
-// Author: Ge,Jun (gejun@baidu.com)
 // Date: 2014/09/22 19:04:47
 
 #include <pthread.h>
@@ -24,7 +26,6 @@
 #include "butil/containers/flat_map.h"           // butil::FlatMap
 #include "butil/scoped_lock.h"                   // BAIDU_SCOPE_LOCK
 #include "butil/string_splitter.h"               // butil::StringSplitter
-#include "butil/strings/string_split.h"          // butil::SplitStringIntoKeyValuePairs
 #include "butil/errno.h"                         // berror
 #include "butil/time.h"                          // milliseconds_from_now
 #include "butil/file_util.h"                     // butil::FilePath
@@ -53,7 +54,7 @@ static bool validate_bvar_abort_on_same_name(const char*, bool v) {
     }
     return true;
 }
-const bool ALLOW_UNUSED dummy_bvar_abort_on_same_name = ::google::RegisterFlagValidator(
+const bool ALLOW_UNUSED dummy_bvar_abort_on_same_name = ::GFLAGS_NS::RegisterFlagValidator(
     &FLAGS_bvar_abort_on_same_name, validate_bvar_abort_on_same_name);
 
 
@@ -202,7 +203,7 @@ void Variable::list_exposed(std::vector<std::string>* names,
         return;
     }
     names->clear();
-    if (names->size() < 32) {
+    if (names->capacity() < 32) {
         names->reserve(count_exposed());
     }
     VarMapWithLock* var_maps = get_var_maps();
@@ -316,8 +317,8 @@ public:
     explicit CharArrayStreamBuf() : _data(NULL), _size(0) {}
     ~CharArrayStreamBuf();
 
-    virtual int overflow(int ch);
-    virtual int sync();
+    int overflow(int ch) override;
+    int sync() override;
     void reset();
     butil::StringPiece data() {
         return butil::StringPiece(pbase(), pptr() - pbase());
@@ -587,7 +588,7 @@ public:
             _fp = NULL;
         }
     }
-    bool dump(const std::string& name, const butil::StringPiece& desc) {
+    bool dump(const std::string& name, const butil::StringPiece& desc) override {
         if (_fp == NULL) {
             butil::File::Error error;
             butil::FilePath dir = butil::FilePath(_filename).DirName();
@@ -627,15 +628,13 @@ public:
             // .data will be appended later
             path = path.RemoveFinalExtension();
         }
-        butil::StringPairs pairs;
-        pairs.reserve(8);
-        butil::SplitStringIntoKeyValuePairs(tabs, '=', ';', &pairs);
-        dumpers.reserve(pairs.size() + 1);
-        //matchers.reserve(pairs.size());
-        for (size_t i = 0; i < pairs.size(); ++i) {
+
+        for (butil::KeyValuePairsSplitter sp(tabs, ';', '='); sp; ++sp) {
+            std::string key = sp.key().as_string();
+            std::string value = sp.value().as_string();
             FileDumper *f = new FileDumper(
-                    path.AddExtension(pairs[i].first).AddExtension("data").value(), s);
-            WildcardMatcher *m = new WildcardMatcher(pairs[i].second, '?', true);
+                    path.AddExtension(key).AddExtension("data").value(), s);
+            WildcardMatcher *m = new WildcardMatcher(value, '?', true);
             dumpers.push_back(std::make_pair(f, m));
         }
         dumpers.push_back(std::make_pair(
@@ -650,7 +649,7 @@ public:
         dumpers.clear();
     }
 
-    bool dump(const std::string& name, const butil::StringPiece& desc) {
+    bool dump(const std::string& name, const butil::StringPiece& desc) override {
         for (size_t i = 0; i < dumpers.size() - 1; ++i) {
             if (dumpers[i].second->match(name)) {
                 return dumpers[i].first->dump(name, desc);
@@ -703,25 +702,25 @@ static void* dumping_thread(void*) {
         DumpOptions options;
         std::string prefix;
         std::string tabs;
-        if (!google::GetCommandLineOption("bvar_dump_file", &filename)) {
+        if (!GFLAGS_NS::GetCommandLineOption("bvar_dump_file", &filename)) {
             LOG(ERROR) << "Fail to get gflag bvar_dump_file";
             return NULL;
         }
-        if (!google::GetCommandLineOption("bvar_dump_include",
+        if (!GFLAGS_NS::GetCommandLineOption("bvar_dump_include",
                                           &options.white_wildcards)) {
             LOG(ERROR) << "Fail to get gflag bvar_dump_include";
             return NULL;
         }
-        if (!google::GetCommandLineOption("bvar_dump_exclude",
+        if (!GFLAGS_NS::GetCommandLineOption("bvar_dump_exclude",
                                           &options.black_wildcards)) {
             LOG(ERROR) << "Fail to get gflag bvar_dump_exclude";
             return NULL;
         }
-        if (!google::GetCommandLineOption("bvar_dump_prefix", &prefix)) {
+        if (!GFLAGS_NS::GetCommandLineOption("bvar_dump_prefix", &prefix)) {
             LOG(ERROR) << "Fail to get gflag bvar_dump_prefix";
             return NULL;
         }
-        if (!google::GetCommandLineOption("bvar_dump_tabs", &tabs)) {
+        if (!GFLAGS_NS::GetCommandLineOption("bvar_dump_tabs", &tabs)) {
             LOG(ERROR) << "Fail to get gflags bvar_dump_tabs";
             return NULL;
         }
@@ -794,7 +793,7 @@ static bool validate_bvar_dump(const char*, bool enabled) {
     }
     return true;
 }
-const bool ALLOW_UNUSED dummy_bvar_dump = ::google::RegisterFlagValidator(
+const bool ALLOW_UNUSED dummy_bvar_dump = ::GFLAGS_NS::RegisterFlagValidator(
     &FLAGS_bvar_dump, validate_bvar_dump);
 
 // validators (to make these gflags reloadable in brpc)
@@ -809,11 +808,11 @@ static bool validate_bvar_dump_interval(const char*, int32_t v) {
     }
     return true;
 }
-const bool ALLOW_UNUSED dummy_bvar_dump_interval = ::google::RegisterFlagValidator(
+const bool ALLOW_UNUSED dummy_bvar_dump_interval = ::GFLAGS_NS::RegisterFlagValidator(
     &FLAGS_bvar_dump_interval, validate_bvar_dump_interval);
 
 static bool validate_bvar_log_dumpped(const char *, bool) { return true; }
-const bool ALLOW_UNUSED dummy_bvar_log_dumpped = ::google::RegisterFlagValidator(
+const bool ALLOW_UNUSED dummy_bvar_log_dumpped = ::GFLAGS_NS::RegisterFlagValidator(
         &FLAGS_bvar_log_dumpped, validate_bvar_log_dumpped);
 
 static bool wakeup_dumping_thread(const char*, const std::string&) {
@@ -823,15 +822,15 @@ static bool wakeup_dumping_thread(const char*, const std::string&) {
     return true;
 }
 
-const bool ALLOW_UNUSED dummy_bvar_dump_file = ::google::RegisterFlagValidator(
+const bool ALLOW_UNUSED dummy_bvar_dump_file = ::GFLAGS_NS::RegisterFlagValidator(
     &FLAGS_bvar_dump_file, wakeup_dumping_thread);
-const bool ALLOW_UNUSED dummy_bvar_dump_filter = ::google::RegisterFlagValidator(
+const bool ALLOW_UNUSED dummy_bvar_dump_filter = ::GFLAGS_NS::RegisterFlagValidator(
     &FLAGS_bvar_dump_include, wakeup_dumping_thread);
-const bool ALLOW_UNUSED dummy_bvar_dump_exclude = ::google::RegisterFlagValidator(
+const bool ALLOW_UNUSED dummy_bvar_dump_exclude = ::GFLAGS_NS::RegisterFlagValidator(
     &FLAGS_bvar_dump_exclude, wakeup_dumping_thread);
-const bool ALLOW_UNUSED dummy_bvar_dump_prefix = ::google::RegisterFlagValidator(
+const bool ALLOW_UNUSED dummy_bvar_dump_prefix = ::GFLAGS_NS::RegisterFlagValidator(
     &FLAGS_bvar_dump_prefix, wakeup_dumping_thread);
-const bool ALLOW_UNUSED dummy_bvar_dump_tabs = ::google::RegisterFlagValidator(
+const bool ALLOW_UNUSED dummy_bvar_dump_tabs = ::GFLAGS_NS::RegisterFlagValidator(
     &FLAGS_bvar_dump_tabs, wakeup_dumping_thread);
 
 void to_underscored_name(std::string* name, const butil::StringPiece& src) {

@@ -39,6 +39,15 @@ struct BallotBoxOptions {
     ClosureQueue* closure_queue;
 };
 
+struct BallotBoxStatus {
+    BallotBoxStatus()
+        : committed_index(0), pending_index(0), pending_queue_size(0)
+    {}
+    int64_t committed_index;
+    int64_t pending_index;
+    int64_t pending_queue_size;
+};
+
 class BallotBox {
 public:
     BallotBox();
@@ -59,7 +68,7 @@ public:
     
     // Called when a candidate becomes the new leader, otherwise the behavior is
     // undefined.
-    // According the the raft algorithm, the logs from pervious terms can't be 
+    // According to the raft algorithm, the logs from pervious terms can't be 
     // committed until a log at the new term becomes committed, so 
     // |new_pending_index| should be |last_log_index| + 1.
     int reset_pending_index(int64_t new_pending_index);
@@ -71,13 +80,15 @@ public:
                             Closure* closure);
 
     // Called by follower, otherwise the behavior is undefined.
-    // Set commited index received from leader
+    // Set committed index received from leader
     int set_last_committed_index(int64_t last_committed_index);
 
     int64_t last_committed_index() 
     { return _last_committed_index.load(butil::memory_order_acquire); }
 
     void describe(std::ostream& os, bool use_html);
+
+    void get_status(BallotBoxStatus* ballot_box_status);
 
 private:
 

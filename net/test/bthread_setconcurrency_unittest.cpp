@@ -1,6 +1,19 @@
-// Copyright (c) 2014 Baidu, Inc.
-// Author: Ge,Jun (gejun@baidu.com)
-// Date: Sun Jul 13 15:04:18 CST 2014
+// Licensed to the Apache Software Foundation (ASF) under one
+// or more contributor license agreements.  See the NOTICE file
+// distributed with this work for additional information
+// regarding copyright ownership.  The ASF licenses this file
+// to you under the Apache License, Version 2.0 (the
+// "License"); you may not use this file except in compliance
+// with the License.  You may obtain a copy of the License at
+//
+//   http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing,
+// software distributed under the License is distributed on an
+// "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+// KIND, either express or implied.  See the License for the
+// specific language governing permissions and limitations
+// under the License.
 
 #include <gtest/gtest.h>
 #include <gflags/gflags.h>
@@ -127,13 +140,13 @@ void* add_concurrency_proc(void*) {
 bool set_min_concurrency(int num) {
     std::stringstream ss;
     ss << num;
-    std::string ret = google::SetCommandLineOption("bthread_min_concurrency", ss.str().c_str());
+    std::string ret = GFLAGS_NS::SetCommandLineOption("bthread_min_concurrency", ss.str().c_str());
     return !ret.empty();
 }
 
 int get_min_concurrency() {
     std::string ret;
-    google::GetCommandLineOption("bthread_min_concurrency", &ret);
+    GFLAGS_NS::GetCommandLineOption("bthread_min_concurrency", &ret);
     return atoi(ret.c_str());
 }
 

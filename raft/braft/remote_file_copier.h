@@ -27,6 +27,8 @@
 
 namespace braft {
 
+DECLARE_bool(raft_enable_throttle_when_install_snapshot);
+
 struct CopyOptions {
     CopyOptions();
     int max_retry;
@@ -89,6 +91,7 @@ public:
         GetFileResponse _response;
         bthread::CountdownEvent _finish_event;
         scoped_refptr<SnapshotThrottle> _throttle;   
+        int64_t _throttle_token_acquire_time_us;
     };
 
     RemoteFileCopier();

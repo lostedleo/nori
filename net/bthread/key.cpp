@@ -1,19 +1,22 @@
-// bthread - A M:N threading library to make applications more concurrent.
-// Copyright (c) 2014 Baidu, Inc.
-// 
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-// 
-//     http://www.apache.org/licenses/LICENSE-2.0
-// 
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+// Licensed to the Apache Software Foundation (ASF) under one
+// or more contributor license agreements.  See the NOTICE file
+// distributed with this work for additional information
+// regarding copyright ownership.  The ASF licenses this file
+// to you under the Apache License, Version 2.0 (the
+// "License"); you may not use this file except in compliance
+// with the License.  You may obtain a copy of the License at
+//
+//   http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing,
+// software distributed under the License is distributed on an
+// "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+// KIND, either express or implied.  See the License for the
+// specific language governing permissions and limitations
+// under the License.
 
-// Author: Ge,Jun (gejun@baidu.com)
+// bthread - A M:N threading library to make applications more concurrent.
+
 // Date: Sun Aug  3 12:46:15 CST 2014
 
 #include <pthread.h>
@@ -31,7 +34,7 @@ class KeyTable;
 
 // defined in task_group.cpp
 extern __thread TaskGroup* tls_task_group;
-extern __thread LocalStorage tls_bls;
+extern thread_local LocalStorage tls_bls;
 static __thread bool tls_ever_created_keytable = false;
 
 // We keep thread specific data in a two-level array. The top-level array
@@ -233,8 +236,8 @@ void return_keytable(bthread_keytable_pool_t* pool, KeyTable* kt) {
     pool->free_keytables = kt;
 }
 
-static void cleanup_pthread() {
-    KeyTable* kt = tls_bls.keytable;
+static void cleanup_pthread(void* arg) {
+    KeyTable* kt = static_cast<KeyTable*>(arg);
     if (kt) {
         delete kt;
         // After deletion: tls may be set during deletion.
@@ -446,7 +449,7 @@ int bthread_setspecific(bthread_key_t key, void* data) {
         }
         if (!bthread::tls_ever_created_keytable) {
             bthread::tls_ever_created_keytable = true;
-            CHECK_EQ(0, butil::thread_atexit(bthread::cleanup_pthread));
+            CHECK_EQ(0, butil::thread_atexit(bthread::cleanup_pthread, kt));
         }
     }
     return kt->set_data(key, data);
@@ -472,10 +475,6 @@ void* bthread_getspecific(bthread_key_t key) {
 
 void bthread_assign_data(void* data) {
     bthread::tls_bls.assigned_data = data;
-    bthread::TaskGroup* const g = bthread::tls_task_group;
-    if (g) {
-        g->current_task()->local_storage.assigned_data = data;
-    }
 }
 
 void* bthread_get_assigned_data() {

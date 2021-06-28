@@ -1,16 +1,19 @@
-// Copyright (c) 2014 Baidu, Inc.
-// 
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-// 
-//     http://www.apache.org/licenses/LICENSE-2.0
-// 
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+// Licensed to the Apache Software Foundation (ASF) under one
+// or more contributor license agreements.  See the NOTICE file
+// distributed with this work for additional information
+// regarding copyright ownership.  The ASF licenses this file
+// to you under the Apache License, Version 2.0 (the
+// "License"); you may not use this file except in compliance
+// with the License.  You may obtain a copy of the License at
+//
+//   http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing,
+// software distributed under the License is distributed on an
+// "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+// KIND, either express or implied.  See the License for the
+// specific language governing permissions and limitations
+// under the License.
 
 #include <time.h>                           // strftime
 #include <pthread.h>
@@ -24,6 +27,7 @@
 #include "butil/files/scoped_file.h"         // ScopedFILE
 #include "butil/time.h"
 #include "butil/popen.h"                    // butil::read_command_output
+#include "butil/process_util.h"             // butil::ReadCommandLine
 #include "brpc/log.h"
 #include "brpc/controller.h"                // Controller
 #include "brpc/closure_guard.h"             // ClosureGuard
@@ -34,7 +38,9 @@
 #include "butil/fd_guard.h"
 
 extern "C" {
+#if defined(OS_LINUX)
 extern char *program_invocation_name;
+#endif
 int __attribute__((weak)) ProfilerStart(const char* fname);
 void __attribute__((weak)) ProfilerStop();
 }
@@ -397,7 +403,7 @@ static void LoadSymbols() {
     size_t line_len = 0;
     ssize_t nr = 0;
     while ((nr = getline(&line, &line_len, fp.get())) != -1) {
-        butil::StringSplitter sp(line, line + line_len, ' ');
+        butil::StringSplitter sp(line, line + nr, ' ');
         if (sp == NULL) {
             continue;
         }
@@ -453,7 +459,11 @@ static void LoadSymbols() {
     info.start_addr = 0;
     info.end_addr = std::numeric_limits<uintptr_t>::max();
     info.offset = 0;
+#if defined(OS_LINUX)
     info.path = program_invocation_name;
+#elif defined(OS_MACOSX)
+    info.path = getprogname();
+#endif
     ExtractSymbolsFromBinary(symbol_map, info);
 
     butil::Timer tm2;
@@ -551,9 +561,9 @@ void PProfService::cmdline(::google::protobuf::RpcController* controller_base,
     Controller* cntl = static_cast<Controller*>(controller_base);
     cntl->http_response().set_content_type("text/plain" /*FIXME*/);
     char buf[1024];  // should be enough?
-    const ssize_t nr = ReadCommandLine(buf, sizeof(buf), true);
+    const ssize_t nr = butil::ReadCommandLine(buf, sizeof(buf), true);
     if (nr < 0) {
-        cntl->SetFailed(ENOENT, "Fail to read /proc/self/cmdline");
+        cntl->SetFailed(ENOENT, "Fail to read cmdline");
         return;
     }
     cntl->response_attachment().append(buf, nr);

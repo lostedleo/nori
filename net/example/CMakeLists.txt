@@ -1,3 +1,5 @@
 add_subdirectory(echo_c++)
-add_subdirectory(multi_threaded_echo_c++)
+if(LINUX)
+  add_subdirectory(multi_threaded_echo_c++)
+endif()
 #add_subdirectory(kv_server)

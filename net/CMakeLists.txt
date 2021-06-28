@@ -16,8 +16,6 @@
 
 # URLs for each downloaded or bundled third-party dependency.
 #############################################################
-cmake_minimum_required(VERSION 3.2.0)
-
 project(net C CXX)
 
 # In-tree dependencies.
@@ -26,9 +24,11 @@ project(net C CXX)
 # get third_party property
 # get protobuf include and protoc path
 get_target_property(PROTOBUF_INCLUDE_DIR protobuf INTERFACE_INCLUDE_DIRECTORIES)
+get_target_property(PROTOBUF_LIB protobuf IMPORTED_LOCATION)
 
 option(BRPC_WITH_GLOG "With glog" ON)
 option(DEBUG "Print debug logs" OFF)
+option(WITH_THRIFT "With thrift framed protocol supported" OFF)
 option(WITH_DEBUG_SYMBOLS "With debug symbols" OFF)
 option(BUILD_UNIT_TESTS "Whether to build unit tests" OFF)
 option(BUILD_EXAMPLES "Whether to build examples" ON)
@@ -42,53 +42,95 @@ if(WITH_DEBUG_SYMBOLS)
   set(DEBUG_SYMBOL "-g")
 endif()
 
-include(FindThreads)
-configure_file(${CMAKE_SOURCE_DIR}/build_tools/config.h.in ${CMAKE_SOURCE_DIR}/net/butil/config.h @ONLY)
+if(WITH_THRIFT)
+    set(THRIFT_CPP_FLAG "-DENABLE_THRIFT_FRAMED_PROTOCOL")
+    set(THRIFT_LIB "thrift")
+endif()
 
-include_directories(
-  ${CMAKE_SOURCE_DIR}/net
-  ${CMAKE_CURRENT_BINARY_DIR}
-)
+include(FindThreads)
+include(GNUInstallDirs)
+configure_file(${CMAKE_SOURCE_DIR}/build_tools/config.h.in ${CMAKE_SOURCE_DIR}/net/butil/config.h @ONLY)
 
 execute_process(
   COMMAND bash -c "git rev-parse --short HEAD | tr -d '\n'"
   OUTPUT_VARIABLE BRPC_REVISION
 )
 
-set(CMAKE_CPP_FLAGS "-DBRPC_WITH_GLOG=${WITH_GLOG_VAL}")
+if(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
+    include(CheckFunctionExists)
+    CHECK_FUNCTION_EXISTS(clock_gettime HAVE_CLOCK_GETTIME)
+    if(NOT HAVE_CLOCK_GETTIME)
+        set(DEFINE_CLOCK_GETTIME "-DNO_CLOCK_GETTIME_IN_MAC")
+    endif()
+    set(CMAKE_CPP_FLAGS "${CMAKE_CPP_FLAGS} -Wno-unused-variable -Wno-deprecated-declarations -Wno-inconsistent-missing-override")
+endif()
+
+set(GFLAGS_NS google)
+set(CMAKE_CPP_FLAGS "${CMAKE_CPP_FLAGS} ${DEFINE_CLOCK_GETTIME} -DBRPC_WITH_GLOG=${WITH_GLOG_VAL} -DGFLAGS_NS=${GFLAGS_NS}")
 set(CMAKE_CPP_FLAGS "${CMAKE_CPP_FLAGS} -DBTHREAD_USE_FAST_PTHREAD_MUTEX -D__const__= -D_GNU_SOURCE -DUSE_SYMBOLIZE -D__STDC_FORMAT_MACROS -D__STDC_LIMIT_MACROS -D__STDC_CONSTANT_MACROS -DBRPC_REVISION=\\\"${BRPC_REVISION}\\\" -D__STRICT_ANSI__")
-set(CMAKE_CPP_FLAGS "${CMAKE_CPP_FLAGS} ${DEBUG_SYMBOL}")
+set(CMAKE_CPP_FLAGS "${CMAKE_CPP_FLAGS} ${DEBUG_SYMBOL} ${THRIFT_CPP_FLAG}")
 set(CMAKE_CXX_FLAGS "${CMAKE_CPP_FLAGS} -O2 -pipe -Wall -W -fPIC -fstrict-aliasing -Wno-invalid-offsetof -Wno-unused-parameter -fno-omit-frame-pointer")
 set(CMAKE_C_FLAGS "${CMAKE_CPP_FLAGS} -O2 -pipe -Wall -W -fPIC -fstrict-aliasing -Wno-unused-parameter -fno-omit-frame-pointer")
 
 if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
   #required by butil/crc32.cc to boost performance for 10x
-  if(NOT (CMAKE_CXX_COMPILER_VERSION VERSION_LESS 4.4))
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -msse4 -msse4.2")
+  if((CMAKE_SYSTEM_PROCESSOR MATCHES "(x86)|(X86)|(amd64)|(AMD64)") AND NOT (CMAKE_CXX_COMPILER_VERSION VERSION_LESS 4.4))
+      set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -msse4 -msse4.2")
+  elseif((CMAKE_SYSTEM_PROCESSOR MATCHES "aarch64"))
+      # segmentation fault in libcontext
+      set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-gcse")
   endif()
   if(NOT (CMAKE_CXX_COMPILER_VERSION VERSION_LESS 7.0))
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-aligned-new")
+      set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-aligned-new")
   endif()
 endif()
 
+if(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
+  set(OPENSSL_ROOT_DIR
+        "/usr/local/opt/openssl"    # Homebrew installed OpenSSL
+        )
+endif()
+
+find_package(OpenSSL)
+
+include_directories(
+  ${CMAKE_SOURCE_DIR}/net
+  ${CMAKE_CURRENT_BINARY_DIR}
+  ${OPENSSL_INCLUDE_DIR}
+)
+
 set(DYNAMIC_LIB
   ${CMAKE_THREAD_LIBS_INIT}
-  gflags
+  ${OPENSSL_CRYPTO_LIBRARY}
+  ${OPENSSL_SSL_LIBRARY}
+  ${THRIFT_LIB}
   protobuf
+  gflags
   libprotoc
   leveldb
-  rt
-  ssl
-  crypto
   dl
   z
   )
 
+
 if(BRPC_WITH_GLOG)
-  set(DYNAMIC_LIB
-    ${DYNAMIC_LIB}
-    glog
-  )
+  set(DYNAMIC_LIB ${DYNAMIC_LIB} glog)
+endif()
+
+if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+  set(DYNAMIC_LIB ${DYNAMIC_LIB} rt)
+elseif(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
+  set(DYNAMIC_LIB ${DYNAMIC_LIB}
+      pthread
+      "-framework CoreFoundation"
+      "-framework CoreGraphics"
+      "-framework CoreData"
+      "-framework CoreText"
+      "-framework Security"
+      "-framework Foundation"
+      "-Wl,-U,_MallocExtension_ReleaseFreeMemory"
+      "-Wl,-U,_ProfilerStart"
+      "-Wl,-U,_ProfilerStop")
 endif()
 
 ## list all source files
@@ -99,7 +141,6 @@ set(BUTIL_SOURCES
   ${CMAKE_SOURCE_DIR}/net/butil/third_party/icu/icu_utf.cc
   ${CMAKE_SOURCE_DIR}/net/butil/third_party/superfasthash/superfasthash.c
   ${CMAKE_SOURCE_DIR}/net/butil/third_party/modp_b64/modp_b64.cc
-  ${CMAKE_SOURCE_DIR}/net/butil/third_party/nspr/prtime.cc
   ${CMAKE_SOURCE_DIR}/net/butil/third_party/symbolize/demangle.cc
   ${CMAKE_SOURCE_DIR}/net/butil/third_party/symbolize/symbolize.cc
   ${CMAKE_SOURCE_DIR}/net/butil/third_party/snappy/snappy-sinksource.cc
@@ -133,14 +174,12 @@ set(BUTIL_SOURCES
   ${CMAKE_SOURCE_DIR}/net/butil/files/scoped_file.cc
   ${CMAKE_SOURCE_DIR}/net/butil/files/scoped_temp_dir.cc
   ${CMAKE_SOURCE_DIR}/net/butil/file_util.cc
-  ${CMAKE_SOURCE_DIR}/net/butil/file_util_linux.cc
   ${CMAKE_SOURCE_DIR}/net/butil/file_util_posix.cc
   ${CMAKE_SOURCE_DIR}/net/butil/guid.cc
   ${CMAKE_SOURCE_DIR}/net/butil/guid_posix.cc
   ${CMAKE_SOURCE_DIR}/net/butil/hash.cc
   ${CMAKE_SOURCE_DIR}/net/butil/lazy_instance.cc
   ${CMAKE_SOURCE_DIR}/net/butil/location.cc
-  ${CMAKE_SOURCE_DIR}/net/butil/md5.cc
   ${CMAKE_SOURCE_DIR}/net/butil/memory/aligned_memory.cc
   ${CMAKE_SOURCE_DIR}/net/butil/memory/ref_counted.cc
   ${CMAKE_SOURCE_DIR}/net/butil/memory/ref_counted_memory.cc
@@ -148,6 +187,7 @@ set(BUTIL_SOURCES
   ${CMAKE_SOURCE_DIR}/net/butil/memory/weak_ptr.cc
   ${CMAKE_SOURCE_DIR}/net/butil/posix/file_descriptor_shuffle.cc
   ${CMAKE_SOURCE_DIR}/net/butil/posix/global_descriptors.cc
+  ${CMAKE_SOURCE_DIR}/net/butil/process_util.cc
   ${CMAKE_SOURCE_DIR}/net/butil/rand_util.cc
   ${CMAKE_SOURCE_DIR}/net/butil/rand_util_posix.cc
   ${CMAKE_SOURCE_DIR}/net/butil/fast_rand.cpp
@@ -163,16 +203,13 @@ set(BUTIL_SOURCES
   ${CMAKE_SOURCE_DIR}/net/butil/strings/string_util.cc
   ${CMAKE_SOURCE_DIR}/net/butil/strings/string_util_constants.cc
   ${CMAKE_SOURCE_DIR}/net/butil/strings/stringprintf.cc
-  ${CMAKE_SOURCE_DIR}/net/butil/strings/sys_string_conversions_posix.cc
   ${CMAKE_SOURCE_DIR}/net/butil/strings/utf_offset_string_conversions.cc
   ${CMAKE_SOURCE_DIR}/net/butil/strings/utf_string_conversion_utils.cc
   ${CMAKE_SOURCE_DIR}/net/butil/strings/utf_string_conversions.cc
   ${CMAKE_SOURCE_DIR}/net/butil/synchronization/cancellation_flag.cc
   ${CMAKE_SOURCE_DIR}/net/butil/synchronization/condition_variable_posix.cc
   ${CMAKE_SOURCE_DIR}/net/butil/synchronization/waitable_event_posix.cc
-  ${CMAKE_SOURCE_DIR}/net/butil/synchronization/rw_mutex.cc
   ${CMAKE_SOURCE_DIR}/net/butil/threading/non_thread_safe_impl.cc
-  ${CMAKE_SOURCE_DIR}/net/butil/threading/platform_thread_linux.cc
   ${CMAKE_SOURCE_DIR}/net/butil/threading/platform_thread_posix.cc
   ${CMAKE_SOURCE_DIR}/net/butil/threading/simple_thread.cc
   ${CMAKE_SOURCE_DIR}/net/butil/threading/thread_checker_impl.cc
@@ -207,13 +244,42 @@ set(BUTIL_SOURCES
   ${CMAKE_SOURCE_DIR}/net/butil/crc32c.cc
   ${CMAKE_SOURCE_DIR}/net/butil/containers/case_ignored_flat_map.cpp
   ${CMAKE_SOURCE_DIR}/net/butil/iobuf.cpp
+  ${CMAKE_SOURCE_DIR}/net/butil/binary_printer.cpp
+  ${CMAKE_SOURCE_DIR}/net/butil/recordio.cc
   ${CMAKE_SOURCE_DIR}/net/butil/popen.cpp
   )
+
+if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+    set(BUTIL_SOURCES ${BUTIL_SOURCES}
+        ${CMAKE_SOURCE_DIR}/net/butil/file_util_linux.cc
+        ${CMAKE_SOURCE_DIR}/net/butil/threading/platform_thread_linux.cc
+        ${CMAKE_SOURCE_DIR}/net/butil/strings/sys_string_conversions_posix.cc)
+elseif(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
+    set(BUTIL_SOURCES ${BUTIL_SOURCES}
+        ${CMAKE_SOURCE_DIR}/net/butil/mac/bundle_locations.mm
+        ${CMAKE_SOURCE_DIR}/net/butil/mac/foundation_util.mm
+        ${CMAKE_SOURCE_DIR}/net/butil/file_util_mac.mm
+        ${CMAKE_SOURCE_DIR}/net/butil/threading/platform_thread_mac.mm
+        ${CMAKE_SOURCE_DIR}/net/butil/strings/sys_string_conversions_mac.mm
+        ${CMAKE_SOURCE_DIR}/net/butil/time/time_mac.cc
+        ${CMAKE_SOURCE_DIR}/net/butil/mac/scoped_mach_port.cc)
+endif()
 
 file(GLOB_RECURSE BVAR_SOURCES "${CMAKE_SOURCE_DIR}/net/bvar/*.cpp")
 file(GLOB_RECURSE BTHREAD_SOURCES "${CMAKE_SOURCE_DIR}/net/bthread/*.cpp")
 file(GLOB_RECURSE JSON2PB_SOURCES "${CMAKE_SOURCE_DIR}/net/json2pb/*.cpp")
 file(GLOB_RECURSE BRPC_SOURCES "${CMAKE_SOURCE_DIR}/net/brpc/*.cpp")
+file(GLOB_RECURSE THRIFT_SOURCES "${CMAKE_SOURCE_DIR}/net/brpc/thrift*.cpp")
+
+if(WITH_THRIFT)
+    message("brpc compile with thrift protocol")
+else()
+    # Remove thrift sources
+    foreach(v ${THRIFT_SOURCES})
+        list(REMOVE_ITEM BRPC_SOURCES ${v})
+    endforeach()
+    set(THRIFT_SOURCES "")
+endif()
 
 set(MCPACK2PB_SOURCES
   ${CMAKE_SOURCE_DIR}/net/mcpack2pb/field_type.cpp
@@ -269,6 +335,7 @@ set(SOURCES
   ${MCPACK2PB_SOURCES}
   ${BRPC_SOURCES}
   ${PROTO_SRCS}
+  ${THRIFT_SOURCES}
 )
 
 if(BUILD_UNIT_TESTS)

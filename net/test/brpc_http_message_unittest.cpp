@@ -1,6 +1,20 @@
- // brpc - A framework to host and access services throughout Baidu.
-// Copyright (c) 2014 Baidu, Inc.
-
+// Licensed to the Apache Software Foundation (ASF) under one
+// or more contributor license agreements.  See the NOTICE file
+// distributed with this work for additional information
+// regarding copyright ownership.  The ASF licenses this file
+// to you under the Apache License, Version 2.0 (the
+// "License"); you may not use this file except in compliance
+// with the License.  You may obtain a copy of the License at
+//
+//   http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing,
+// software distributed under the License is distributed on an
+// "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+// KIND, either express or implied.  See the License for the
+// specific language governing permissions and limitations
+// under the License.
+//
 // Date 2014/10/24 16:44:30
 
 #include <gtest/gtest.h>
@@ -52,7 +66,7 @@ TEST(HttpMessageTest, http_method) {
 }
 
 TEST(HttpMessageTest, eof) {
-    google::SetCommandLineOption("verbose", "100");
+    GFLAGS_NS::SetCommandLineOption("verbose", "100");
     const char* http_request = 
         "GET /CloudApiControl/HttpServer/telematics/v3/weather?location=%E6%B5%B7%E5%8D%97%E7%9C%81%E7%9B%B4%E8%BE%96%E5%8E%BF%E7%BA%A7%E8%A1%8C%E6%94%BF%E5%8D%95%E4%BD%8D&output=json&ak=0l3FSP6qA0WbOzGRaafbmczS HTTP/1.1\r\n"
         "X-Host: api.map.baidu.com\r\n"
@@ -333,37 +347,37 @@ TEST(HttpMessageTest, serialize_http_request) {
     butil::IOBuf request;
     butil::IOBuf content;
     content.append("data");
-    SerializeHttpRequest(&request, &header, ep, &content);
+    MakeRawHttpRequest(&request, &header, ep, &content);
     ASSERT_EQ("POST / HTTP/1.1\r\nContent-Length: 4\r\nHost: 127.0.0.1:1234\r\nFoo: Bar\r\nAccept: */*\r\nUser-Agent: brpc/1.0 curl/7.0\r\n\r\ndata", request);
 
     // user-set content-length is ignored.
     header.SetHeader("Content-Length", "100");
-    SerializeHttpRequest(&request, &header, ep, &content);
+    MakeRawHttpRequest(&request, &header, ep, &content);
     ASSERT_EQ("POST / HTTP/1.1\r\nContent-Length: 4\r\nHost: 127.0.0.1:1234\r\nFoo: Bar\r\nAccept: */*\r\nUser-Agent: brpc/1.0 curl/7.0\r\n\r\ndata", request);
 
     // user-host overwrites passed-in remote_side
     header.SetHeader("Host", "MyHost: 4321");
-    SerializeHttpRequest(&request, &header, ep, &content);
+    MakeRawHttpRequest(&request, &header, ep, &content);
     ASSERT_EQ("POST / HTTP/1.1\r\nContent-Length: 4\r\nFoo: Bar\r\nHost: MyHost: 4321\r\nAccept: */*\r\nUser-Agent: brpc/1.0 curl/7.0\r\n\r\ndata", request);
 
     // user-set accept
     header.SetHeader("accePT"/*intended uppercase*/, "blahblah");
-    SerializeHttpRequest(&request, &header, ep, &content);
+    MakeRawHttpRequest(&request, &header, ep, &content);
     ASSERT_EQ("POST / HTTP/1.1\r\nContent-Length: 4\r\naccePT: blahblah\r\nFoo: Bar\r\nHost: MyHost: 4321\r\nUser-Agent: brpc/1.0 curl/7.0\r\n\r\ndata", request);
 
     // user-set UA
     header.SetHeader("user-AGENT", "myUA");
-    SerializeHttpRequest(&request, &header, ep, &content);
+    MakeRawHttpRequest(&request, &header, ep, &content);
     ASSERT_EQ("POST / HTTP/1.1\r\nContent-Length: 4\r\naccePT: blahblah\r\nuser-AGENT: myUA\r\nFoo: Bar\r\nHost: MyHost: 4321\r\n\r\ndata", request);
 
     // user-set Authorization
     header.SetHeader("authorization", "myAuthString");
-    SerializeHttpRequest(&request, &header, ep, &content);
+    MakeRawHttpRequest(&request, &header, ep, &content);
     ASSERT_EQ("POST / HTTP/1.1\r\nContent-Length: 4\r\naccePT: blahblah\r\nuser-AGENT: myUA\r\nauthorization: myAuthString\r\nFoo: Bar\r\nHost: MyHost: 4321\r\n\r\ndata", request);
 
     // GET does not serialize content
     header.set_method(brpc::HTTP_METHOD_GET);
-    SerializeHttpRequest(&request, &header, ep, &content);
+    MakeRawHttpRequest(&request, &header, ep, &content);
     ASSERT_EQ("GET / HTTP/1.1\r\naccePT: blahblah\r\nuser-AGENT: myUA\r\nauthorization: myAuthString\r\nFoo: Bar\r\nHost: MyHost: 4321\r\n\r\n", request);
 }
 
@@ -374,7 +388,7 @@ TEST(HttpMessageTest, serialize_http_response) {
     butil::IOBuf response;
     butil::IOBuf content;
     content.append("data");
-    SerializeHttpResponse(&response, &header, &content);
+    MakeRawHttpResponse(&response, &header, &content);
     ASSERT_EQ("HTTP/1.1 200 OK\r\nContent-Length: 4\r\nFoo: Bar\r\n\r\ndata", response);
     // content is cleared.
     CHECK(content.empty());
@@ -382,11 +396,11 @@ TEST(HttpMessageTest, serialize_http_response) {
     // user-set content-length is ignored.
     content.append("data2");
     header.SetHeader("Content-Length", "100");
-    SerializeHttpResponse(&response, &header, &content);
+    MakeRawHttpResponse(&response, &header, &content);
     ASSERT_EQ("HTTP/1.1 200 OK\r\nContent-Length: 5\r\nFoo: Bar\r\n\r\ndata2", response);
 
     // null content
-    SerializeHttpResponse(&response, &header, NULL);
+    MakeRawHttpResponse(&response, &header, NULL);
     ASSERT_EQ("HTTP/1.1 200 OK\r\nFoo: Bar\r\n\r\n", response);
 }
 

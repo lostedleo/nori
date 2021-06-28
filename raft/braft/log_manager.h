@@ -27,6 +27,7 @@
 #include "braft/util.h"                          // raft_mutex_t
 #include "braft/log_entry.h"                     // LogEntry
 #include "braft/configuration_manager.h"         // ConfigurationManager
+#include "braft/storage.h"                       // Storage
 
 namespace braft {
 
@@ -40,6 +41,16 @@ struct LogManagerOptions {
     FSMCaller* fsm_caller;  // To report log error
 };
 
+struct LogManagerStatus {
+    LogManagerStatus()
+        : first_index(1), last_index(0), disk_index(0), known_applied_index(0)
+    {}
+    int64_t first_index;
+    int64_t last_index;
+    int64_t disk_index;
+    int64_t known_applied_index;
+};
+
 class SnapshotMeta;
 
 class BAIDU_CACHELINE_ALIGNMENT LogManager {
@@ -49,8 +60,10 @@ public:
     class StableClosure : public Closure {
     public:
         StableClosure() : _first_log_index(0) {}
+        void update_metric(IOMetric* metric);
     protected:
         int64_t _first_log_index;
+        IOMetric metric;
     private:
     friend class LogManager;
     friend class AppendBatcher;
@@ -123,7 +136,7 @@ public:
     void set_applied_id(const LogId& applied_id);
 
     // Check the consistency between log and snapshot, which must satisfy ANY
-    // one of the follower condition
+    // one of the following condition
     //   - Log starts from 1. OR
     //   - Log starts from a positive position and there must be a snapshot
     //     of which the last_included_id is in the range 
@@ -133,6 +146,9 @@ public:
 
     void describe(std::ostream& os, bool use_html);
 
+    // Get the internal status of LogManager.
+    void get_status(LogManagerStatus* status);
+
 private:
 friend class AppendBatcher;
     struct WaitMeta {
@@ -141,7 +157,7 @@ friend class AppendBatcher;
         int error_code;
     };
 
-    void append_to_storage(std::vector<LogEntry*>* to_append, LogId* last_id);
+    void append_to_storage(std::vector<LogEntry*>* to_append, LogId* last_id, IOMetric* metric);
 
     static int disk_thread(void* meta,
                            bthread::TaskIterator<StableClosure*>& iter);
@@ -200,7 +216,14 @@ friend class AppendBatcher;
     std::deque<LogEntry* /*FIXME*/> _logs_in_memory;
     int64_t _first_log_index;
     int64_t _last_log_index;
+    // the last snapshot's log_id
     LogId _last_snapshot_id;
+    // the virtual first log, for finding next_index of replicator, which 
+    // can avoid install_snapshot too often in extreme case where a follower's
+    // install_snapshot is slower than leader's save_snapshot
+    // [NOTICE] there should not be hole between this log_id and _last_snapshot_id,
+    // or may cause some unexpect cases
+    LogId _virtual_first_log_id;
 
     bthread::ExecutionQueueId<StableClosure*> _disk_queue;
 };

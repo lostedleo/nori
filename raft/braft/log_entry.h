@@ -19,14 +19,14 @@
 
 #include <butil/iobuf.h>                         // butil::IOBuf
 #include <butil/memory/ref_counted.h>            // butil::RefCountedThreadSafe
-#include <bvar/bvar.h>
 #include <butil/third_party/murmurhash3/murmurhash3.h>  // fmix64
 #include "braft/configuration.h"
 #include "braft/raft.pb.h"
+#include "braft/util.h"
 
 namespace braft {
 
-// Log indentifier
+// Log identifier
 struct LogId {
     LogId() : index(0), term(0) {}
     LogId(int64_t index_, int64_t term_) : index(index_), term(term_) {}
@@ -93,6 +93,10 @@ inline std::ostream& operator<<(std::ostream& os, const LogId& id) {
     os << "(index=" << id.index << ",term=" << id.term << ')';
     return os;
 }
+
+butil::Status parse_configuration_meta(const butil::IOBuf& data, LogEntry* entry);
+
+butil::Status serialize_configuration_meta(const LogEntry* entry, butil::IOBuf& data);
 
 }  //  namespace braft
 
