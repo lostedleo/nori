@@ -1,0 +1,76 @@
+project(base C CXX)
+
+option(WITH_DEBUG_SYMBOLS "With debug symbols" ON)
+
+if(WITH_DEBUG_SYMBOLS)
+  set(DEBUG_SYMBOL "-g2")
+endif()
+
+set(DYNAMIC_LIB
+  ${CMAKE_THREAD_LIBS_INIT}
+)
+
+include_directories(${CMAKE_SOURCE_DIR/base})
+
+file(GLOB_RECURSE HMM_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/algorithm/hmm/*.cpp"
+     "${CMAKE_CURRENT_SOURCE_DIR}/algorithm/hmm/*.h")
+set(SOURCES
+  ${HMM_SOURCES}
+)
+add_style_check_target(base_lint "${SOURCES}")
+
+set(CMAKE_CPP_FLAGS "${CMAKE_CPP_FLAGS} -DBTHREAD_USE_FAST_PTHREAD_MUTEX -D__const__= -D_GNU_SOURCE -DUSE_SYMBOLIZE -DNO_TCMALLOC -D__STDC_FORMAT_MACROS -D__STDC_LIMIT_MACROS -D__STDC_CONSTANT_MACROS -DBRAFT_REVISION=\\\"${BRAFT_REVISION}\\\" -D__STRICT_ANSI__")
+set(CMAKE_CPP_FLAGS "${CMAKE_CPP_FLAGS} -msse4 -msse4.2")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${CMAKE_CPP_FLAGS} ${DEBUG_SYMBOL} -O2 -g2 -pipe -Wall -W -fPIC -fstrict-aliasing -Wno-invalid-offsetof -Wno-unused-parameter -fno-omit-frame-pointer")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${CMAKE_CPP_FLAGS} ${DEBUG_SYMBOL} -O2 -pipe -Wall -W -fPIC -fstrict-aliasing -Wno-unused-parameter -fno-omit-frame-pointer")
+
+set(BASE_OUTPUT ${CMAKE_BINARY_DIR}/output_base)
+set(BASE_OUTPUT_INCLUDE ${BASE_OUTPUT}/include)
+set(BASE_OUTPUT_LIB ${BASE_OUTPUT}/lib)
+set(BASE_OUTPUT_BIN ${BASE_OUTPUT}/bin)
+include_directories(${BASE_OUTPUT_INCLUDE})
+
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${BASE_OUTPUT_LIB})
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${BASE_OUTPUT_LIB})
+set(EXECUTABLE_OUTPUT_PATH ${BASE_OUTPUT_BIN})
+
+add_library(base-shared SHARED ${SOURCES})
+add_library(base-static STATIC ${SOURCES})
+SET_TARGET_PROPERTIES(base-static PROPERTIES OUTPUT_NAME base CLEAN_DIRECT_OUTPUT 1
+  INTERFACE_INCLUDE_DIRECTORIES ${BASE_OUTPUT_INCLUDE}
+)
+SET_TARGET_PROPERTIES(base-shared PROPERTIES OUTPUT_NAME base CLEAN_DIRECT_OUTPUT 1
+  INTERFACE_INCLUDE_DIRECTORIES ${BASE_OUTPUT_INCLUDE}
+)
+
+file(COPY ${CMAKE_SOURCE_DIR}/base/
+  DESTINATION ${BASE_OUTPUT_INCLUDE}
+  FILES_MATCHING
+  PATTERN "*.h"
+  PATTERN "*.hpp"
+  PATTERN "test" EXCLUDE
+  PATTERN "tools" EXCLUDE
+  PATTERN "example" EXCLUDE
+  PATTERN "docs" EXCLUDE
+)
+
+install(DIRECTORY ${BASE_OUTPUT_INCLUDE}
+  DESTINATION include
+  FILES_MATCHING
+  PATTERN "*.h"
+  PATTERN "*.hpp"
+)
+
+install(TARGETS base-static
+        RUNTIME DESTINATION bin
+        LIBRARY DESTINATION lib${LIBSUFFIX}
+        ARCHIVE DESTINATION lib${LIBSUFFIX}
+)
+
+install(TARGETS base-shared
+        RUNTIME DESTINATION bin
+        LIBRARY DESTINATION lib${LIBSUFFIX}
+        ARCHIVE DESTINATION lib${LIBSUFFIX}
+)
+
+add_subdirectory(algorithm/test)

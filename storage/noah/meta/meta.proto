@@ -1,0 +1,211 @@
+syntax="proto3";
+package noah.meta;
+option cc_generic_services = true;
+
+enum Type {
+  PING = 0;
+  PULL = 1;
+  INIT = 2;
+  LISTTABLE = 3;
+  LISTNODE = 4;
+  LISTMETA = 5;
+  DROPTABLE = 6;
+  DOWNNODES = 7;
+  SETMASTER = 8;
+  ADDSLAVE = 9;
+  REMOVESLAVE = 10;
+  MIGRATE = 11;
+}
+
+enum Status {
+  OK = 0;
+  EEPOCH = 1;   // error epoch
+  ERROR = 2;
+  REDIRECT = 3;
+  NOTFOUND = 4;
+  EXIST = 5;
+  NOTSUPPORT = 6;
+  UNKNOWN = 255;
+}
+
+enum PStatus {
+  ACTIVE = 0;
+  SLOWDOWN = 1;
+  STUCK = 2;
+}
+
+enum NodeState {
+  UP = 0;
+  DOWN = 1;
+}
+
+enum Role {
+  MASTER = 0;
+  SLAVE = 1;
+}
+
+enum MigrateStatus {
+  MIGRATING = 0;
+  CANCELED = 1;
+  COMPLETED = 2;
+}
+
+message Version {
+  int64 epoch = 1;
+  int64 version = 2;
+}
+
+message Node {
+  string ip = 1;
+  int32  port = 2;
+}
+
+message NodeStatus {
+  Node node = 1;
+  NodeState status = 2;
+}
+
+message MetaNodes {
+  Node leader = 1;
+  repeated Node followers = 2;
+}
+
+message Partition {
+  int32 id = 1;
+  PStatus status = 2;
+  Node master = 3;
+  repeated Node slaves = 4;
+}
+
+message Table {
+  string name = 1;
+  repeated Partition partitions = 2;
+  int32 duplicate_num = 3;
+  int64 capacity = 4;
+  int64 version = 5;
+}
+
+message BasicUnit {
+  string name = 1;
+  int32 id = 2;
+  Node node = 3;
+}
+
+message MigrateUnit {
+  string name = 1;
+  int32 id = 2;
+  Node fault = 3;
+  Node src = 4;
+  Node dst = 5;
+  Role role = 6;
+}
+
+message NodeSnap {
+  repeated NodeStatus nodes = 1;
+}
+
+message TableSnap {
+  map<string, Table> table_info = 1;
+}
+
+message MetaCmdRequest {
+  Type type = 1;
+  Version version = 2;
+
+  // Ping
+  message Ping {
+    Node node = 1;
+  }
+  Ping ping = 3;
+
+  // Pull
+  message Pull {
+    Node node = 1;
+    repeated string names = 2;
+    bool all = 3;
+  }
+  Pull pull = 4;
+
+  // Init
+  message Init {
+    Table table = 1;
+  }
+  Init init = 5;
+
+  // DropTable
+  message DropTable {
+    repeated string names = 1;
+  }
+  DropTable drop_table = 6;
+
+  message DownNodes {
+    repeated Node nodes = 1;
+  }
+  DownNodes down_nodes = 7;
+
+  // SetMaster
+  message SetMaster {
+    BasicUnit basic = 1;
+  }
+  SetMaster set_master = 8;
+
+  // AddSlave
+  message AddSlave {
+    BasicUnit basic = 1;
+  }
+  AddSlave add_slave = 9;
+
+  // RemoveSalve
+  message RemoveSlave {
+    BasicUnit basic = 1;
+  }
+  RemoveSlave remove_slave = 10;
+
+  // Migrate
+  message Migrate {
+    MigrateUnit unit = 1;
+  }
+  Migrate migrate = 11;
+}
+
+message MetaCmdResponse {
+  Version version = 1;
+  Status status = 2;
+  string msg = 3;
+  string redirect = 4;
+
+  // Ping
+  message Ping {
+    MigrateUnit migrate = 1;
+  }
+  Ping ping = 5;
+
+  // Pull
+  message Pull {
+    repeated Table info = 1;
+    repeated NodeStatus node_status = 2;
+  }
+  Pull pull = 6;
+
+  // ListTable
+  message ListTable {
+    repeated string tables = 1;
+  }
+  ListTable list_table = 7;
+
+  // ListNode
+  message ListNode {
+    repeated NodeStatus nodes = 1;
+  }
+  ListNode list_node = 8;
+
+  // ListMeta
+  message ListMeta {
+    MetaNodes nodes = 1;
+  }
+  ListMeta list_meta = 9;
+}
+
+service MetaService {
+  rpc MetaCmd(MetaCmdRequest) returns (MetaCmdResponse);
+}

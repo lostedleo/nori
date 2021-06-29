@@ -1,0 +1,7 @@
+--conf=127.0.0.1:8100:0
+--internal_port=8081
+--data_path=../data
+--log_dir=../log
+--stderrthreshold=3
+--auto_migrate=false
+--eth=eth1

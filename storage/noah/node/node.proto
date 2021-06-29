@@ -1,0 +1,152 @@
+syntax="proto3";
+option cc_generic_services = true;
+
+package noah.node;
+
+enum Status {
+  OK = 0;
+  ERROR = 1;
+  EEPOCH = 2;   // error epoch
+  NOTFOUND = 3;
+  EXIST = 4;
+  NOTMASTER = 5;
+  NOTACTIVE = 6;
+  MIGRATING = 7;
+  UNKNOWN = 255;
+}
+
+message ValueInfo {
+  bytes value = 1;
+  int32 expired = 2;
+}
+
+message CreateTableRequest {
+  int64 epoch = 1;
+  int64 version = 2;
+  string table_name = 3;
+  int32 parition_num = 4;
+  int32 duplicate_num = 5;
+  int64 capacity = 6;
+}
+
+message CreateTableResponse {
+  Status status = 1;
+  int64 epoch = 2;
+  int64 version = 3;
+}
+
+message GetRequest {
+  int64 epoch = 1;
+  int64 version = 2;
+  string table_name = 3;
+  int32 id = 4;
+  repeated string keys = 5;
+}
+
+message GetResponse {
+  Status status = 1;
+  repeated bytes values = 2;
+}
+
+message SetRequest {
+  int64 epoch = 1;
+  int64 version = 2;
+  string table_name = 3;
+  int32 id = 4;
+  map<string, bytes> key_values = 5;
+  int32 expired = 6;
+}
+
+message SetResponse {
+  Status status = 1;
+}
+
+message DelRequest {
+  int64 epoch = 1;
+  int64 version = 2;
+  string table_name = 3;
+  int32 id = 4;
+  repeated string keys = 5;
+}
+
+message DelResponse {
+  Status status = 1;
+}
+
+message ListRequest {
+  int64 epoch = 1;
+  int64 version = 2;
+  string table_name = 3;
+  int32 id = 4;
+  int32 offset = 5;
+  int32 size = 6;
+  string offset_key = 7;
+}
+
+message ListResponse {
+  Status status = 1;
+  int32 total_size = 2;
+  bool end = 3;
+  map<string, bytes> key_values = 4;
+  string key = 5;
+}
+
+message MigrateRequest {
+  int64 epoch = 1;
+  int64 version = 2;
+  string table_name = 3;
+  int32 id = 4;
+  map<string, bytes> key_values = 5;
+  bool expired = 6;
+}
+
+message MigrateResponse {
+  Status status = 1;
+}
+
+message ComboGetRequest {
+  repeated GetRequest requests = 1;
+}
+
+message ComboGetResponse {
+  repeated GetResponse responses = 1;
+}
+
+message ComboSetRequest {
+  repeated SetRequest requests = 1;
+}
+
+message ComboSetResponse {
+  repeated SetResponse responses = 1;
+}
+
+message ComboDelRequest {
+  repeated DelRequest requests = 1;
+}
+
+message ComboDelResponse {
+  repeated DelResponse responses = 1;
+}
+
+message ComboListRequest {
+  repeated ListRequest requests = 1;
+}
+
+message ComboListResponse {
+  repeated ListResponse responses = 1;
+}
+
+service NodeService {
+  rpc CreateTable(CreateTableRequest) returns (CreateTableResponse);
+  rpc Get(GetRequest) returns (GetResponse);
+  rpc Set(SetRequest) returns (SetResponse);
+  rpc Del(DelRequest) returns (DelResponse);
+  rpc List(ListRequest) returns (ListResponse);
+  rpc Migrate(MigrateRequest) returns (MigrateResponse);
+
+  // for batch operations
+  rpc ComboGet(ComboGetRequest) returns (ComboGetResponse);
+  rpc ComboSet(ComboSetRequest) returns (ComboSetResponse);
+  rpc ComboDel(ComboDelRequest) returns (ComboDelResponse);
+  rpc ComboList(ComboListRequest) returns (ComboListResponse);
+}

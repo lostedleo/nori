@@ -1,0 +1,8 @@
+--internal_port=8080
+--meta_conf=10.49.105.229:8100:0,127.0.0.1:8100:0
+--log_dir=../log
+--eth=eth1
+--stderrthreshold=3
+--open_persistence=false
+--free_memory_to_system_interval=3600
+--open_statistic=true
