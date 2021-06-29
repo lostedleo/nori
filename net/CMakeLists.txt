@@ -56,21 +56,15 @@ execute_process(
   OUTPUT_VARIABLE BRPC_REVISION
 )
 
+set(GFLAGS_NS google)
 if(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
     include(CheckFunctionExists)
     CHECK_FUNCTION_EXISTS(clock_gettime HAVE_CLOCK_GETTIME)
     if(NOT HAVE_CLOCK_GETTIME)
         set(DEFINE_CLOCK_GETTIME "-DNO_CLOCK_GETTIME_IN_MAC")
     endif()
-    set(CMAKE_CPP_FLAGS "${CMAKE_CPP_FLAGS} -Wno-unused-variable -Wno-deprecated-declarations -Wno-inconsistent-missing-override")
+    set(CMAKE_CPP_FLAGS "${CMAKE_CPP_FLAGS} -Wno-error -Wno-sign-compare -Wno-unused-variable -Wno-deprecated-declarations -Wno-inconsistent-missing-override")
 endif()
-
-set(GFLAGS_NS google)
-set(CMAKE_CPP_FLAGS "${CMAKE_CPP_FLAGS} ${DEFINE_CLOCK_GETTIME} -DBRPC_WITH_GLOG=${WITH_GLOG_VAL} -DGFLAGS_NS=${GFLAGS_NS}")
-set(CMAKE_CPP_FLAGS "${CMAKE_CPP_FLAGS} -DBTHREAD_USE_FAST_PTHREAD_MUTEX -D__const__= -D_GNU_SOURCE -DUSE_SYMBOLIZE -D__STDC_FORMAT_MACROS -D__STDC_LIMIT_MACROS -D__STDC_CONSTANT_MACROS -DBRPC_REVISION=\\\"${BRPC_REVISION}\\\" -D__STRICT_ANSI__")
-set(CMAKE_CPP_FLAGS "${CMAKE_CPP_FLAGS} ${DEBUG_SYMBOL} ${THRIFT_CPP_FLAG}")
-set(CMAKE_CXX_FLAGS "${CMAKE_CPP_FLAGS} -O2 -pipe -Wall -W -fPIC -fstrict-aliasing -Wno-invalid-offsetof -Wno-unused-parameter -fno-omit-frame-pointer")
-set(CMAKE_C_FLAGS "${CMAKE_CPP_FLAGS} -O2 -pipe -Wall -W -fPIC -fstrict-aliasing -Wno-unused-parameter -fno-omit-frame-pointer")
 
 if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
   #required by butil/crc32.cc to boost performance for 10x
@@ -84,6 +78,12 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
       set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-aligned-new")
   endif()
 endif()
+
+set(CMAKE_CPP_FLAGS "${CMAKE_CPP_FLAGS} ${DEFINE_CLOCK_GETTIME} -DBRPC_WITH_GLOG=${WITH_GLOG_VAL} -DGFLAGS_NS=${GFLAGS_NS}")
+set(CMAKE_CPP_FLAGS "${CMAKE_CPP_FLAGS} -DBTHREAD_USE_FAST_PTHREAD_MUTEX -D__const__= -D_GNU_SOURCE -DUSE_SYMBOLIZE -D__STDC_FORMAT_MACROS -D__STDC_LIMIT_MACROS -D__STDC_CONSTANT_MACROS -DBRPC_REVISION=\\\"${BRPC_REVISION}\\\" -D__STRICT_ANSI__")
+set(CMAKE_CPP_FLAGS "${CMAKE_CPP_FLAGS} ${DEBUG_SYMBOL} ${THRIFT_CPP_FLAG}")
+set(CMAKE_CXX_FLAGS "${CMAKE_CPP_FLAGS} -O2 -pipe -Wall -W -fPIC -fstrict-aliasing -Wno-invalid-offsetof -Wno-unused-parameter -fno-omit-frame-pointer")
+set(CMAKE_C_FLAGS "${CMAKE_CPP_FLAGS} -O2 -pipe -Wall -W -fPIC -fstrict-aliasing -Wno-unused-parameter -fno-omit-frame-pointer")
 
 if(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
   set(OPENSSL_ROOT_DIR
@@ -111,7 +111,6 @@ set(DYNAMIC_LIB
   dl
   z
   )
-
 
 if(BRPC_WITH_GLOG)
   set(DYNAMIC_LIB ${DYNAMIC_LIB} glog)
@@ -207,6 +206,7 @@ set(BUTIL_SOURCES
   ${CMAKE_SOURCE_DIR}/net/butil/strings/utf_string_conversion_utils.cc
   ${CMAKE_SOURCE_DIR}/net/butil/strings/utf_string_conversions.cc
   ${CMAKE_SOURCE_DIR}/net/butil/synchronization/cancellation_flag.cc
+  ${CMAKE_SOURCE_DIR}/net/butil/synchronization/rw_mutex.cc
   ${CMAKE_SOURCE_DIR}/net/butil/synchronization/condition_variable_posix.cc
   ${CMAKE_SOURCE_DIR}/net/butil/synchronization/waitable_event_posix.cc
   ${CMAKE_SOURCE_DIR}/net/butil/threading/non_thread_safe_impl.cc

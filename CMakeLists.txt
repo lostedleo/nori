@@ -16,7 +16,7 @@
 
 # URLs for each downloaded or bundled third-party dependency.
 #############################################################
-cmake_minimum_required(VERSION 3.10.0)
+cmake_minimum_required(VERSION 3.10...3.21)
 
 project(NORI)
 
@@ -58,5 +58,6 @@ use_cxx11()
 # In-tree dependencies.
 #######################
 add_subdirectory(third_party)
+add_subdirectory(base)
 add_subdirectory(net)
 add_subdirectory(raft)

@@ -22,8 +22,13 @@ namespace butil {
 // the lock, can aquaire the lock again without being blocked.
 RWMutex::RWMutex() {
   CHECK_PTHREAD_CALL(pthread_rwlockattr_init(&raw_rwlock_attr_));
+#if defined(OS_LINUX)
   CHECK_PTHREAD_CALL(
-      pthread_rwlockattr_setkind_np(&raw_rwlock_attr_, PTHREAD_MUTEX_RECURSIVE_NP));
+      pthread_rwlockattr_setkind_np(&raw_rwlock_attr_, PTHREAD_RWLOCK_PREFER_READER_NP));
+#elif defined(OS_MACOSX)
+  CHECK_PTHREAD_CALL(
+      pthread_rwlockattr_setpshared(&raw_rwlock_attr_, PTHREAD_PROCESS_SHARED));
+#endif
 
   CHECK_PTHREAD_CALL(pthread_rwlock_init(&raw_rwlock_, &raw_rwlock_attr_));
 }
