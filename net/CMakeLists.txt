@@ -117,7 +117,7 @@ if(BRPC_WITH_GLOG)
 endif()
 
 if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
-  set(DYNAMIC_LIB ${DYNAMIC_LIB} rt)
+  set(DYNAMIC_LIB ${DYNAMIC_LIB} rt unwind snappy)
 elseif(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
   set(DYNAMIC_LIB ${DYNAMIC_LIB}
       pthread

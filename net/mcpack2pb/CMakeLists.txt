@@ -6,4 +6,8 @@ set(protoc_gen_mcpack_SOURCES
   )
 
 add_executable(protoc-gen-mcpack ${protoc_gen_mcpack_SOURCES})
-target_link_libraries(protoc-gen-mcpack brpc-shared)
+if (BUILD_SHARED_LIBS)
+  target_link_libraries(protoc-gen-mcpack brpc-shared glog)
+else ()
+  target_link_libraries(protoc-gen-mcpack brpc-static glog)
+endif ()

@@ -63,7 +63,7 @@ endif ()
 # steps by giving it a noop command to run instead.
 set(CMAKE_NOOP ${CMAKE_COMMAND} -E echo)
 set(INSTALL_DIR ${CMAKE_SOURCE_DIR}/third_party_install)
-set(DEPS_CONFIG --prefix=${INSTALL_DIR} --with-pic)
+set(DEPS_CONFIG --with-pic)
 if(BUILD_SHARED_LIBS)
 else ()
   list(APPEND DEPS_CONFIG --without-shared)
@@ -288,9 +288,15 @@ ExternalProject_Add(
 ################################
 EXTERNAL(gperftools ${GPERFTOOLS_VERSION} ${CMAKE_CURRENT_BINARY_DIR})
 add_library(gperftools ${LIBRARY_LINKAGE} IMPORTED GLOBAL)
-add_dependencies(gperftools ${GPERFTOOLS_TARGET})
 
-set(GPERFTOOLS_CONFIG_CMD ${GPERFTOOLS_ROOT}/configure ${DEPS_CONFIG})
+if (APPLE)
+  add_dependencies(gperftools ${GPERFTOOLS_TARGET})
+  set(GPERFTOOLS_CONFIG_CMD ${GPERFTOOLS_ROOT}/configure ${DEPS_CONFIG})
+else ()
+  add_dependencies(gperftools ${GPERFTOOLS_TARGET} unwind)
+  set(GPERFTOOLS_CONFIG_CMD ${GPERFTOOLS_ROOT}/configure ${DEPS_CONFIG} --enable-libunwind)
+endif ()
+
 
 set_target_properties(
   gperftools PROPERTIES
