@@ -1,4 +1,3 @@
-// Copyright (c) 2018 tencent.com, Inc All Rights Reserverd
 // Author: Zhenwei Zhu losted.leo@gmail.com
 
 #ifndef NOAH_COMMON_META_CLIENT_H_
