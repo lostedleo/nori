@@ -1,11 +1,11 @@
 // Copyright (c) 2018 Baidu.com, Inc. All Rights Reserved
-// 
+//
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
-// 
+//
 //     http://www.apache.org/licenses/LICENSE-2.0
-// 
+//
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -26,7 +26,7 @@
 DEFINE_bool(check_term, true, "Check if the leader changed to another term");
 DEFINE_bool(disable_cli, false, "Don't allow raft_cli access this node");
 DEFINE_bool(log_applied_task, false, "Print notice log when a task is applied");
-DEFINE_int32(election_timeout_ms, 5000, 
+DEFINE_int32(election_timeout_ms, 5000,
             "Start election in such milliseconds if disconnect with the leader");
 DEFINE_int32(port, 8200, "Listen port of this peer");
 DEFINE_int32(snapshot_interval, 30, "Interval between each snapshot");
@@ -40,7 +40,7 @@ class Block;
 // Implements Closure which encloses RPC stuff
 class BlockClosure : public braft::Closure {
 public:
-    BlockClosure(Block* block, 
+    BlockClosure(Block* block,
                  const BlockRequest* request,
                  BlockResponse* response,
                  butil::IOBuf* data,
@@ -48,7 +48,7 @@ public:
         : _block(block)
         , _request(request)
         , _response(response)
-        , _data(data)   
+        , _data(data)
         , _done(done) {}
     ~BlockClosure() {}
 
@@ -126,7 +126,7 @@ public:
         // peers in the group receive this request as well.
         // Notice that _value can't be modified in this routine otherwise it
         // will be inconsistent with others in this group.
-        
+
         // Serialize request to IOBuf
         const int64_t term = _leader_term.load(butil::memory_order_relaxed);
         if (term < 0) {
@@ -159,7 +159,7 @@ public:
 
     void read(const BlockRequest *request, BlockResponse* response,
               butil::IOBuf* buf) {
-        // In consideration of consistency. GetRequest to follower should be 
+        // In consideration of consistency. GetRequest to follower should be
         // rejected.
         if (!is_leader()) {
             // This node is a follower or it's not up-to-date. Redirect to
@@ -192,7 +192,7 @@ public:
         response->set_success(true);
     }
 
-    bool is_leader() const 
+    bool is_leader() const
     { return _leader_term.load(butil::memory_order_acquire) > 0; }
 
     // Shut this node down.
@@ -227,7 +227,7 @@ private:
                 _fd = -1;
             }
         }
-        
+
         int _fd;
     };
 
@@ -251,7 +251,7 @@ friend class BlockClosure;
 
     // @braft::StateMachine
     void on_apply(braft::Iterator& iter) {
-        // A batch of tasks are committed, which must be processed through 
+        // A batch of tasks are committed, which must be processed through
         // |iter|
         for (; iter.valid(); iter.next()) {
             BlockResponse* response = NULL;
@@ -305,7 +305,7 @@ friend class BlockClosure;
             // The purpose of following logs is to help you understand the way
             // this StateMachine works.
             // Remove these logs in performance-sensitive servers.
-            LOG_IF(INFO, FLAGS_log_applied_task) 
+            LOG_IF(INFO, FLAGS_log_applied_task)
                     << "Write " << data.size() << " bytes"
                     << " from offset=" << offset
                     << " at log_index=" << iter.index();
@@ -335,7 +335,11 @@ friend class BlockClosure;
         // Sync buffered data before
         int rc = 0;
         LOG(INFO) << "Saving snapshot to " << snapshot_path;
-        for (; (rc = ::fdatasync(sa->fd->fd())) < 0 && errno == EINTR;) {}
+#ifdef __APPLE__
+        for (; (rc = fcntl(sa->fd->fd(), F_FULLFSYNC)) < 0 && errno == EINTR;) {}
+#else
+        for (; (rc = fdatasync(sa->fd->fd())) < 0 && errno == EINTR;) {}
+#endif
         if (rc < 0) {
             sa->done->status().set_error(EIO, "Fail to sync fd=%d : %m",
                                          sa->fd->fd());
@@ -346,7 +350,7 @@ friend class BlockClosure;
             sa->done->status().set_error(EIO, "Fail to link data : %m");
             return NULL;
         }
-        
+
         // Snapshot is a set of files in raft. Add the only file into the
         // writer here.
         if (sa->writer->add_file("data") != 0) {
@@ -474,7 +478,7 @@ int main(int argc, char* argv[]) {
     example::BlockServiceImpl service(&block);
 
     // Add your service into RPC rerver
-    if (server.AddService(&service, 
+    if (server.AddService(&service,
                           brpc::SERVER_DOESNT_OWN_SERVICE) != 0) {
         LOG(ERROR) << "Fail to add service";
         return -1;
@@ -491,7 +495,7 @@ int main(int argc, char* argv[]) {
     // It's recommended to start the server before Block is started to avoid
     // the case that it becomes the leader while the service is unreacheable by
     // clients.
-    // Notice that default options of server are used here. Check out details 
+    // Notice that default options of server are used here. Check out details
     // from the doc of brpc if you would like change some options
     if (server.Start(FLAGS_port, NULL) != 0) {
         LOG(ERROR) << "Fail to start Server";

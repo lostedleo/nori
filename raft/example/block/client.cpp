@@ -123,6 +123,7 @@ int main(int argc, char* argv[]) {
 
     std::vector<bthread_t> tids;
     tids.resize(FLAGS_thread_num);
+#if defined(OS_LINUX)
     if (!FLAGS_use_bthread) {
         for (int i = 0; i < FLAGS_thread_num; ++i) {
             if (pthread_create(&tids[i], NULL, sender, NULL) != 0) {
@@ -138,6 +139,14 @@ int main(int argc, char* argv[]) {
             }
         }
     }
+#elif defined(OS_MACOSX)
+    for (int i = 0; i < FLAGS_thread_num; ++i) {
+        if (bthread_start_background(&tids[i], NULL, sender, NULL) != 0) {
+            LOG(ERROR) << "Fail to create bthread";
+            return -1;
+        }
+    }
+#endif
 
     while (!brpc::IsAskedToQuit()) {
         sleep(1);
@@ -149,6 +158,7 @@ int main(int argc, char* argv[]) {
     }
 
     LOG(INFO) << "Block client is going to quit";
+#if defined(OS_LINUX)
     for (int i = 0; i < FLAGS_thread_num; ++i) {
         if (!FLAGS_use_bthread) {
             pthread_join(tids[i], NULL);
@@ -156,6 +166,11 @@ int main(int argc, char* argv[]) {
             bthread_join(tids[i], NULL);
         }
     }
+#elif defined(OS_MACOSX)
+    for (int i = 0; i < FLAGS_thread_num; ++i) {
+        bthread_join(tids[i], NULL);
+    }
+#endif
 
     return 0;
 }

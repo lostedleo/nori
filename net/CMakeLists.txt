@@ -24,7 +24,6 @@ project(net C CXX)
 # get third_party property
 # get protobuf include and protoc path
 get_target_property(PROTOBUF_INCLUDE_DIR protobuf INTERFACE_INCLUDE_DIRECTORIES)
-get_target_property(PROTOBUF_LIB protobuf IMPORTED_LOCATION)
 
 option(BRPC_WITH_GLOG "With glog" ON)
 option(DEBUG "Print debug logs" OFF)
@@ -63,7 +62,7 @@ if(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
   if(NOT HAVE_CLOCK_GETTIME)
     set(DEFINE_CLOCK_GETTIME "-DNO_CLOCK_GETTIME_IN_MAC")
   endif()
-  set(CMAKE_CPP_FLAGS "${CMAKE_CPP_FLAGS} -Wno-sign-compare -Wno-deprecated-declarations -Wno-inconsistent-missing-override")
+  set(CMAKE_CPP_FLAGS "${CMAKE_CPP_FLAGS} -Wno-unused-local-typedef -Wno-sign-compare -Wno-inconsistent-missing-override")
 endif()
 
 if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
@@ -82,7 +81,7 @@ endif()
 set(CMAKE_CPP_FLAGS "${CMAKE_CPP_FLAGS} ${DEFINE_CLOCK_GETTIME} -DBRPC_WITH_GLOG=${WITH_GLOG_VAL} -DGFLAGS_NS=${GFLAGS_NS}")
 set(CMAKE_CPP_FLAGS "${CMAKE_CPP_FLAGS} -DBTHREAD_USE_FAST_PTHREAD_MUTEX -D__const__= -D_GNU_SOURCE -DUSE_SYMBOLIZE -D__STDC_FORMAT_MACROS -D__STDC_LIMIT_MACROS -D__STDC_CONSTANT_MACROS -DBRPC_REVISION=\\\"${BRPC_REVISION}\\\" -D__STRICT_ANSI__")
 set(CMAKE_CPP_FLAGS "${CMAKE_CPP_FLAGS} ${DEBUG_SYMBOL} ${THRIFT_CPP_FLAG}")
-set(CMAKE_CXX_FLAGS "${CMAKE_CPP_FLAGS} -O2 -pipe -Wall -W -fPIC -fstrict-aliasing -Wno-unused-local-typedef -Wno-unused-variable -Wno-invalid-offsetof -Wno-unused-parameter -fno-omit-frame-pointer")
+set(CMAKE_CXX_FLAGS "${CMAKE_CPP_FLAGS} -O2 -pipe -Wall -W -fPIC -fstrict-aliasing -Wno-deprecated-declarations -Wno-unused-variable -Wno-invalid-offsetof -Wno-unused-parameter -fno-omit-frame-pointer")
 set(CMAKE_C_FLAGS "${CMAKE_CPP_FLAGS} -O2 -pipe -Wall -W -fPIC -fstrict-aliasing -Wno-unused-parameter -fno-omit-frame-pointer")
 
 if(CMAKE_SYSTEM_NAME STREQUAL "Darwin")

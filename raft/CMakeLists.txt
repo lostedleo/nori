@@ -5,54 +5,6 @@ if(BRPC_WITH_GLOG)
   set(WITH_GLOG_VAL "1")
 endif()
 
-set(GFLAGS_NS google)
-set(BRPC_LIB brpc-static)
-set(DYNAMIC_LIB
-  ${CMAKE_THREAD_LIBS_INIT}
-  ${BRPC_LIB}
-  ${OPENSSL_LIBRARIES}
-  ${OPENSSL_CRYPTO_LIBRARY}
-  gflags
-  protobuf
-  leveldb
-  dl
-  z
-)
-
-if(BRPC_WITH_GLOG)
-  set(DYNAMIC_LIB ${DYNAMIC_LIB} glog)
-endif()
-
-if(LEVELDB_WITH_SNAPPY)
-  find_library(SNAPPY_LIB NAMES snappy)
-  set(DYNAMIC_LIB ${DYNAMIC_LIB} ${SNAPPY_LIB})
-endif()
-
-if(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
-  set(DYNAMIC_LIB ${DYNAMIC_LIB}
-    pthread
-    "-framework CoreFoundation"
-    "-framework CoreGraphics"
-    "-framework CoreData"
-    "-framework CoreText"
-    "-framework Security"
-    "-framework Foundation"
-    "-Wl,-U,_MallocExtension_ReleaseFreeMemory"
-    "-Wl,-U,_ProfilerStart"
-    "-Wl,-U,_ProfilerStop"
-    )
-else()
-  set(DYNAMIC_LIB ${DYNAMIC_LIB} rt)
-endif()
-
-if(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
-    set(OPENSSL_ROOT_DIR
-        "/usr/local/opt/openssl"    # Homebrew installed OpenSSL
-        )
-endif()
-
-include(FindOpenSSL)
-
 set(BRAFT_OUTPUT ${CMAKE_BINARY_DIR}/output_braft)
 set(BRAFT_OUTPUT_INCLUDE ${BRAFT_OUTPUT}/include)
 set(BRAFT_OUTPUT_LIB ${BRAFT_OUTPUT}/lib)
@@ -122,7 +74,7 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
   endif()
 endif()
 
-set(CMAKE_CPP_FLAGS "${CMAKE_CPP_FLAGS} ${DEFINE_CLOCK_GETTIME} -DBRPC_WITH_GLOG=${WITH_GLOG_VAL} -DGFLAGS_NS=${GFLAGS_NS}")
+set(CMAKE_CPP_FLAGS "${CMAKE_CPP_FLAGS} ${DEFINE_CLOCK_GETTIME} -DBRPC_WITH_GLOG=${WITH_GLOG_VAL} -DGFLAGS_NS=google")
 set(CMAKE_CPP_FLAGS "${CMAKE_CPP_FLAGS} -DBTHREAD_USE_FAST_PTHREAD_MUTEX -D__const__= -D_GNU_SOURCE -DUSE_SYMBOLIZE -DNO_TCMALLOC -D__STDC_FORMAT_MACROS -D__STDC_LIMIT_MACROS -D__STDC_CONSTANT_MACROS -DBRAFT_REVISION=\\\"${BRAFT_REVISION}\\\" -D__STRICT_ANSI__")
 set(CMAKE_CPP_FLAGS "${CMAKE_CPP_FLAGS} ${DEBUG_SYMBOL}")
 set(CMAKE_CXX_FLAGS "${CMAKE_CPP_FLAGS} -O2 -pipe -Wall -W -fPIC -fstrict-aliasing -Wno-deprecated-copy -Wno-sign-compare -Wno-invalid-offsetof -Wno-unused-parameter -fno-omit-frame-pointer")
@@ -164,7 +116,7 @@ if(BUILD_UNIT_TESTS)
   add_subdirectory(test)
 endif()
 add_subdirectory(tools)
-if(BUILD_EXAMPLES AND LINUX)
+if(BUILD_EXAMPLES)
   add_subdirectory(example)
 endif()
 

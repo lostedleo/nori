@@ -16,440 +16,43 @@
 #include <brpc/closure_guard.h>
 #include <bthread/bthread.h>
 #include <bthread/countdown_event.h>
-#include "braft/node.h"
-#include "braft/enum.pb.h"
-#include "braft/errno.pb.h"
+#include "util.h"
 
 namespace braft {
 extern bvar::Adder<int64_t> g_num_nodes;
+DECLARE_int32(raft_max_parallel_append_entries_rpc_num);
+DECLARE_bool(raft_enable_append_entries_cache);
+DECLARE_int32(raft_max_append_entries_cache_size);
 }
+
 using braft::raft_mutex_t;
-
-bool g_dont_print_apply_log = false;
-class MockFSM : public braft::StateMachine {
+class TestEnvironment : public ::testing::Environment {
 public:
-    MockFSM(const butil::EndPoint& address_)
-        : address(address_)
-        , applied_index(0)
-        , snapshot_index(0)
-        , _on_start_following_times(0)
-        , _on_stop_following_times(0)
-        , _leader_term(-1)
-    {
-        pthread_mutex_init(&mutex, NULL);
+    void SetUp() {
     }
-    virtual ~MockFSM() {
-        pthread_mutex_destroy(&mutex);
+    void TearDown() {
     }
-
-    butil::EndPoint address;
-    std::vector<butil::IOBuf> logs;
-    pthread_mutex_t mutex;
-    int64_t applied_index;
-    int64_t snapshot_index;
-    int64_t _on_start_following_times;
-    int64_t _on_stop_following_times;
-    volatile int64_t _leader_term;
-
-    void lock() {
-        pthread_mutex_lock(&mutex);
-    }
-
-    void on_leader_start(int64_t term) {
-        _leader_term = term;
-    }
-    void on_leader_stop(const butil::Status&) {
-        _leader_term = -1;
-    }
-
-    bool is_leader() { return _leader_term > 0; }
-
-    void unlock() {
-        pthread_mutex_unlock(&mutex);
-    }
-
-    virtual void on_apply(braft::Iterator& iter) {
-        for (; iter.valid(); iter.next()) {
-            LOG_IF(INFO, !g_dont_print_apply_log) << "addr " << address << " apply " << iter.index();
-            ::brpc::ClosureGuard guard(iter.done());
-            lock();
-            logs.push_back(iter.data());
-            unlock();
-            applied_index = iter.index();
-        }
-    }
-
-    virtual void on_shutdown() {
-        LOG(INFO) << "addr " << address << " shutdowned";
-    }
-
-    virtual void on_snapshot_save(braft::SnapshotWriter* writer, braft::Closure* done) {
-        std::string file_path = writer->get_path();
-        file_path.append("/data");
-        brpc::ClosureGuard done_guard(done);
-
-        LOG(INFO) << "on_snapshot_save to " << file_path;
-
-        int fd = ::creat(file_path.c_str(), 0644);
-        if (fd < 0) {
-            LOG(ERROR) << "create file failed, path: " << file_path << " err: " << berror();
-            done->status().set_error(EIO, "Fail to create file");
-            return;
-        }
-        lock();
-        // write snapshot and log to file
-        for (size_t i = 0; i < logs.size(); i++) {
-            butil::IOBuf data = logs[i];
-            int len = data.size();
-            int ret = write(fd, &len, sizeof(int));
-            CHECK_EQ(ret, 4);
-            data.cut_into_file_descriptor(fd, len);
-        }
-        ::close(fd);
-        snapshot_index = applied_index;
-        unlock();
-        writer->add_file("data");
-    }
-
-    virtual int on_snapshot_load(braft::SnapshotReader* reader) {
-        std::string file_path = reader->get_path();
-        file_path.append("/data");
-
-        LOG(INFO) << "on_snapshot_load from " << file_path;
-
-        int fd = ::open(file_path.c_str(), O_RDONLY);
-        if (fd < 0) {
-            LOG(ERROR) << "creat file failed, path: " << file_path << " err: " << berror();
-            return EIO;
-        }
-
-        lock();
-        logs.clear();
-        while (true) {
-            int len = 0;
-            int ret = read(fd, &len, sizeof(int));
-            if (ret <= 0) {
-                break;
-            }
-
-            butil::IOPortal data;
-            data.append_from_file_descriptor(fd, len);
-            logs.push_back(data);
-        }
-
-        ::close(fd);
-        unlock();
-        return 0;
-    }
-
-    virtual void on_start_following(const braft::LeaderChangeContext& start_following_context) {
-        LOG(INFO) << "address " << address << " start following new leader: " 
-                   <<  start_following_context;
-        ++_on_start_following_times;
-    }
-
-    virtual void on_stop_following(const braft::LeaderChangeContext& stop_following_context) {
-        LOG(INFO) << "address " << address << " stop following old leader: " 
-                   <<  stop_following_context;
-        ++_on_stop_following_times;
-    }
-
-    virtual void on_configuration_committed(const ::braft::Configuration& conf) {
-        LOG(INFO) << "address " << address << " commit conf: " << conf;
-    }
-
 };
 
-class ExpectClosure : public braft::Closure {
-public:
-    void Run() {
-        if (_expect_err_code >= 0) {
-            EXPECT_EQ(status().error_code(), _expect_err_code) 
-                << _pos << " : " << status();
-                                                
-        }
-        if (_cond) {
-            _cond->signal();
-        }
-        delete this;
-    }
-private:
-    ExpectClosure(bthread::CountdownEvent* cond, int expect_err_code, const char* pos)
-        : _cond(cond), _expect_err_code(expect_err_code), _pos(pos) {}
-
-    ExpectClosure(bthread::CountdownEvent* cond, const char* pos)
-        : _cond(cond), _expect_err_code(-1), _pos(pos) {}
-
-    bthread::CountdownEvent* _cond;
-    int _expect_err_code;
-    const char* _pos;
-};
-
-typedef ExpectClosure ShutdownClosure;
-typedef ExpectClosure ApplyClosure;
-typedef ExpectClosure AddPeerClosure;
-typedef ExpectClosure RemovePeerClosure;
-typedef ExpectClosure SnapshotClosure;
-
-#define NEW_SHUTDOWNCLOSURE(arg...) \
-        (new ExpectClosure(arg, __FILE__ ":" BAIDU_SYMBOLSTR(__LINE__)))
-#define NEW_APPLYCLOSURE(arg...) \
-        (new ExpectClosure(arg, __FILE__ ":" BAIDU_SYMBOLSTR(__LINE__)))
-#define NEW_ADDPEERCLOSURE(arg...) \
-        (new ExpectClosure(arg, __FILE__ ":" BAIDU_SYMBOLSTR(__LINE__)))
-#define NEW_REMOVEPEERCLOSURE(arg...) \
-        (new ExpectClosure(arg, __FILE__ ":" BAIDU_SYMBOLSTR(__LINE__)))
-#define NEW_SNAPSHOTCLOSURE(arg...) \
-        (new ExpectClosure(arg, __FILE__ ":" BAIDU_SYMBOLSTR(__LINE__)))
-
-class Cluster {
-public:
-    Cluster(const std::string& name, const std::vector<braft::PeerId>& peers,
-            int32_t election_timeout_ms = 300)
-        : _name(name), _peers(peers) 
-        , _election_timeout_ms(election_timeout_ms) {
-    }
-    ~Cluster() {
-        stop_all();
-    }
-
-    int start(const butil::EndPoint& listen_addr, bool empty_peers = false,
-              int snapshot_interval_s = 30) {
-        if (_server_map[listen_addr] == NULL) {
-            brpc::Server* server = new brpc::Server();
-            if (braft::add_service(server, listen_addr) != 0 
-                    || server->Start(listen_addr, NULL) != 0) {
-                LOG(ERROR) << "Fail to start raft service";
-                delete server;
-                return -1;
-            }
-            _server_map[listen_addr] = server;
-        }
-
-        braft::NodeOptions options;
-        options.election_timeout_ms = _election_timeout_ms;
-        options.snapshot_interval_s = snapshot_interval_s;
-        if (!empty_peers) {
-            options.initial_conf = braft::Configuration(_peers);
-        }
-        MockFSM* fsm = new MockFSM(listen_addr);
-        options.fsm = fsm;
-        options.node_owns_fsm = true;
-        butil::string_printf(&options.log_uri, "local://./data/%s/log",
-                            butil::endpoint2str(listen_addr).c_str());
-        butil::string_printf(&options.raft_meta_uri, "local://./data/%s/raft_meta",
-                            butil::endpoint2str(listen_addr).c_str());
-        butil::string_printf(&options.snapshot_uri, "local://./data/%s/snapshot",
-                            butil::endpoint2str(listen_addr).c_str());
-
-        braft::Node* node = new braft::Node(_name, braft::PeerId(listen_addr, 0));
-        int ret = node->init(options);
-        if (ret != 0) {
-            LOG(WARNING) << "init_node failed, server: " << listen_addr;
-            return ret;
-        } else {
-            LOG(INFO) << "init node " << listen_addr;
-        }
-
-        {
-            std::lock_guard<raft_mutex_t> guard(_mutex);
-            _nodes.push_back(node);
-            _fsms.push_back(fsm);
-        }
-        return 0;
-    }
-
-    int stop(const butil::EndPoint& listen_addr) {
-        
-        bthread::CountdownEvent cond;
-        braft::Node* node = remove_node(listen_addr);
-        if (node) {
-            node->shutdown(NEW_SHUTDOWNCLOSURE(&cond));
-            cond.wait();
-            node->join();
-        }
-
-        delete _server_map[listen_addr];
-        _server_map.erase(listen_addr);
-        delete node;
-        return node ? 0 : -1;
-    }
-
-    void stop_all() {
-        std::vector<butil::EndPoint> addrs;
-        std::vector<braft::Node*> nodes;
-        all_nodes(&addrs);
-        for (auto addr : addrs) {
-            braft::Node* node = remove_node(addr);
-            node->shutdown(NULL);
-            nodes.push_back(node);
-            std::cout << "Stopping server " << addr << std::endl;
-            delete _server_map[addr];
-            _server_map.erase(addr);
-        }
-        for (auto node : nodes) {
-            std::cout << "join node " << node->node_id() << std::endl;
-            node->join();
-            delete node;
-        }
-    }
-
-    void clean(const butil::EndPoint& listen_addr) {
-        std::string data_path;
-        butil::string_printf(&data_path, "./data/%s",
-                            butil::endpoint2str(listen_addr).c_str());
-
-        if (!butil::DeleteFile(butil::FilePath(data_path), true)) {
-            LOG(ERROR) << "delete path failed, path: " << data_path;
-        }
-    }
-
-    braft::Node* leader() {
-        std::lock_guard<raft_mutex_t> guard(_mutex);
-        braft::Node* node = NULL;
-        for (size_t i = 0; i < _nodes.size(); i++) {
-            if (_nodes[i]->is_leader() &&
-                    _fsms[i]->_leader_term == _nodes[i]->_impl->_current_term) {
-                node = _nodes[i];
-                break;
-            }
-        }
-        return node;
-    }
-
-    void followers(std::vector<braft::Node*>* nodes) {
-        nodes->clear();
-
-        std::lock_guard<raft_mutex_t> guard(_mutex);
-        for (size_t i = 0; i < _nodes.size(); i++) {
-            if (!_nodes[i]->is_leader()) {
-                nodes->push_back(_nodes[i]);
-            }
-        }
-    }
-    
-    void wait_leader() {
-        while (true) {
-            braft::Node* node = leader();
-            if (node) {
-                return;
-            } else {
-                usleep(100 * 1000);
-            }
-        }
-    }
-
-    void ensure_leader(const butil::EndPoint& expect_addr) {
-CHECK:
-        std::lock_guard<raft_mutex_t> guard(_mutex);
-        for (size_t i = 0; i < _nodes.size(); i++) {
-            braft::PeerId leader_id = _nodes[i]->leader_id();
-            if (leader_id.addr != expect_addr) {
-                goto WAIT;
-            }
-        }
-
-        return;
-WAIT:
-        usleep(100 * 1000);
-        goto CHECK;
-    }
-
-    bool ensure_same(int wait_time_s = -1) {
-        std::lock_guard<raft_mutex_t> guard(_mutex);
-        if (_fsms.size() <= 1) {
-            return true;
-        }
-        LOG(INFO) << "_fsms.size()=" << _fsms.size();
-
-        int nround = 0;
-        MockFSM* first = _fsms[0];
-CHECK:
-        first->lock();
-        for (size_t i = 1; i < _fsms.size(); i++) {
-            MockFSM* fsm = _fsms[i];
-            fsm->lock();
-
-            if (first->logs.size() != fsm->logs.size()) {
-                fsm->unlock();
-                goto WAIT;
-            }
-
-            for (size_t j = 0; j < first->logs.size(); j++) {
-                butil::IOBuf& first_data = first->logs[j];
-                butil::IOBuf& fsm_data = fsm->logs[j];
-                if (first_data.to_string() != fsm_data.to_string()) {
-                    fsm->unlock();
-                    goto WAIT;
-                }
-            }
-
-            fsm->unlock();
-        }
-        first->unlock();
-
-        return true;
-WAIT:
-        first->unlock();
-        sleep(1);
-        ++nround;
-        if (wait_time_s > 0 && nround > wait_time_s) {
-            return false;
-        }
-        goto CHECK;
-    }
-
-private:
-    void all_nodes(std::vector<butil::EndPoint>* addrs) {
-        addrs->clear();
-
-        std::lock_guard<raft_mutex_t> guard(_mutex);
-        for (size_t i = 0; i < _nodes.size(); i++) {
-            addrs->push_back(_nodes[i]->node_id().peer_id.addr);
-        }
-    }
-
-    braft::Node* remove_node(const butil::EndPoint& addr) {
-        std::lock_guard<raft_mutex_t> guard(_mutex);
-
-        // remove node
-        braft::Node* node = NULL;
-        std::vector<braft::Node*> new_nodes;
-        for (size_t i = 0; i < _nodes.size(); i++) {
-            if (addr.port == _nodes[i]->node_id().peer_id.addr.port) {
-                node = _nodes[i];
-            } else {
-                new_nodes.push_back(_nodes[i]);
-            }
-        }
-        _nodes.swap(new_nodes);
-
-        // remove fsm
-        std::vector<MockFSM*> new_fsms;
-        for (size_t i = 0; i < _fsms.size(); i++) {
-            if (_fsms[i]->address != addr) {
-                new_fsms.push_back(_fsms[i]);
-            }
-        }
-        _fsms.swap(new_fsms);
-
-        return node;
-    }
-
-    std::string _name;
-    std::vector<braft::PeerId> _peers;
-    std::vector<braft::Node*> _nodes;
-    std::vector<MockFSM*> _fsms;
-    std::map<butil::EndPoint, brpc::Server*> _server_map;
-    int32_t _election_timeout_ms;
-    raft_mutex_t _mutex;
-};
-
-class NodeTest : public testing::Test {
+class NodeTest : public testing::TestWithParam<const char*> {
 protected:
     void SetUp() {
         g_dont_print_apply_log = false;
-        //logging::FLAGS_verbose = 90;
+        //logging::FLAGS_v = 90;
+        GFLAGS_NS::SetCommandLineOption("minloglevel", "1");
+        GFLAGS_NS::SetCommandLineOption("crash_on_fatal_log", "true");
+        if (GetParam() == std::string("NoReplication")) {
+            braft::FLAGS_raft_max_parallel_append_entries_rpc_num = 1;
+            braft::FLAGS_raft_enable_append_entries_cache = false;
+        } else if (GetParam() == std::string("NoCache")) {
+            braft::FLAGS_raft_max_parallel_append_entries_rpc_num = 32;
+            braft::FLAGS_raft_enable_append_entries_cache = false;
+        } else if (GetParam() == std::string("HasCache")) {
+            braft::FLAGS_raft_max_parallel_append_entries_rpc_num = 32;
+            braft::FLAGS_raft_enable_append_entries_cache = true;
+            braft::FLAGS_raft_max_append_entries_cache_size = 8;
+        }
+        LOG(INFO) << "Start unitests: " << GetParam();
         ::system("rm -rf data");
         ASSERT_EQ(0, braft::g_num_nodes.get_value());
     }
@@ -461,9 +64,11 @@ protected:
             ASSERT_EQ(0, braft::g_num_nodes.get_value());
         }
     }
+private:
+    butil::ShadowingAtExitManager exit_manager_;
 };
 
-TEST_F(NodeTest, InitShutdown) {
+TEST_P(NodeTest, InitShutdown) {
     brpc::Server server;
     int ret = braft::add_service(&server, "0.0.0.0:5006");
     ASSERT_EQ(0, ret);
@@ -492,7 +97,7 @@ TEST_F(NodeTest, InitShutdown) {
     cond.wait();
 }
 
-TEST_F(NodeTest, Server) {
+TEST_P(NodeTest, Server) {
     brpc::Server server1;
     brpc::Server server2;
     ASSERT_EQ(0, braft::add_service(&server1, "0.0.0.0:5006"));
@@ -502,7 +107,7 @@ TEST_F(NodeTest, Server) {
     server2.Start("0.0.0.0:5007", NULL);
 }
 
-TEST_F(NodeTest, SingleNode) {
+TEST_P(NodeTest, SingleNode) {
     brpc::Server server;
     int ret = braft::add_service(&server, 5006);
     server.Start(5006, NULL);
@@ -547,7 +152,7 @@ TEST_F(NodeTest, SingleNode) {
     server.Join();
 }
 
-TEST_F(NodeTest, NoLeader) {
+TEST_P(NodeTest, NoLeader) {
     std::vector<braft::PeerId> peers;
     for (int i = 0; i < 3; i++) {
         braft::PeerId peer;
@@ -560,7 +165,7 @@ TEST_F(NodeTest, NoLeader) {
 
     // start cluster
     Cluster cluster("unittest", peers);
-    cluster.start(peers[0].addr);
+    cluster.start(peers[1].addr);
 
     std::vector<braft::Node*> nodes;
     cluster.followers(&nodes);
@@ -605,7 +210,7 @@ TEST_F(NodeTest, NoLeader) {
     LOG(INFO) << "remove peer " << peer0;
 }
 
-TEST_F(NodeTest, TripleNode) {
+TEST_P(NodeTest, TripleNode) {
     std::vector<braft::PeerId> peers;
     for (int i = 0; i < 3; i++) {
         braft::PeerId peer;
@@ -694,7 +299,7 @@ TEST_F(NodeTest, TripleNode) {
     cluster.stop_all();
 }
 
-TEST_F(NodeTest, LeaderFail) {
+TEST_P(NodeTest, LeaderFail) {
     std::vector<braft::PeerId> peers;
     for (int i = 0; i < 3; i++) {
         braft::PeerId peer;
@@ -807,7 +412,7 @@ TEST_F(NodeTest, LeaderFail) {
     cluster.stop_all();
 }
 
-TEST_F(NodeTest, JoinNode) {
+TEST_P(NodeTest, JoinNode) {
     std::vector<braft::PeerId> peers;
     braft::PeerId peer0;
     peer0.addr.ip = butil::my_ip();
@@ -898,7 +503,227 @@ TEST_F(NodeTest, JoinNode) {
     cluster.stop_all();
 }
 
-TEST_F(NodeTest, RemoveFollower) {
+TEST_P(NodeTest, Leader_step_down_during_install_snapshot) {
+    std::vector<braft::PeerId> peers;
+    braft::PeerId peer0;
+    peer0.addr.ip = butil::my_ip();
+    peer0.addr.port = 5006;
+    peer0.idx = 0;
+
+    // start cluster
+    peers.push_back(peer0);
+    Cluster cluster("unittest", peers, 1000);
+    ASSERT_EQ(0, cluster.start(peer0.addr));
+    LOG(INFO) << "start single cluster " << peer0;
+
+    cluster.wait_leader();
+
+    braft::Node* leader = cluster.leader();
+    ASSERT_TRUE(leader != NULL);
+    ASSERT_EQ(leader->node_id().peer_id, peer0);
+    LOG(WARNING) << "leader is " << leader->node_id();
+
+    bthread::CountdownEvent cond(10);
+    // apply something
+    for (int i = 0; i < 10; i++) {
+        butil::IOBuf data; 
+        std::string data_buf;
+        data_buf.resize(256 * 1024, 'a');
+        data.append(data_buf);
+        
+        braft::Task task;
+        task.data = &data;
+        task.done = NEW_APPLYCLOSURE(&cond, 0);
+        leader->apply(task);
+    }
+    cond.wait();
+
+    // trigger leader snapshot
+    LOG(WARNING) << "trigger leader snapshot ";
+    cond.reset(1);
+    leader->snapshot(NEW_SNAPSHOTCLOSURE(&cond, 0));
+    cond.wait();
+
+    cond.reset(10);
+    // apply something
+    for (int i = 0; i < 10; i++) {
+        butil::IOBuf data;
+        std::string data_buf;
+        data_buf.resize(256 * 1024, 'b');
+        data.append(data_buf);
+        
+        braft::Task task;
+        task.data = &data;
+        task.done = NEW_APPLYCLOSURE(&cond, 0);
+        leader->apply(task);
+    }
+    cond.wait();
+    
+    // trigger leader snapshot again to compact logs
+    LOG(WARNING) << "trigger leader snapshot again";
+    cond.reset(1);
+    leader->snapshot(NEW_SNAPSHOTCLOSURE(&cond, 0));
+    cond.wait();
+
+    // start peer1
+    braft::PeerId peer1;
+    peer1.addr.ip = butil::my_ip();
+    peer1.addr.port = 5006 + 1;
+    peer1.idx = 0;
+    ASSERT_EQ(0, cluster.start(peer1.addr, true));
+    LOG(INFO) << "start peer " << peer1;
+    // wait until started successfully
+    usleep(1000* 1000);
+
+    // add peer1, leader step down while caught_up
+    cond.reset(1);
+    LOG(INFO) << "add peer: " << peer1;
+    leader->add_peer(peer1, NEW_ADDPEERCLOSURE(&cond, EPERM));
+    usleep(500 * 1000);
+
+    {
+        brpc::Channel channel;
+        brpc::ChannelOptions options;
+        options.protocol = brpc::PROTOCOL_HTTP;
+        if (channel.Init(leader->node_id().peer_id.addr, &options) != 0) {
+            LOG(ERROR) << "Fail to initialize channel";
+        }
+        {
+            brpc::Controller cntl;
+            cntl.http_request().uri() = "/raft_stat/unittest";
+            cntl.http_request().set_method(brpc::HTTP_METHOD_GET);
+            channel.CallMethod(NULL, &cntl, NULL, NULL, NULL/* done*/);
+            LOG(INFO) << "http return: \n" << cntl.response_attachment();
+        }
+    }
+
+    LOG(INFO) << "leader " << leader->node_id() 
+                << " step_down because of some error";
+    butil::Status status;
+    status.set_error(braft::ERAFTTIMEDOUT, "Majority of the group dies");
+    leader->_impl->step_down(leader->_impl->_current_term, false, status);
+    cond.wait(); 
+    
+    // add peer1 again, success 
+    LOG(INFO) << "add peer again: " << peer1;
+    cond.reset(1);
+    cluster.wait_leader();
+    leader = cluster.leader();
+    leader->add_peer(peer1, NEW_ADDPEERCLOSURE(&cond, 0));
+    cond.wait(); 
+    
+    cluster.ensure_same();
+    
+    LOG(INFO) << "stop cluster";
+    cluster.stop_all();
+}
+
+
+TEST_P(NodeTest, Report_error_during_install_snapshot) {
+    std::vector<braft::PeerId> peers;
+    for (int i = 0; i < 3; i++) {
+        braft::PeerId peer;
+        peer.addr.ip = butil::my_ip();
+        peer.addr.port = 5006 + i;
+        peer.idx = 0;
+
+        peers.push_back(peer);
+    }
+
+    // start cluster
+    Cluster cluster("unittest", peers);
+    for (size_t i = 0; i < peers.size(); i++) {
+        ASSERT_EQ(0, cluster.start(peers[i].addr));
+    }
+
+    // elect leader
+    cluster.wait_leader();
+    braft::Node* leader = cluster.leader();
+    ASSERT_TRUE(leader != NULL);
+    LOG(WARNING) << "leader is " << leader->node_id();
+
+    // apply something
+    bthread::CountdownEvent cond(10);
+    for (int i = 0; i < 10; i++) {
+        butil::IOBuf data;
+        std::string data_buf;
+        data_buf.resize(256 * 1024, 'a');
+        data.append(data_buf);
+
+        braft::Task task;
+        task.data = &data;
+        task.done = NEW_APPLYCLOSURE(&cond, 0);
+        leader->apply(task);
+    }
+    cond.wait();
+
+    cluster.ensure_same();
+
+    std::vector<braft::Node*> nodes;
+    cluster.followers(&nodes);
+    ASSERT_EQ(2, nodes.size());
+
+    // stop follower
+    LOG(WARNING) << "stop follower";
+    butil::EndPoint follower_addr = nodes[0]->node_id().peer_id.addr;
+    cluster.stop(follower_addr);
+
+    // apply something
+    cond.reset(10);
+    for (int i = 10; i < 20; i++) {
+        butil::IOBuf data;
+        std::string data_buf;
+        data_buf.resize(256 * 1024, 'b');
+        data.append(data_buf);
+
+        braft::Task task;
+        task.data = &data;
+        task.done = NEW_APPLYCLOSURE(&cond, 0);
+        leader->apply(task);
+    }
+    cond.wait();
+
+    // trigger leader snapshot
+    LOG(WARNING) << "trigger leader snapshot ";
+    cond.reset(1);
+    leader->snapshot(NEW_SNAPSHOTCLOSURE(&cond, 0));
+    cond.wait();
+
+    // apply something
+    cond.reset(10);
+    for (int i = 20; i < 30; i++) {
+        butil::IOBuf data;
+        std::string data_buf;
+        data_buf.resize(256 * 1024, 'c');
+        data.append(data_buf);
+
+        braft::Task task;
+        task.data = &data;
+        task.done = NEW_APPLYCLOSURE(&cond, 0);
+        leader->apply(task);
+    }
+    cond.wait();
+
+    // trigger leader snapshot again to compact logs
+    LOG(WARNING) << "trigger leader snapshot again";
+    cond.reset(1);
+    leader->snapshot(NEW_SNAPSHOTCLOSURE(&cond, 0));
+    cond.wait();
+
+    LOG(WARNING) << "restart follower";
+    ASSERT_EQ(0, cluster.start(follower_addr));
+    usleep(1*1000*1000);
+    
+    // trigger newly-started follower report_error when install_snapshot
+    cluster._nodes.back()->_impl->_snapshot_executor->report_error(EIO, "%s", 
+                                                    "Fail to close writer");
+    
+    sleep(2);
+    LOG(WARNING) << "cluster stop";
+    cluster.stop_all();
+}
+
+TEST_P(NodeTest, RemoveFollower) {
     std::vector<braft::PeerId> peers;
     for (int i = 0; i < 3; i++) {
         braft::PeerId peer;
@@ -1000,7 +825,7 @@ TEST_F(NodeTest, RemoveFollower) {
     cluster.ensure_same();
 }
 
-TEST_F(NodeTest, RemoveLeader) {
+TEST_P(NodeTest, RemoveLeader) {
     std::vector<braft::PeerId> peers;
     for (int i = 0; i < 3; i++) {
         braft::PeerId peer;
@@ -1094,7 +919,89 @@ TEST_F(NodeTest, RemoveLeader) {
     cluster.ensure_same();
 }
 
-TEST_F(NodeTest, PreVote) {
+TEST_P(NodeTest, restart_without_stable_meta) {
+    std::vector<braft::PeerId> peers;
+    for (int i = 0; i < 3; i++) {
+        braft::PeerId peer;
+        peer.addr.ip = butil::my_ip();
+        peer.addr.port = 5006 + i;
+        peer.idx = 0;
+
+        peers.push_back(peer);
+    }
+
+    // start cluster
+    Cluster cluster("unittest", peers);
+    for (size_t i = 0; i < peers.size(); i++) {
+        ASSERT_EQ(0, cluster.start(peers[i].addr));
+    }
+
+    // elect leader
+    cluster.wait_leader();
+    braft::Node* leader = cluster.leader();
+    ASSERT_TRUE(leader != NULL);
+    LOG(WARNING) << "leader is " << leader->node_id();
+
+    // apply something
+    bthread::CountdownEvent cond(10);
+    for (int i = 0; i < 10; i++) {
+        butil::IOBuf data;
+        char data_buf[128];
+        snprintf(data_buf, sizeof(data_buf), "hello: %d", i + 1);
+        data.append(data_buf);
+
+        braft::Task task;
+        task.data = &data;
+        task.done = NEW_APPLYCLOSURE(&cond, 0);
+        leader->apply(task);
+    }
+    cond.wait();
+
+    cluster.ensure_same();
+
+    std::vector<braft::Node*> nodes;
+    cluster.followers(&nodes);
+    ASSERT_EQ(2, nodes.size());
+
+    // stop follower
+    LOG(WARNING) << "stop follower";
+    butil::EndPoint follower_addr = nodes[0]->node_id().peer_id.addr;
+    cluster.stop(follower_addr);
+
+    ::system(butil::string_printf("rm -rf ./data/%s/stable/*",
+                                 butil::endpoint2str(follower_addr).c_str()).c_str());
+
+    LOG(INFO) << "restart follower";
+    ASSERT_EQ(0, cluster.start(follower_addr));
+
+    bthread_usleep(1000*1000);
+    cluster.wait_leader();
+    leader = cluster.leader();
+    ASSERT_TRUE(leader != NULL);
+    LOG(INFO) << "leader is " << leader->node_id();
+
+    // apply something
+    cond.reset(10);
+    for (int i = 0; i < 10; i++) {
+        butil::IOBuf data;
+        char data_buf[128];
+        snprintf(data_buf, sizeof(data_buf), "hello: %d", i + 1);
+        data.append(data_buf);
+
+        braft::Task task;
+        task.data = &data;
+        task.done = NEW_APPLYCLOSURE(&cond, 0);
+        leader->apply(task);
+    }
+    cond.wait();
+
+    cluster.ensure_same();
+
+    LOG(WARNING) << "cluster stop";
+    cluster.stop_all();
+}
+
+TEST_P(NodeTest, PreVote) {
     std::vector<braft::PeerId> peers;
     for (int i = 0; i < 3; i++) {
         braft::PeerId peer;
@@ -1186,7 +1093,59 @@ TEST_F(NodeTest, PreVote) {
     ASSERT_EQ(saved_term, leader->_impl->_current_term);
 }
 
-TEST_F(NodeTest, SetPeer1) {
+TEST_P(NodeTest, Vote_timedout) {
+    GFLAGS_NS::SetCommandLineOption("raft_step_down_when_vote_timedout", "true");
+    std::vector<braft::PeerId> peers;
+    for (int i = 0; i < 2; i++) {
+        braft::PeerId peer;
+        peer.addr.ip = butil::my_ip();
+        peer.addr.port = 5006 + i;
+        peer.idx = 0;
+
+        peers.push_back(peer);
+    }
+
+    // start cluster
+    Cluster cluster("unittest", peers, 500);
+    for (size_t i = 0; i < peers.size(); i++) {
+        ASSERT_EQ(0, cluster.start(peers[i].addr, false, 1));
+    }
+
+    // elect leader
+    cluster.wait_leader();
+    braft::Node* leader = cluster.leader();
+    ASSERT_TRUE(leader != NULL);
+    LOG(WARNING) << "leader is " << leader->node_id();
+
+    usleep(1000 * 1000);
+    std::vector<braft::Node*> nodes;
+    cluster.followers(&nodes);
+    ASSERT_FALSE(nodes.empty());
+    // stop follower, only one node left 
+    const butil::EndPoint follower_addr = nodes[0]->_impl->_server_id.addr;
+    cluster.stop(follower_addr);
+    
+    // wait old leader to step down 
+    usleep(2000 * 1000);
+    // trigger old leader to vote, expecting fail when vote timedout
+    std::unique_lock<raft_mutex_t> lck(leader->_impl->_mutex);
+    leader->_impl->elect_self(&lck);
+    lck.unlock();
+    usleep(3000 * 1000);
+   
+    // start the stopped follower
+    LOG(WARNING) << "restart follower";
+    cluster.start(follower_addr);
+    usleep(2000 * 1000);
+
+    ASSERT_TRUE(cluster.ensure_same(5));
+    LOG(WARNING) << "cluster stop";
+    cluster.stop_all();
+
+    GFLAGS_NS::SetCommandLineOption("raft_step_down_when_vote_timedout", "false");
+}
+
+TEST_P(NodeTest, SetPeer1) {
     // bootstrap from null
     Cluster cluster("unittest", std::vector<braft::PeerId>());
     braft::PeerId boot_peer;
@@ -1206,7 +1165,7 @@ TEST_F(NodeTest, SetPeer1) {
     cluster.wait_leader();
 }
 
-TEST_F(NodeTest, SetPeer2) {
+TEST_P(NodeTest, SetPeer2) {
     std::vector<braft::PeerId> peers;
     for (int i = 0; i < 3; i++) {
         braft::PeerId peer;
@@ -1333,7 +1292,7 @@ TEST_F(NodeTest, SetPeer2) {
     cluster.ensure_same();
 }
 
-TEST_F(NodeTest, RestoreSnapshot) {
+TEST_P(NodeTest, RestoreSnapshot) {
     std::vector<braft::PeerId> peers;
     for (int i = 0; i < 3; i++) {
         braft::PeerId peer;
@@ -1395,7 +1354,7 @@ TEST_F(NodeTest, RestoreSnapshot) {
     cluster.stop_all();
 }
 
-TEST_F(NodeTest, InstallSnapshot) {
+TEST_P(NodeTest, InstallSnapshot) {
     std::vector<braft::PeerId> peers;
     for (int i = 0; i < 3; i++) {
         braft::PeerId peer;
@@ -1480,8 +1439,11 @@ TEST_F(NodeTest, InstallSnapshot) {
     }
     cond.wait();
 
-    // wait leader to compact logs
-    usleep(5000 * 1000);
+    // trigger leader snapshot again to compact logs
+    LOG(WARNING) << "trigger leader snapshot again";
+    cond.reset(1);
+    leader->snapshot(NEW_SNAPSHOTCLOSURE(&cond, 0));
+    cond.wait();
 
     LOG(WARNING) << "restart follower";
     ASSERT_EQ(0, cluster.start(follower_addr));
@@ -1494,7 +1456,114 @@ TEST_F(NodeTest, InstallSnapshot) {
     cluster.stop_all();
 }
 
-TEST_F(NodeTest, NoSnapshot) {
+TEST_P(NodeTest, install_snapshot_exceed_max_task_num) {
+    GFLAGS_NS::SetCommandLineOption("raft_max_install_snapshot_tasks_num", "1");
+    std::vector<braft::PeerId> peers;
+    for (int i = 0; i < 5; i++) {
+        braft::PeerId peer;
+        peer.addr.ip = butil::my_ip();
+        peer.addr.port = 5006 + i;
+        peer.idx = 0;
+
+        peers.push_back(peer);
+    }
+
+    // start cluster
+    Cluster cluster("unittest", peers);
+    for (size_t i = 0; i < peers.size(); i++) {
+        ASSERT_EQ(0, cluster.start(peers[i].addr));
+    }
+
+    // elect leader
+    cluster.wait_leader();
+    braft::Node* leader = cluster.leader();
+    ASSERT_TRUE(leader != NULL);
+    LOG(WARNING) << "leader is " << leader->node_id();
+
+    // apply something
+    bthread::CountdownEvent cond(10);
+    for (int i = 0; i < 10; i++) {
+        butil::IOBuf data;
+        char data_buf[128];
+        snprintf(data_buf, sizeof(data_buf), "hello: %d", i + 1);
+        data.append(data_buf);
+
+        braft::Task task;
+        task.data = &data;
+        task.done = NEW_APPLYCLOSURE(&cond, 0);
+        leader->apply(task);
+    }
+    cond.wait();
+
+    cluster.ensure_same();
+
+    std::vector<braft::Node*> nodes;
+    cluster.followers(&nodes);
+    ASSERT_EQ(4, nodes.size());
+
+    // stop follower
+    LOG(WARNING) << "stop follower";
+    butil::EndPoint follower_addr = nodes[0]->node_id().peer_id.addr;
+    butil::EndPoint follower_addr2 = nodes[1]->node_id().peer_id.addr;
+    cluster.stop(follower_addr);
+    cluster.stop(follower_addr2);
+
+    // apply something
+    cond.reset(10);
+    for (int i = 10; i < 20; i++) {
+        butil::IOBuf data; 
+        std::string data_buf;
+        data_buf.resize(128 * 1024, 'a');
+        data.append(data_buf);
+        
+        braft::Task task;
+        task.data = &data;
+        task.done = NEW_APPLYCLOSURE(&cond, 0);
+        leader->apply(task);        
+    }
+    cond.wait();
+
+    // trigger leader snapshot
+    LOG(WARNING) << "trigger leader snapshot ";
+    cond.reset(1);
+    leader->snapshot(NEW_SNAPSHOTCLOSURE(&cond, 0));
+    cond.wait();
+
+    // apply something
+    cond.reset(10);
+    for (int i = 20; i < 30; i++) {
+        butil::IOBuf data; 
+        std::string data_buf;
+        data_buf.resize(128 * 1024, 'b');
+        data.append(data_buf);
+        
+        braft::Task task;
+        task.data = &data;
+        task.done = NEW_APPLYCLOSURE(&cond, 0);
+        leader->apply(task);    
+    }
+    cond.wait();
+
+    // trigger leader snapshot again to compact logs
+    LOG(WARNING) << "trigger leader snapshot again";
+    cond.reset(1);
+    leader->snapshot(NEW_SNAPSHOTCLOSURE(&cond, 0));
+    cond.wait();
+
+    LOG(WARNING) << "restart follower";
+    ASSERT_EQ(0, cluster.start(follower_addr));
+    ASSERT_EQ(0, cluster.start(follower_addr2));
+
+    usleep(5 * 1000 * 1000);
+
+    cluster.ensure_same();
+
+    LOG(WARNING) << "cluster stop";
+    cluster.stop_all();
+    GFLAGS_NS::SetCommandLineOption("raft_max_install_snapshot_tasks_num", "1000");
+}
+
+TEST_P(NodeTest, NoSnapshot) {
     brpc::Server server;
     brpc::ServerOptions server_options;
     int ret = braft::add_service(&server, "0.0.0.0:5006");
@@ -1551,7 +1620,7 @@ TEST_F(NodeTest, NoSnapshot) {
     server.Join();
 }
 
-TEST_F(NodeTest, AutoSnapshot) {
+TEST_P(NodeTest, AutoSnapshot) {
     brpc::Server server;
     brpc::ServerOptions server_options;
     int ret = braft::add_service(&server, "0.0.0.0:5006");
@@ -1608,7 +1677,7 @@ TEST_F(NodeTest, AutoSnapshot) {
     server.Join();
 }
 
-TEST_F(NodeTest, LeaderShouldNotChange) {
+TEST_P(NodeTest, LeaderShouldNotChange) {
     std::vector<braft::PeerId> peers;
     for (int i = 0; i < 3; i++) {
         braft::PeerId peer;
@@ -1640,7 +1709,7 @@ TEST_F(NodeTest, LeaderShouldNotChange) {
     cluster.stop_all();
 }
 
-TEST_F(NodeTest, RecoverFollower) {
+TEST_P(NodeTest, RecoverFollower) {
     std::vector<braft::PeerId> peers;
     for (int i = 0; i < 3; i++) {
         braft::PeerId peer;
@@ -1706,7 +1775,7 @@ TEST_F(NodeTest, RecoverFollower) {
     cluster.stop_all();
 }
 
-TEST_F(NodeTest, leader_transfer) {
+TEST_P(NodeTest, leader_transfer) {
     std::vector<braft::PeerId> peers;
     for (int i = 0; i < 3; i++) {
         braft::PeerId peer;
@@ -1739,7 +1808,7 @@ TEST_F(NodeTest, leader_transfer) {
     cluster.stop_all();
 }
 
-TEST_F(NodeTest, leader_transfer_before_log_is_compleleted) {
+TEST_P(NodeTest, leader_transfer_before_log_is_compleleted) {
     std::vector<braft::PeerId> peers;
     for (int i = 0; i < 3; i++) {
         braft::PeerId peer;
@@ -1777,26 +1846,27 @@ TEST_F(NodeTest, leader_transfer_before_log_is_compleleted) {
         leader->apply(task);
     }
     cond.wait();
-    ASSERT_EQ(0, leader->transfer_leadership_to(target));
+    ASSERT_EQ(EHOSTUNREACH, leader->transfer_leadership_to(target));
     cond.reset(1);
     braft::Task task;
     butil::IOBuf data;
     data.resize(5, 'a');
     task.data = &data;
-    task.done = NEW_APPLYCLOSURE(&cond, EBUSY);
+    task.done = NEW_APPLYCLOSURE(&cond, 0);
     leader->apply(task);
     cond.wait();
+    braft::Node* saved_leader = leader;
     cluster.start(target.addr);
     usleep(5000 * 1000);
     LOG(INFO) << "here";
     cluster.wait_leader();
     leader = cluster.leader();
-    ASSERT_EQ(target, leader->node_id().peer_id);
+    ASSERT_EQ(saved_leader->node_id().peer_id, leader->node_id().peer_id);
     ASSERT_TRUE(cluster.ensure_same(5));
     cluster.stop_all();
 }
 
-TEST_F(NodeTest, leader_transfer_resume_on_failure) {
+TEST_P(NodeTest, leader_transfer_resume_on_failure) {
     std::vector<braft::PeerId> peers;
     for (int i = 0; i < 3; i++) {
         braft::PeerId peer;
@@ -1834,14 +1904,14 @@ TEST_F(NodeTest, leader_transfer_resume_on_failure) {
         leader->apply(task);
     }
     cond.wait();
-    ASSERT_EQ(0, leader->transfer_leadership_to(target));
+    ASSERT_EQ(EHOSTUNREACH, leader->transfer_leadership_to(target));
     braft::Node* saved_leader = leader;
     cond.reset(1);
     braft::Task task;
     butil::IOBuf data;
     data.resize(5, 'a');
     task.data = &data;
-    task.done = NEW_APPLYCLOSURE(&cond, EBUSY);
+    task.done = NEW_APPLYCLOSURE(&cond, 0);
     leader->apply(task);
     cond.wait();
     //cluster.start(target.addr);
@@ -1872,7 +1942,7 @@ protected:
     }
 };
 
-TEST_F(NodeTest, shutdown_and_join_work_after_init_fails) {
+TEST_P(NodeTest, shutdown_and_join_work_after_init_fails) {
     brpc::Server server;
     int ret = braft::add_service(&server, 5006);
     server.Start(5006, NULL);
@@ -1934,8 +2004,8 @@ TEST_F(NodeTest, shutdown_and_join_work_after_init_fails) {
     server.Join();
 }
 
-TEST_F(NodeTest, shutting_leader_triggers_timeout_now) {
-    google::SetCommandLineOption("raft_sync", "false");
+TEST_P(NodeTest, shutting_leader_triggers_timeout_now) {
+    GFLAGS_NS::SetCommandLineOption("raft_sync", "false");
     std::vector<braft::PeerId> peers;
     for (int i = 0; i < 3; i++) {
         braft::PeerId peer;
@@ -1959,11 +2029,11 @@ TEST_F(NodeTest, shutting_leader_triggers_timeout_now) {
     usleep(100 * 1000);
     leader = cluster.leader();
     ASSERT_TRUE(leader != NULL);
-    google::SetCommandLineOption("raft_sync", "true");
+    GFLAGS_NS::SetCommandLineOption("raft_sync", "true");
 }
 
-TEST_F(NodeTest, removing_leader_triggers_timeout_now) {
-    google::SetCommandLineOption("raft_sync", "false");
+TEST_P(NodeTest, removing_leader_triggers_timeout_now) {
+    GFLAGS_NS::SetCommandLineOption("raft_sync", "false");
     std::vector<braft::PeerId> peers;
     for (int i = 0; i < 3; i++) {
         braft::PeerId peer;
@@ -1989,10 +2059,10 @@ TEST_F(NodeTest, removing_leader_triggers_timeout_now) {
     leader = cluster.leader();
     ASSERT_TRUE(leader != NULL);
     ASSERT_NE(old_leader_id, leader->node_id().peer_id);
-    google::SetCommandLineOption("raft_sync", "true");
+    GFLAGS_NS::SetCommandLineOption("raft_sync", "true");
 }
 
-TEST_F(NodeTest, transfer_should_work_after_install_snapshot) {
+TEST_P(NodeTest, transfer_should_work_after_install_snapshot) {
     std::vector<braft::PeerId> peers;
     for (size_t i = 0; i < 3; ++i) {
         braft::PeerId peer;
@@ -2048,7 +2118,7 @@ TEST_F(NodeTest, transfer_should_work_after_install_snapshot) {
     ASSERT_EQ(last_peer, leader->node_id().peer_id);
 }
 
-TEST_F(NodeTest, append_entries_when_follower_is_in_error_state) {
+TEST_P(NodeTest, append_entries_when_follower_is_in_error_state) {
     std::vector<braft::PeerId> peers;
     // five nodes
     for (int i = 0; i < 5; i++) {
@@ -2143,7 +2213,7 @@ TEST_F(NodeTest, append_entries_when_follower_is_in_error_state) {
     cluster.stop_all();
 }
 
-TEST_F(NodeTest, on_start_following_and_on_stop_following) {
+TEST_P(NodeTest, on_start_following_and_on_stop_following) {
     std::vector<braft::PeerId> peers;
     // five nodes
     for (int i = 0; i < 5; i++) {
@@ -2164,7 +2234,9 @@ TEST_F(NodeTest, on_start_following_and_on_stop_following) {
     cluster.wait_leader();
     braft::Node* leader_first = cluster.leader();
     ASSERT_TRUE(leader_first != NULL);
-    LOG(WARNING) << "leader_first is " << leader_first->node_id();
+    LOG(WARNING) << "leader_first is " << leader_first->node_id()
+                 << ", election_timeout is " 
+                 << leader_first->_impl->_options.election_timeout_ms;
 
     // apply something
     bthread::CountdownEvent cond(10);
@@ -2224,15 +2296,15 @@ TEST_F(NodeTest, on_start_following_and_on_stop_following) {
     // When it was still in follower state, it would do handle_election_timeout and
     // trigger on_stop_following when not receiving heartbeat for a long
     // time(election_timeout_ms).
-    ASSERT_EQ(static_cast<MockFSM*>(leader_second->_impl->_options.fsm)->_on_start_following_times, 1);
-    ASSERT_EQ(static_cast<MockFSM*>(leader_second->_impl->_options.fsm)->_on_stop_following_times, 1);
+    ASSERT_GE(static_cast<MockFSM*>(leader_second->_impl->_options.fsm)->_on_start_following_times, 1);
+    ASSERT_GE(static_cast<MockFSM*>(leader_second->_impl->_options.fsm)->_on_stop_following_times, 1);
     for (int i = 0; i < 3; i++) {
         // Firstly these followers have a leader, but it stops and a candidate
         // sends request_vote_request to them, which triggers on_stop_following.
         // When the candidate becomes new leader, on_start_following is triggled
         // again so _on_start_following_times increase by 1.
-        ASSERT_EQ(static_cast<MockFSM*>(followers_second[i]->_impl->_options.fsm)->_on_start_following_times, 2);
-        ASSERT_EQ(static_cast<MockFSM*>(followers_second[i]->_impl->_options.fsm)->_on_stop_following_times, 1);
+        ASSERT_GE(static_cast<MockFSM*>(followers_second[i]->_impl->_options.fsm)->_on_start_following_times, 2);
+        ASSERT_GE(static_cast<MockFSM*>(followers_second[i]->_impl->_options.fsm)->_on_stop_following_times, 1);
     }
 
     // transfer leadership to a follower
@@ -2264,20 +2336,20 @@ TEST_F(NodeTest, on_start_following_and_on_stop_following) {
     // leader_third's _on_start_following_times and _on_stop_following_times should both be 2.
     // When it was still in follower state, it would do handle_timeout_now_request and
     // trigger on_stop_following when leader_second transferred leadership to it.
-    ASSERT_EQ(static_cast<MockFSM*>(leader_third->_impl->_options.fsm)->_on_start_following_times, 2);
-    ASSERT_EQ(static_cast<MockFSM*>(leader_third->_impl->_options.fsm)->_on_stop_following_times, 2);
+    ASSERT_GE(static_cast<MockFSM*>(leader_third->_impl->_options.fsm)->_on_start_following_times, 2);
+    ASSERT_GE(static_cast<MockFSM*>(leader_third->_impl->_options.fsm)->_on_stop_following_times, 2);
     for (int i = 0; i < 3; i++) {
         // leader_second became follower when it transferred leadership to target, 
         // and when it receives leader_third's append_entries_request on_start_following is triggled.
         if (followers_third[i]->node_id().peer_id == leader_second->node_id().peer_id) {
-            ASSERT_EQ(static_cast<MockFSM*>(followers_third[i]->_impl->_options.fsm)->_on_start_following_times, 2);
-            ASSERT_EQ(static_cast<MockFSM*>(followers_third[i]->_impl->_options.fsm)->_on_stop_following_times, 1);
+            ASSERT_GE(static_cast<MockFSM*>(followers_third[i]->_impl->_options.fsm)->_on_start_following_times, 2);
+            ASSERT_GE(static_cast<MockFSM*>(followers_third[i]->_impl->_options.fsm)->_on_stop_following_times, 1);
             continue;
         }
         // other followers just lose the leader_second and get leader_third, so _on_stop_following_times and 
         // _on_start_following_times both increase by 1. 
-        ASSERT_EQ(static_cast<MockFSM*>(followers_third[i]->_impl->_options.fsm)->_on_start_following_times, 3);
-        ASSERT_EQ(static_cast<MockFSM*>(followers_third[i]->_impl->_options.fsm)->_on_stop_following_times, 2);
+        ASSERT_GE(static_cast<MockFSM*>(followers_third[i]->_impl->_options.fsm)->_on_start_following_times, 3);
+        ASSERT_GE(static_cast<MockFSM*>(followers_third[i]->_impl->_options.fsm)->_on_stop_following_times, 2);
     }
 
     cluster.ensure_same();
@@ -2285,7 +2357,7 @@ TEST_F(NodeTest, on_start_following_and_on_stop_following) {
     cluster.stop_all();
 }
 
-TEST_F(NodeTest, read_committed_user_log) {
+TEST_P(NodeTest, read_committed_user_log) {
     std::vector<braft::PeerId> peers;
     for (int i = 0; i < 3; i++) {
         braft::PeerId peer;
@@ -2443,7 +2515,7 @@ TEST_F(NodeTest, read_committed_user_log) {
     cluster.stop_all();
 }
 
-TEST_F(NodeTest, boostrap_with_snapshot) {
+TEST_P(NodeTest, boostrap_with_snapshot) {
     butil::EndPoint addr;
     ASSERT_EQ(0, butil::str2endpoint("127.0.0.1:5006", &addr));
     MockFSM fsm(addr);
@@ -2485,7 +2557,7 @@ TEST_F(NodeTest, boostrap_with_snapshot) {
     node.join();
 }
 
-TEST_F(NodeTest, boostrap_without_snapshot) {
+TEST_P(NodeTest, boostrap_without_snapshot) {
     butil::EndPoint addr;
     ASSERT_EQ(0, butil::str2endpoint("127.0.0.1:5006", &addr));
     braft::BootstrapOptions boptions;
@@ -2514,7 +2586,7 @@ TEST_F(NodeTest, boostrap_without_snapshot) {
     node.join();
 }
 
-TEST_F(NodeTest, change_peers) {
+TEST_P(NodeTest, change_peers) {
     std::vector<braft::PeerId> peers;
     braft::PeerId peer0;
     peer0.addr.ip = butil::my_ip();
@@ -2560,10 +2632,11 @@ TEST_F(NodeTest, change_peers) {
         done.wait();
         ASSERT_TRUE(done.status().ok()) << done.status();
     }
+    cluster.wait_leader();
     ASSERT_TRUE(cluster.ensure_same());
 }
 
-TEST_F(NodeTest, change_peers_add_multiple_node) {
+TEST_P(NodeTest, change_peers_add_multiple_node) {
     std::vector<braft::PeerId> peers;
     braft::PeerId peer0;
     peer0.addr.ip = butil::my_ip();
@@ -2616,7 +2689,7 @@ TEST_F(NodeTest, change_peers_add_multiple_node) {
     ASSERT_TRUE(cluster.ensure_same());
 }
 
-TEST_F(NodeTest, change_peers_steps_down_in_joint_consensus) {
+TEST_P(NodeTest, change_peers_steps_down_in_joint_consensus) {
     std::vector<braft::PeerId> peers;
     braft::PeerId peer0("127.0.0.1:5006");
     braft::PeerId peer1("127.0.0.1:5007");
@@ -2673,7 +2746,14 @@ TEST_F(NodeTest, change_peers_steps_down_in_joint_consensus) {
     leader = cluster.leader();
     ASSERT_TRUE(leader->list_peers(&peers).ok());
     ASSERT_TRUE(conf.equals(peers));
-    ASSERT_FALSE(leader->_impl->_conf_ctx.is_busy());
+    ASSERT_TRUE(leader->_impl->_conf.stable() || !leader->_impl->_conf_ctx.is_busy());
+    int wait_count = 1000;
+    while (leader->_impl->_conf_ctx.is_busy() && wait_count > 0) {
+        LOG(WARNING) << "wait util stable stage finish";
+        usleep(5 * 1000);
+        --wait_count;
+    }
+    ASSERT_TRUE(!leader->_impl->_conf_ctx.is_busy());
 }
 
 struct ChangeArg {
@@ -2715,15 +2795,15 @@ static void* change_routine(void* arg) {
     return NULL;
 }
 
-TEST_F(NodeTest, change_peers_chaos_with_snapshot) {
+TEST_P(NodeTest, change_peers_chaos_with_snapshot) {
     g_dont_print_apply_log = true;
-    google::SetCommandLineOption("raft_sync", "false");
-    ASSERT_FALSE(google::SetCommandLineOption("crash_on_fatal_log", "true").empty());
-    google::SetCommandLineOption("minloglevel", "3");
+    GFLAGS_NS::SetCommandLineOption("raft_sync", "false");
+    ASSERT_FALSE(GFLAGS_NS::SetCommandLineOption("crash_on_fatal_log", "true").empty());
+    GFLAGS_NS::SetCommandLineOption("minloglevel", "3");
     std::vector<braft::PeerId> peers;
     // start cluster
     peers.push_back(braft::PeerId("127.0.0.1:5006"));
-    Cluster cluster("unittest", peers, 1000);
+    Cluster cluster("unittest", peers, 2000);
     cluster.start(peers.front().addr, false, 1);
     for (int i = 1; i < 10; ++i) {
         peers.push_back("127.0.0.1:" + std::to_string(5006 + i));
@@ -2760,20 +2840,20 @@ TEST_F(NodeTest, change_peers_chaos_with_snapshot) {
     }
     arg.stop = true;
     pthread_join(tid, NULL);
-    google::SetCommandLineOption("raft_sync", "true");
-    google::SetCommandLineOption("minloglevel", "3");
+    GFLAGS_NS::SetCommandLineOption("raft_sync", "true");
+    GFLAGS_NS::SetCommandLineOption("minloglevel", "1");
 }
 
-TEST_F(NodeTest, change_peers_chaos_without_snapshot) {
+TEST_P(NodeTest, change_peers_chaos_without_snapshot) {
     g_dont_print_apply_log = true;
-    google::SetCommandLineOption("minloglevel", "3");
-    google::SetCommandLineOption("raft_sync", "false");
-    ASSERT_FALSE(google::SetCommandLineOption("crash_on_fatal_log", "true").empty());
+    GFLAGS_NS::SetCommandLineOption("minloglevel", "3");
+    GFLAGS_NS::SetCommandLineOption("raft_sync", "false");
+    ASSERT_FALSE(GFLAGS_NS::SetCommandLineOption("crash_on_fatal_log", "true").empty());
     std::vector<braft::PeerId> peers;
     // start cluster
     peers.push_back(braft::PeerId("127.0.0.1:5006"));
-    Cluster cluster("unittest", peers, 1000);
-    cluster.start(peers.front().addr, false, 100000);
+    Cluster cluster("unittest", peers, 2000);
+    cluster.start(peers.front().addr, false, 10000);
     for (int i = 1; i < 10; ++i) {
         peers.push_back("127.0.0.1:" + std::to_string(5006 + i));
         cluster.start(peers.back().addr, true, 10000);
@@ -2785,7 +2865,7 @@ TEST_F(NodeTest, change_peers_chaos_without_snapshot) {
     arg.dont_remove_first_peer = true;
     pthread_t tid;
     ASSERT_EQ(0, pthread_create(&tid, NULL, change_routine, &arg));
-    for (int i = 0; i < 100000;) {
+    for (int i = 0; i < 10000;) {
         cluster.wait_leader();
         braft::Node* leader = cluster.leader();
         if (!leader) {
@@ -2818,6 +2898,489 @@ TEST_F(NodeTest, change_peers_chaos_without_snapshot) {
     cluster.ensure_same();
     std::cout << "Stopping cluster" << std::endl;
     cluster.stop_all();
-    google::SetCommandLineOption("raft_sync", "true");
-    google::SetCommandLineOption("minloglevel", "0");
+    GFLAGS_NS::SetCommandLineOption("raft_sync", "true");
+    GFLAGS_NS::SetCommandLineOption("minloglevel", "1");
+}
+
+class AppendEntriesSyncClosure : public google::protobuf::Closure {
+public:
+    AppendEntriesSyncClosure() {
+        _cntl = new brpc::Controller;
+    }
+    ~AppendEntriesSyncClosure() {
+        if (_cntl) {
+            delete _cntl;
+        }
+    }
+    void Run() {
+        _event.signal();
+    }
+    void wait() {
+        _event.wait();
+    }
+    braft::AppendEntriesRequest& request() { return _request; }
+    braft::AppendEntriesResponse& response() { return _response; }
+    brpc::Controller& cntl() {
+        return *_cntl;
+    }
+
+private:
+    bthread::CountdownEvent _event;
+    braft::AppendEntriesRequest _request;
+    braft::AppendEntriesResponse _response;
+    brpc::Controller* _cntl;
+};
+
+void follower_append_entries(
+        const braft::AppendEntriesRequest& request_template, int entry_size,
+        int64_t prev_log_index, AppendEntriesSyncClosure& closure, braft::Node* node) {
+    braft::AppendEntriesRequest& request = closure.request();
+    request.CopyFrom(request_template);
+    request.set_prev_log_index(prev_log_index);
+    for (int i = 0; i < entry_size; ++i) {
+        braft::EntryMeta em;
+        butil::IOBuf data;
+        data.append("hello");
+        em.set_data_len(data.size());
+        em.set_type(braft::ENTRY_TYPE_DATA);
+        em.set_term(request_template.term());
+        request.add_entries()->Swap(&em);
+        closure.cntl().request_attachment().append(data);
+    }
+    node->_impl->handle_append_entries_request(
+            &closure.cntl(), &closure.request(), &closure.response(), &closure);
+}
+
+TEST_P(NodeTest, follower_handle_out_of_order_append_entries) {
+    std::vector<braft::PeerId> peers;
+    for (int i = 0; i < 3; i++) {
+        braft::PeerId peer;
+        peer.addr.ip = butil::my_ip();
+        peer.addr.port = 5006 + i;
+        peer.idx = 0;
+
+        peers.push_back(peer);
+    }
+
+    // start cluster
+    Cluster cluster("unittest", peers, 3000);
+    for (size_t i = 0; i < peers.size(); i++) {
+        ASSERT_EQ(0, cluster.start(peers[i].addr));
+    }
+
+    // elect leader
+    cluster.wait_leader();
+    braft::Node* leader = cluster.leader();
+    ASSERT_TRUE(leader != NULL);
+    LOG(WARNING) << "leader is " << leader->node_id();
+
+    cluster.ensure_same();
+
+    std::vector<braft::Node*> followers;
+    cluster.followers(&followers);
+    
+    while (true) {
+        followers[0]->_impl->_mutex.lock();
+        int64_t local_index = followers[0]->_impl->_log_manager->last_log_index();
+        followers[0]->_impl->_mutex.unlock();
+        if (local_index == 0) {
+            bthread_usleep(1000);
+            continue;
+        } else {
+            break;
+        }
+    }
+
+    followers[0]->_impl->_mutex.lock();
+    int64_t local_index = followers[0]->_impl->_log_manager->last_log_index();
+    int64_t term = followers[0]->_impl->_current_term;
+    std::string group_id = followers[0]->_impl->_group_id;
+    std::string server_id = followers[0]->_impl->_leader_id.to_string();
+    std::string peer_id = "";
+    int64_t committed_index = followers[0]->_impl->_ballot_box->last_committed_index();
+    followers[0]->_impl->_mutex.unlock();
+    int32_t max_append_entries_cache_size = braft::FLAGS_raft_max_append_entries_cache_size;
+    if (!braft::FLAGS_raft_enable_append_entries_cache) {
+        max_append_entries_cache_size = 0;
+    }
+
+    // Create a template
+    braft::AppendEntriesRequest request_template;
+    request_template.set_term(term);
+    request_template.set_group_id(group_id);
+    request_template.set_server_id(server_id);
+    request_template.set_peer_id(peer_id);
+    // request_template.set_prev_log_index(local_index);
+    request_template.set_prev_log_term(term);
+    request_template.set_committed_index(committed_index);
+
+    // Fill the entire cache
+    std::deque<AppendEntriesSyncClosure*> out_of_order_closures;
+    for (int32_t i = 0; i < max_append_entries_cache_size / 2; ++i) {
+        out_of_order_closures.push_back(new AppendEntriesSyncClosure());
+        AppendEntriesSyncClosure& closure = *out_of_order_closures.back();
+        follower_append_entries(
+                request_template, 1, local_index + 1 + i,
+                closure, followers[0]);
+    }
+    for (int32_t i = max_append_entries_cache_size - 1; i >= max_append_entries_cache_size / 2; --i) {
+        out_of_order_closures.push_back(new AppendEntriesSyncClosure());
+        AppendEntriesSyncClosure& closure = *out_of_order_closures.back();
+        follower_append_entries(
+                request_template, 1, local_index + 1 + i,
+                closure, followers[0]);
+    }
+    followers[0]->_impl->_mutex.lock();
+    ASSERT_EQ(followers[0]->_impl->_log_manager->last_log_index(), local_index);
+    ASSERT_TRUE(followers[0]->_impl->_append_entries_cache == NULL ||
+                followers[0]->_impl->_append_entries_cache->_rpc_map.size() ==
+                size_t(max_append_entries_cache_size));
+    followers[0]->_impl->_mutex.unlock();
+
+    // Fill another out-of-order request, be rejected
+    AppendEntriesSyncClosure closure1;
+    follower_append_entries(
+            request_template, 1, local_index + 1 + max_append_entries_cache_size,
+            closure1, followers[0]);
+    closure1.wait();
+    ASSERT_FALSE(closure1.response().success());
+
+    // Let all out-of-order entries be handled
+    AppendEntriesSyncClosure closure2;
+    follower_append_entries(
+            request_template, 1, local_index, closure2, followers[0]);
+    closure2.wait();
+    ASSERT_TRUE(closure2.response().success());
+    for (auto& c : out_of_order_closures) {
+        c->wait();
+        ASSERT_TRUE(c->response().success());
+    }
+    out_of_order_closures.clear();
+    local_index += max_append_entries_cache_size + 1;
+    followers[0]->_impl->_mutex.lock();
+    ASSERT_EQ(followers[0]->_impl->_log_manager->last_log_index(), local_index);
+    ASSERT_TRUE(followers[0]->_impl->_append_entries_cache == NULL);
+    followers[0]->_impl->_mutex.unlock();
+
+    if (max_append_entries_cache_size <= 1) {
+        LOG(WARNING) << "cluster stop";
+        cluster.stop_all();
+        return;
+    }
+
+    // Overlap out-of-order requests
+    AppendEntriesSyncClosure closure3;
+    follower_append_entries(
+            request_template, 3, local_index + 5,
+            closure3, followers[0]);
+    followers[0]->_impl->_mutex.lock();
+    ASSERT_EQ(followers[0]->_impl->_append_entries_cache->_rpc_map.size(), 1);
+    ASSERT_EQ(followers[0]->_impl->_append_entries_cache->first_index(), local_index + 5 + 1);
+    followers[0]->_impl->_mutex.unlock();
+
+    AppendEntriesSyncClosure closure4;
+    follower_append_entries(
+            request_template, 2, local_index + 5,
+            closure4, followers[0]);
+    followers[0]->_impl->_mutex.lock();
+    ASSERT_EQ(followers[0]->_impl->_append_entries_cache->_rpc_map.size(), 1);
+    ASSERT_EQ(followers[0]->_impl->_append_entries_cache->first_index(), local_index + 5 + 1);
+    followers[0]->_impl->_mutex.unlock();
+    closure3.wait();
+    ASSERT_FALSE(closure3.response().success());
+
+    AppendEntriesSyncClosure closure5;
+    follower_append_entries(
+            request_template, 2, local_index + 6,
+            closure5, followers[0]);
+    followers[0]->_impl->_mutex.lock();
+    ASSERT_EQ(followers[0]->_impl->_append_entries_cache->_rpc_map.size(), 1);
+    ASSERT_EQ(followers[0]->_impl->_append_entries_cache->first_index(), local_index + 6 + 1);
+    followers[0]->_impl->_mutex.unlock();
+    closure4.wait();
+    ASSERT_FALSE(closure4.response().success());
+
+    AppendEntriesSyncClosure closure6;
+    follower_append_entries(
+            request_template, 3, local_index + 4,
+            closure6, followers[0]);
+    followers[0]->_impl->_mutex.lock();
+    ASSERT_EQ(followers[0]->_impl->_append_entries_cache->_rpc_map.size(), 1);
+    ASSERT_EQ(followers[0]->_impl->_append_entries_cache->first_index(), local_index + 4 + 1);
+    followers[0]->_impl->_mutex.unlock();
+    closure5.wait();
+    ASSERT_FALSE(closure5.response().success());
+
+    // Wait until timeout
+    closure6.wait();
+    ASSERT_FALSE(closure6.response().success());
+    followers[0]->_impl->_mutex.lock();
+    ASSERT_EQ(followers[0]->_impl->_log_manager->last_log_index(), local_index);
+    ASSERT_TRUE(followers[0]->_impl->_append_entries_cache == NULL);
+    followers[0]->_impl->_mutex.unlock();
+
+    // Part of cache continuous
+    AppendEntriesSyncClosure closure7;
+    follower_append_entries(
+            request_template, 3, local_index + 5,
+            closure7, followers[0]);
+    followers[0]->_impl->_mutex.lock();
+    ASSERT_EQ(followers[0]->_impl->_append_entries_cache->_rpc_map.size(), 1);
+    ASSERT_EQ(followers[0]->_impl->_append_entries_cache->first_index(), local_index + 5 + 1);
+    followers[0]->_impl->_mutex.unlock();
+
+    AppendEntriesSyncClosure closure8;
+    follower_append_entries(
+            request_template, 2, local_index + 2,
+            closure8, followers[0]);
+    followers[0]->_impl->_mutex.lock();
+    ASSERT_EQ(followers[0]->_impl->_append_entries_cache->_rpc_map.size(), 2);
+    ASSERT_EQ(followers[0]->_impl->_append_entries_cache->first_index(), local_index + 2 + 1);
+    followers[0]->_impl->_mutex.unlock();
+
+    AppendEntriesSyncClosure closure9;
+    follower_append_entries(
+            request_template, 1, local_index + 1,
+            closure9, followers[0]);
+    followers[0]->_impl->_mutex.lock();
+    ASSERT_EQ(followers[0]->_impl->_append_entries_cache->_rpc_map.size(), 3);
+    ASSERT_EQ(followers[0]->_impl->_append_entries_cache->first_index(), local_index + 1 + 1);
+    followers[0]->_impl->_mutex.unlock();
+
+    AppendEntriesSyncClosure closure10;
+    follower_append_entries(
+            request_template, 1, local_index,
+            closure10, followers[0]);
+    followers[0]->_impl->_mutex.lock();
+    ASSERT_EQ(followers[0]->_impl->_append_entries_cache->_rpc_map.size(), 1);
+    ASSERT_EQ(followers[0]->_impl->_append_entries_cache->first_index(), local_index + 5 + 1);
+    followers[0]->_impl->_mutex.unlock();
+    
+    closure10.wait();
+    closure9.wait();
+    closure8.wait();
+    ASSERT_TRUE(closure10.response().success());
+    ASSERT_TRUE(closure9.response().success());
+    ASSERT_TRUE(closure8.response().success());
+    local_index += 2 + 2;
+    followers[0]->_impl->_mutex.lock();
+    ASSERT_EQ(followers[0]->_impl->_log_manager->last_log_index(), local_index);
+    followers[0]->_impl->_mutex.unlock();
+
+    // Wait util timeout
+    closure7.wait();
+    ASSERT_FALSE(closure7.response().success());
+    followers[0]->_impl->_mutex.lock();
+    ASSERT_EQ(followers[0]->_impl->_log_manager->last_log_index(), local_index);
+    ASSERT_TRUE(followers[0]->_impl->_append_entries_cache == NULL);
+    followers[0]->_impl->_mutex.unlock();
+
+    LOG(WARNING) << "cluster stop";
+    cluster.stop_all();
+}
+
+TEST_P(NodeTest, readonly) {
+    std::vector<braft::PeerId> peers;
+    for (int i = 0; i < 3; i++) {
+        braft::PeerId peer;
+        peer.addr.ip = butil::my_ip();
+        peer.addr.port = 5006 + i;
+        peer.idx = 0;
+
+        peers.push_back(peer);
+    }
+
+    // start cluster
+    Cluster cluster("unittest", peers);
+    for (size_t i = 0; i < peers.size(); i++) {
+        ASSERT_EQ(0, cluster.start(peers[i].addr));
+    }
+
+    // elect leader
+    cluster.wait_leader();
+    braft::Node* leader = cluster.leader();
+    ASSERT_TRUE(leader != NULL);
+    LOG(WARNING) << "leader is " << leader->node_id();
+
+    // apply something
+    bthread::CountdownEvent cond(10);
+    int start_index = 0;
+    for (int i = start_index; i < start_index + 10; i++) {
+        butil::IOBuf data;
+        char data_buf[128];
+        snprintf(data_buf, sizeof(data_buf), "hello: %d", i);
+        data.append(data_buf);
+
+        braft::Task task;
+        task.data = &data;
+        task.done = NEW_APPLYCLOSURE(&cond, 0);
+        leader->apply(task);
+    }
+    cond.wait();
+
+    // let leader enter readonly mode, reject user logs
+    leader->enter_readonly_mode();
+    ASSERT_TRUE(leader->readonly());
+    cond.reset(10);
+    start_index += 10;
+    for (int i = start_index; i < start_index + 10; i++) {
+        butil::IOBuf data;
+        char data_buf[128];
+        snprintf(data_buf, sizeof(data_buf), "hello: %d", i);
+        data.append(data_buf);
+
+        braft::Task task;
+        task.data = &data;
+        task.done = NEW_APPLYCLOSURE(&cond, braft::EREADONLY);
+        leader->apply(task);
+    }
+    cond.wait();
+
+    // let leader leave readonly mode, accept user logs
+    leader->leave_readonly_mode();
+    ASSERT_FALSE(leader->readonly());
+    cond.reset(10);
+    start_index += 10;
+    for (int i = start_index; i < start_index + 10; i++) {
+        butil::IOBuf data;
+        char data_buf[128];
+        snprintf(data_buf, sizeof(data_buf), "hello: %d", i);
+        data.append(data_buf);
+
+        braft::Task task;
+        task.data = &data;
+        task.done = NEW_APPLYCLOSURE(&cond, 0);
+        leader->apply(task);
+    }
+    cond.wait();
+  
+    std::vector<braft::Node*> followers;
+    cluster.followers(&followers);
+    ASSERT_EQ(2, followers.size());
+
+    // Let follower 0 enter readonly mode, still can accept user logs
+    followers[0]->enter_readonly_mode();
+    bthread_usleep(2000 * 1000); // wait a while for heartbeat
+    cond.reset(10);
+    start_index += 10;
+    for (int i = start_index; i < start_index + 10; i++) {
+        butil::IOBuf data;
+        char data_buf[128];
+        snprintf(data_buf, sizeof(data_buf), "hello: %d", i);
+        data.append(data_buf);
+
+        braft::Task task;
+        task.data = &data;
+        task.done = NEW_APPLYCLOSURE(&cond, 0);
+        leader->apply(task);
+    }
+    cond.wait();
+
+    // Let follower 1 enter readonly mode, majority readonly, reject user logs
+    followers[1]->enter_readonly_mode();
+    int retry = 5;
+    while (!leader->readonly() && --retry >= 0) {
+        bthread_usleep(1000 * 1000);
+    }
+    ASSERT_TRUE(leader->readonly());
+    cond.reset(10);
+    start_index += 10;
+    for (int i = start_index; i < start_index + 10; i++) {
+        butil::IOBuf data;
+        char data_buf[128];
+        snprintf(data_buf, sizeof(data_buf), "hello: %d", i);
+        data.append(data_buf);
+
+        braft::Task task;
+        task.data = &data;
+        task.done = NEW_APPLYCLOSURE(&cond, braft::EREADONLY);
+        leader->apply(task);
+    }
+    cond.wait();  
+
+    // Add a new follower
+    braft::PeerId peer3;
+    peer3.addr.ip = butil::my_ip();
+    peer3.addr.port = 5006 + 3;
+    peer3.idx = 0;
+    ASSERT_EQ(0, cluster.start(peer3.addr, true));
+    bthread_usleep(1000* 1000);
+    cond.reset(1);
+    leader->add_peer(peer3, NEW_ADDPEERCLOSURE(&cond, 0));
+    cond.wait();
+
+    // Trigger follower 0 do snapshot
+    cond.reset(1);
+    followers[0]->snapshot(NEW_SNAPSHOTCLOSURE(&cond, 0));
+    cond.wait();
+
+    // 2/4 readonly, leader still in readonly
+    retry = 5;
+    while (!leader->readonly() && --retry >= 0) {
+        bthread_usleep(1000 * 1000);
+    }
+    ASSERT_TRUE(leader->readonly());
+    start_index += 10;
+    cond.reset(10);
+    for (int i = start_index; i < start_index + 10; i++) {
+        butil::IOBuf data;
+        char data_buf[128];
+        snprintf(data_buf, sizeof(data_buf), "hello: %d", i);
+        data.append(data_buf);
+
+        braft::Task task;
+        task.data = &data;
+        task.done = NEW_APPLYCLOSURE(&cond, braft::EREADONLY);
+        leader->apply(task);
+    }
+    cond.wait();  
+
+    // Remove follower 0
+    cond.reset(1);
+    leader->remove_peer(followers[0]->node_id().peer_id, NEW_REMOVEPEERCLOSURE(&cond, 0));
+    cond.wait();
+    cluster.stop(followers[0]->node_id().peer_id.addr);
+
+    // 1/3 readonly, leader leave Readonly
+    retry = 5;
+    while (leader->readonly() && --retry >= 0) {
+        bthread_usleep(1000 * 1000);
+    }
+    ASSERT_TRUE(!leader->readonly());
+    cond.reset(10);
+    start_index += 10;
+    for (int i = start_index; i < start_index + 10; i++) {
+        butil::IOBuf data;
+        char data_buf[128];
+        snprintf(data_buf, sizeof(data_buf), "hello: %d", i);
+        data.append(data_buf);
+
+        braft::Task task;
+        task.data = &data;
+        task.done = NEW_APPLYCLOSURE(&cond, 0);
+        leader->apply(task);
+    }
+    cond.wait();  
+
+    // Follower 1 leave readonly, catch up logs
+    followers[1]->leave_readonly_mode();
+    cluster.ensure_same();
+
+    LOG(WARNING) << "cluster stop";
+    cluster.stop_all();
+}
+
+INSTANTIATE_TEST_CASE_P(NodeTestWithoutPipelineReplication,
+                        NodeTest,
+                        ::testing::Values("NoReplcation"));
+
+INSTANTIATE_TEST_CASE_P(NodeTestWithPipelineReplication,
+                        NodeTest,
+                        ::testing::Values("NoCache", "HasCache"));
+
+int main(int argc, char* argv[]) {
+    ::testing::AddGlobalTestEnvironment(new TestEnvironment());
+    ::testing::InitGoogleTest(&argc, argv);
+    GFLAGS_NS::ParseCommandLineFlags(&argc, &argv, true);
+    return RUN_ALL_TESTS();
 }

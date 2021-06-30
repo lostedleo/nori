@@ -1,4 +1,6 @@
-include_directories(${CMAKE_CURRENT_BINARY_DIR})
+include_directories(${CMAKE_CURRENT_BINARY_DIR}
+  ${PROTOBUF_INCLUDE_DIR})
+
 file(GLOB PROTOS "*.proto")
 list(APPEND PROTO_FLAGS -I${CMAKE_CURRENT_BINARY_DIR})
 foreach(PROTO ${PROTOS})
@@ -6,8 +8,9 @@ foreach(PROTO ${PROTOS})
   list(APPEND TEST_PROTO_SRCS "${CMAKE_CURRENT_BINARY_DIR}/${PROTO_WE}.pb.cc")
   add_custom_command(
     OUTPUT "${PROTO_WE}.pb.h" "${PROTO_WE}.pb.cc"
-    COMMAND protoc --cpp_out=${CMAKE_CURRENT_BINARY_DIR}
+    COMMAND protoc ${PROTO_FLAGS} --cpp_out=${CMAKE_CURRENT_BINARY_DIR}/..
             --proto_path=${PROTOBUF_INCLUDE_DIR}
+            --proto_path=${CMAKE_SOURCE_DIR}/net
             --proto_path=${CMAKE_CURRENT_SOURCE_DIR} ${PROTO}
     DEPENDS ${PROTO} protoc
     WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
@@ -18,10 +21,6 @@ set(GPERFTOOLS_LIBRARIES gperftools)
 set(GTEST_LIB gtest)
 set(GTEST_MAIN_LIB gtest_main)
 
-set(CMAKE_CPP_FLAGS "-DBRPC_WITH_GLOG=${WITH_GLOG_VAL}")
-set(CMAKE_CPP_FLAGS "${CMAKE_CPP_FLAGS} -DBTHREAD_USE_FAST_PTHREAD_MUTEX -D__const__= -D_GNU_SOURCE -DUSE_SYMBOLIZE -DNO_TCMALLOC -D__STDC_FORMAT_MACROS -D__STDC_LIMIT_MACROS -D__STDC_CONSTANT_MACROS -DUNIT_TEST -Dprivate=public -Dprotected=public -DBVAR_NOT_LINK_DEFAULT_VARIABLES -D__STRICT_ANSI__ -include ${CMAKE_CURRENT_SOURCE_DIR}/sstream_workaround.h")
-set(CMAKE_CXX_FLAGS "${CMAKE_CPP_FLAGS} -O2 -pipe -Wall -W -fPIC -fstrict-aliasing -Wno-invalid-offsetof -Wno-unused-parameter -fno-omit-frame-pointer")
-
 if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
   #required by butil/crc32.cc to boost performance for 10x
   if(NOT (CMAKE_CXX_COMPILER_VERSION VERSION_LESS 4.4))
@@ -31,6 +30,9 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-aligned-new")
   endif()
 endif()
+
+set(CMAKE_CPP_FLAGS "${CMAKE_CPP_FLAGS} -DBTHREAD_USE_FAST_PTHREAD_MUTEX -D__const__= -D_GNU_SOURCE -DUSE_SYMBOLIZE -DNO_TCMALLOC -D__STDC_FORMAT_MACROS -D__STDC_LIMIT_MACROS -D__STDC_CONSTANT_MACROS -DUNIT_TEST -Dprivate=public -Dprotected=public -DBVAR_NOT_LINK_DEFAULT_VARIABLES -D__STRICT_ANSI__ -include ${PROJECT_SOURCE_DIR}/test/sstream_workaround.h")
+set(CMAKE_CXX_FLAGS "${CMAKE_CPP_FLAGS} -g -O2 -pipe -Wall -W -fPIC -fstrict-aliasing -Wno-invalid-offsetof -Wno-unused-parameter -fno-omit-frame-pointer")
 
 file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/cert1.key DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
 file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/cert2.key DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
@@ -54,7 +56,6 @@ SET(TEST_BUTIL_SOURCES
   ${CMAKE_CURRENT_SOURCE_DIR}/cpu_unittest.cc
   ${CMAKE_CURRENT_SOURCE_DIR}/crash_logging_unittest.cc
   ${CMAKE_CURRENT_SOURCE_DIR}/leak_tracker_unittest.cc
-  ${CMAKE_CURRENT_SOURCE_DIR}/proc_maps_linux_unittest.cc
   ${CMAKE_CURRENT_SOURCE_DIR}/stack_trace_unittest.cc
   ${CMAKE_CURRENT_SOURCE_DIR}/environment_unittest.cc
   ${CMAKE_CURRENT_SOURCE_DIR}/file_util_unittest.cc
@@ -65,7 +66,6 @@ SET(TEST_BUTIL_SOURCES
   ${CMAKE_CURRENT_SOURCE_DIR}/guid_unittest.cc
   ${CMAKE_CURRENT_SOURCE_DIR}/hash_unittest.cc
   ${CMAKE_CURRENT_SOURCE_DIR}/lazy_instance_unittest.cc
-  ${CMAKE_CURRENT_SOURCE_DIR}/md5_unittest.cc
   ${CMAKE_CURRENT_SOURCE_DIR}/aligned_memory_unittest.cc
   ${CMAKE_CURRENT_SOURCE_DIR}/linked_ptr_unittest.cc
   ${CMAKE_CURRENT_SOURCE_DIR}/ref_counted_memory_unittest.cc
@@ -110,7 +110,6 @@ SET(TEST_BUTIL_SOURCES
   ${CMAKE_CURRENT_SOURCE_DIR}/thread_local_storage_unittest.cc
   ${CMAKE_CURRENT_SOURCE_DIR}/thread_local_unittest.cc
   ${CMAKE_CURRENT_SOURCE_DIR}/watchdog_unittest.cc
-  ${CMAKE_CURRENT_SOURCE_DIR}/pr_time_unittest.cc
   ${CMAKE_CURRENT_SOURCE_DIR}/time_unittest.cc
   ${CMAKE_CURRENT_SOURCE_DIR}/version_unittest.cc
   ${CMAKE_CURRENT_SOURCE_DIR}/logging_unittest.cc
@@ -135,13 +134,25 @@ SET(TEST_BUTIL_SOURCES
   ${CMAKE_CURRENT_SOURCE_DIR}/iobuf_unittest.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/test_switches.cc
   ${CMAKE_CURRENT_SOURCE_DIR}/scoped_locale.cc
-  ${CMAKE_CURRENT_SOURCE_DIR}/test_file_util_linux.cc
   ${CMAKE_CURRENT_SOURCE_DIR}/butil_unittest_main.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/butil_unittest_main.cpp
   )
 
 # -DBVAR_NOT_LINK_DEFAULT_VARIABLES not work for gcc >= 5.0, just remove the file to prevent linking into unit tests
 list(REMOVE_ITEM BVAR_SOURCES ${CMAKE_SOURCE_DIR}/net/bvar/default_variables.cpp)
+
+if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+  set(TEST_BUTIL_SOURCES ${TEST_BUTIL_SOURCES}
+    ${CMAKE_CURRENT_SOURCE_DIR}/proc_maps_linux_unittest.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/test_file_util_linux.cc)
+endif()
+
+if(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
+    set(DYNAMIC_LIB ${DYNAMIC_LIB}
+                    "-Wl,-U,_bthread_getspecific"
+                    "-Wl,-U,_bthread_setspecific"
+                    "-Wl,-U,_bthread_key_create")
+endif()
 
 file(GLOB TEST_BVAR_SRCS "bvar_*_unittest.cpp")
 add_executable(test_bvar
@@ -150,11 +161,14 @@ add_executable(test_bvar
 target_link_libraries(test_bvar ${GTEST_LIB}
   ${GPERFTOOLS_LIBRARIES}
   butil-static)
+add_test(NAME test_bvar COMMAND test_bvar)
 
-add_library(test_proto ${TEST_PROTO_SRCS})
-target_link_libraries(test_proto protobuf)
-add_executable(test_butil ${TEST_BUTIL_SOURCES})
-target_link_libraries(test_butil ${GTEST_LIB} ${GPERFTOOLS_LIBRARIES} brpc-static test_proto)
+add_library(test_proto OBJECT ${TEST_PROTO_SRCS})
+# target_link_libraries(test_proto protobuf)
+add_executable(test_butil ${TEST_BUTIL_SOURCES}
+                          ${CMAKE_CURRENT_BINARY_DIR}/iobuf.pb.cc)
+target_link_libraries(test_butil ${GTEST_LIB} ${GPERFTOOLS_LIBRARIES} brpc-static)
+add_test(NAME test_butil COMMAND test_butil)
 
 file(GLOB BTHREAD_UNITTESTS "bthread*unittest.cpp")
 foreach(BTHREAD_UT ${BTHREAD_UNITTESTS})
@@ -165,19 +179,19 @@ foreach(BTHREAD_UT ${BTHREAD_UNITTESTS})
     ${GTEST_LIB}
     ${GPERFTOOLS_LIBRARIES}
     brpc-static
-    test_proto
   )
+  add_test(NAME ${BTHREAD_UT_WE} COMMAND ${BTHREAD_UT_WE})
 endforeach()
 
 file(GLOB BRPC_UNITTESTS "brpc_*_unittest.cpp")
 foreach(BRPC_UT ${BRPC_UNITTESTS})
   get_filename_component(BRPC_UT_WE ${BRPC_UT} NAME_WE)
-  add_executable(${BRPC_UT_WE} ${BRPC_UT})
+  add_executable(${BRPC_UT_WE} ${BRPC_UT} $<TARGET_OBJECTS:test_proto>)
   target_link_libraries(${BRPC_UT_WE}
     ${GTEST_MAIN_LIB}
     ${GPERFTOOLS_LIBRARIES}
     ${GTEST_LIB}
     brpc-static
-    test_proto
   )
+  add_test(NAME ${BRPC_UT_WE} COMMAND ${BRPC_UT_WE})
 endforeach()
