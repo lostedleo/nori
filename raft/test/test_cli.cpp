@@ -12,7 +12,7 @@
 #include "braft/node.h"
 
 class CliTest : public testing::Test {
-public:
+ public:
   void SetUp() {
     GFLAGS_NS::SetCommandLineOption("raft_sync", "false");
     ::system("rm -rf data");
@@ -23,14 +23,14 @@ public:
 };
 
 class MockFSM : public braft::StateMachine {
-public:
+ public:
   virtual void on_apply(braft::Iterator& /*iter*/) {
     ASSERT_FALSE(true) << "Can't reach here";
   }
 };
 
 class RaftNode {
-public:
+ public:
   RaftNode() : _node(NULL) {}
   ~RaftNode() {
     stop();

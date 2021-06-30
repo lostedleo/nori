@@ -18,7 +18,7 @@ if (LINK_TCMALLOC)
   set(GPERFTOOLS_LIBRARIES gperftools)
 endif ()
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CPP_FLAGS}")
+set(CMAKE_CXX_FLAGS "${CMAKE_CPP_FLAGS} -Wno-format")
 
 add_executable(atomic_client client.cpp ${PROTO_SRC} ${PROTO_HEADER})
 add_executable(atomic_server server.cpp ${PROTO_SRC} ${PROTO_HEADER})
