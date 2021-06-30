@@ -36,9 +36,9 @@
 #include "brpc/policy/esp_authenticator.h"
 
 int main(int argc, char* argv[]) {
-    testing::InitGoogleTest(&argc, argv);
-    GFLAGS_NS::ParseCommandLineFlags(&argc, &argv, true);
-    return RUN_ALL_TESTS();
+  testing::InitGoogleTest(&argc, argv);
+  GFLAGS_NS::ParseCommandLineFlags(&argc, &argv, true);
+  return RUN_ALL_TESTS();
 }
 
 namespace {
@@ -53,106 +53,106 @@ static const int WRONG_MSG = 1;
 
 class EspTest : public ::testing::Test{
 protected:
-    EspTest() {
-        EXPECT_EQ(0, pipe(_pipe_fds));
-        brpc::SocketId id;
-        brpc::SocketOptions options;
-        options.fd = _pipe_fds[1];
-        EXPECT_EQ(0, brpc::Socket::Create(options, &id));
-        EXPECT_EQ(0, brpc::Socket::Address(id, &_socket));
-    };
+  EspTest() {
+    EXPECT_EQ(0, pipe(_pipe_fds));
+    brpc::SocketId id;
+    brpc::SocketOptions options;
+    options.fd = _pipe_fds[1];
+    EXPECT_EQ(0, brpc::Socket::Create(options, &id));
+    EXPECT_EQ(0, brpc::Socket::Address(id, &_socket));
+  };
 
-    virtual ~EspTest() {};
-    virtual void SetUp() {};
-    virtual void TearDown() {};
+  virtual ~EspTest() {};
+  virtual void SetUp() {};
+  virtual void TearDown() {};
 
-    void WriteResponse(brpc::Controller& cntl, int msg) {
-        brpc::EspMessage req;
-    
-        req.head.to.stub = STUB;
-        req.head.msg = msg;
-        req.head.msg_id = MSG_ID;
-        req.body.append(EXP_RESPONSE);
-    
-        butil::IOBuf req_buf;
-        brpc::policy::SerializeEspRequest(&req_buf, &cntl, &req);
-    
-        butil::IOBuf packet_buf;
-        brpc::policy::PackEspRequest(&packet_buf, NULL, cntl.call_id().value, NULL, &cntl, req_buf, NULL);
-    
-        packet_buf.cut_into_file_descriptor(_pipe_fds[1], packet_buf.size());
-    }
+  void WriteResponse(brpc::Controller& cntl, int msg) {
+    brpc::EspMessage req;
+  
+    req.head.to.stub = STUB;
+    req.head.msg = msg;
+    req.head.msg_id = MSG_ID;
+    req.body.append(EXP_RESPONSE);
+  
+    butil::IOBuf req_buf;
+    brpc::policy::SerializeEspRequest(&req_buf, &cntl, &req);
+  
+    butil::IOBuf packet_buf;
+    brpc::policy::PackEspRequest(&packet_buf, NULL, cntl.call_id().value, NULL, &cntl, req_buf, NULL);
+  
+    packet_buf.cut_into_file_descriptor(_pipe_fds[1], packet_buf.size());
+  }
 
-    int _pipe_fds[2];
-    brpc::SocketUniquePtr _socket;
+  int _pipe_fds[2];
+  brpc::SocketUniquePtr _socket;
 };
 
 TEST_F(EspTest, complete_flow) {
-    brpc::EspMessage req;
-    brpc::EspMessage res;
+  brpc::EspMessage req;
+  brpc::EspMessage res;
 
-    req.head.to.stub = STUB;
-    req.head.msg = MSG;
-    req.head.msg_id = MSG_ID;
-    req.body.append(EXP_REQUEST);
+  req.head.to.stub = STUB;
+  req.head.msg = MSG;
+  req.head.msg_id = MSG_ID;
+  req.body.append(EXP_REQUEST);
 
-    butil::IOBuf req_buf;
-    brpc::Controller cntl;
-    cntl._response = &res;
-    ASSERT_EQ(0, brpc::Socket::Address(_socket->id(), &cntl._current_call.sending_sock));
+  butil::IOBuf req_buf;
+  brpc::Controller cntl;
+  cntl._response = &res;
+  ASSERT_EQ(0, brpc::Socket::Address(_socket->id(), &cntl._current_call.sending_sock));
 
-    brpc::policy::SerializeEspRequest(&req_buf, &cntl, &req);
-    ASSERT_FALSE(cntl.Failed());
-    ASSERT_EQ(sizeof(req.head) + req.body.size(), req_buf.size());
+  brpc::policy::SerializeEspRequest(&req_buf, &cntl, &req);
+  ASSERT_FALSE(cntl.Failed());
+  ASSERT_EQ(sizeof(req.head) + req.body.size(), req_buf.size());
 
-    const brpc::Authenticator* auth = brpc::policy::global_esp_authenticator();
-    butil::IOBuf packet_buf;
-    brpc::policy::PackEspRequest(&packet_buf, NULL, cntl.call_id().value, NULL, &cntl, req_buf, auth);
+  const brpc::Authenticator* auth = brpc::policy::global_esp_authenticator();
+  butil::IOBuf packet_buf;
+  brpc::policy::PackEspRequest(&packet_buf, NULL, cntl.call_id().value, NULL, &cntl, req_buf, auth);
 
-    std::string auth_str;
-    auth->GenerateCredential(&auth_str);
+  std::string auth_str;
+  auth->GenerateCredential(&auth_str);
 
-    ASSERT_FALSE(cntl.Failed());
-    ASSERT_EQ(req_buf.size() + auth_str.size(), packet_buf.size());
+  ASSERT_FALSE(cntl.Failed());
+  ASSERT_EQ(req_buf.size() + auth_str.size(), packet_buf.size());
 
-    WriteResponse(cntl, MSG);
+  WriteResponse(cntl, MSG);
 
-    butil::IOPortal response_buf;
-    response_buf.append_from_file_descriptor(_pipe_fds[0], 1024);
+  butil::IOPortal response_buf;
+  response_buf.append_from_file_descriptor(_pipe_fds[0], 1024);
 
-    brpc::ParseResult res_pr =
-            brpc::policy::ParseEspMessage(&response_buf, NULL, false, NULL);
-    ASSERT_EQ(brpc::PARSE_OK, res_pr.error());
+  brpc::ParseResult res_pr =
+      brpc::policy::ParseEspMessage(&response_buf, NULL, false, NULL);
+  ASSERT_EQ(brpc::PARSE_OK, res_pr.error());
 
-    brpc::InputMessageBase* res_msg = res_pr.message();
-    _socket->ReAddress(&res_msg->_socket);
+  brpc::InputMessageBase* res_msg = res_pr.message();
+  _socket->ReAddress(&res_msg->_socket);
 
-    brpc::policy::ProcessEspResponse(res_msg);
+  brpc::policy::ProcessEspResponse(res_msg);
 
-    ASSERT_FALSE(cntl.Failed());
-    ASSERT_EQ(EXP_RESPONSE, res.body.to_string());
+  ASSERT_FALSE(cntl.Failed());
+  ASSERT_EQ(EXP_RESPONSE, res.body.to_string());
 }
 
 TEST_F(EspTest, wrong_response_head) {
-    brpc::EspMessage res;
-    brpc::Controller cntl;
-    cntl._response = &res;
-    ASSERT_EQ(0, brpc::Socket::Address(_socket->id(), &cntl._current_call.sending_sock));
+  brpc::EspMessage res;
+  brpc::Controller cntl;
+  cntl._response = &res;
+  ASSERT_EQ(0, brpc::Socket::Address(_socket->id(), &cntl._current_call.sending_sock));
 
-    WriteResponse(cntl, WRONG_MSG);
+  WriteResponse(cntl, WRONG_MSG);
 
-    butil::IOPortal response_buf;
-    response_buf.append_from_file_descriptor(_pipe_fds[0], 1024);
+  butil::IOPortal response_buf;
+  response_buf.append_from_file_descriptor(_pipe_fds[0], 1024);
 
-    brpc::ParseResult res_pr =
-            brpc::policy::ParseEspMessage(&response_buf, NULL, false, NULL);
-    ASSERT_EQ(brpc::PARSE_OK, res_pr.error());
+  brpc::ParseResult res_pr =
+      brpc::policy::ParseEspMessage(&response_buf, NULL, false, NULL);
+  ASSERT_EQ(brpc::PARSE_OK, res_pr.error());
 
-    brpc::InputMessageBase* res_msg = res_pr.message();
-    _socket->ReAddress(&res_msg->_socket);
+  brpc::InputMessageBase* res_msg = res_pr.message();
+  _socket->ReAddress(&res_msg->_socket);
 
-    brpc::policy::ProcessEspResponse(res_msg);
+  brpc::policy::ProcessEspResponse(res_msg);
 
-    ASSERT_TRUE(cntl.Failed());
+  ASSERT_TRUE(cntl.Failed());
 }
 } //namespace

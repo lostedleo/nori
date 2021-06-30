@@ -28,17 +28,17 @@ namespace {
 
 int ThreadNiceValue(ThreadPriority priority) {
   switch (priority) {
-    case kThreadPriority_RealtimeAudio:
-      return -10;
-    case kThreadPriority_Background:
-      return 10;
-    case kThreadPriority_Normal:
-      return 0;
-    case kThreadPriority_Display:
-      return -6;
-    default:
-      NOTREACHED() << "Unknown priority.";
-      return 0;
+  case kThreadPriority_RealtimeAudio:
+    return -10;
+  case kThreadPriority_Background:
+    return 10;
+  case kThreadPriority_Normal:
+    return 0;
+  case kThreadPriority_Display:
+    return -6;
+  default:
+    NOTREACHED() << "Unknown priority.";
+    return 0;
   }
 }
 
@@ -60,7 +60,7 @@ void PlatformThread::SetName(const char* name) {
   // thread because that would rename the process, causing tools like killall
   // to stop working.
   if (PlatformThread::CurrentId() == getpid())
-    return;
+  return;
 
   // http://0pointer.de/blog/projects/name-your-threads.html
   // Set the name for the LWP (which gets truncated to 15 characters).
@@ -70,20 +70,20 @@ void PlatformThread::SetName(const char* name) {
   int err = prctl(PR_SET_NAME, name);
   // We expect EPERM failures in sandboxed processes, just ignore those.
   if (err < 0 && errno != EPERM)
-    DPLOG(ERROR) << "prctl(PR_SET_NAME)";
+  DPLOG(ERROR) << "prctl(PR_SET_NAME)";
 #endif  //  !defined(OS_NACL)
 }
 
 // static
 void PlatformThread::SetThreadPriority(PlatformThreadHandle handle,
-                                       ThreadPriority priority) {
+                     ThreadPriority priority) {
 #if !defined(OS_NACL)
   if (priority == kThreadPriority_RealtimeAudio) {
-    const struct sched_param kRealTimePrio = { 8 };
-    if (pthread_setschedparam(pthread_self(), SCHED_RR, &kRealTimePrio) == 0) {
-      // Got real time priority, no need to set nice level.
-      return;
-    }
+  const struct sched_param kRealTimePrio = { 8 };
+  if (pthread_setschedparam(pthread_self(), SCHED_RR, &kRealTimePrio) == 0) {
+    // Got real time priority, no need to set nice level.
+    return;
+  }
   }
 
   // setpriority(2) will set a thread's priority if it is passed a tid as
@@ -93,8 +93,8 @@ void PlatformThread::SetThreadPriority(PlatformThreadHandle handle,
   DCHECK_NE(handle.id_, kInvalidThreadId);
   const int kNiceSetting = ThreadNiceValue(priority);
   if (setpriority(PRIO_PROCESS, handle.id_, kNiceSetting)) {
-    DVPLOG(1) << "Failed to set nice value of thread ("
-              << handle.id_ << ") to " << kNiceSetting;
+  DVPLOG(1) << "Failed to set nice value of thread ("
+        << handle.id_ << ") to " << kNiceSetting;
   }
 #endif  //  !defined(OS_NACL)
 }

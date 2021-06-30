@@ -34,11 +34,11 @@
 // This macro does not work for string-flags because they're thread-unsafe to
 // modify directly. To emphasize this, you have to write the validator by
 // yourself and use GFLAGS_NS::GetCommandLineOption() to acess the flag.
-#define BRPC_VALIDATE_GFLAG(flag, validate_fn)                     \
-    const int register_FLAGS_ ## flag ## _dummy                         \
-                 __attribute__((__unused__)) =                          \
-        ::brpc::RegisterFlagValidatorOrDie(                       \
-            &FLAGS_##flag, (validate_fn))
+#define BRPC_VALIDATE_GFLAG(flag, validate_fn)           \
+  const int register_FLAGS_ ## flag ## _dummy             \
+         __attribute__((__unused__)) =              \
+    ::brpc::RegisterFlagValidatorOrDie(             \
+      &FLAGS_##flag, (validate_fn))
 
 
 namespace brpc {
@@ -56,15 +56,15 @@ extern bool NonNegativeInteger(const char*, int32_t);
 extern bool NonNegativeInteger(const char*, int64_t);
 
 extern bool RegisterFlagValidatorOrDie(const bool* flag,
-                                  bool (*validate_fn)(const char*, bool));
+                  bool (*validate_fn)(const char*, bool));
 extern bool RegisterFlagValidatorOrDie(const int32_t* flag,
-                                  bool (*validate_fn)(const char*, int32_t));
+                  bool (*validate_fn)(const char*, int32_t));
 extern bool RegisterFlagValidatorOrDie(const int64_t* flag,
-                                  bool (*validate_fn)(const char*, int64_t));
+                  bool (*validate_fn)(const char*, int64_t));
 extern bool RegisterFlagValidatorOrDie(const uint64_t* flag,
-                                  bool (*validate_fn)(const char*, uint64_t));
+                  bool (*validate_fn)(const char*, uint64_t));
 extern bool RegisterFlagValidatorOrDie(const double* flag,
-                                  bool (*validate_fn)(const char*, double));
+                  bool (*validate_fn)(const char*, double));
 } // namespace brpc
 
 

@@ -27,17 +27,17 @@ namespace brpc {
 namespace policy {
 
 struct DiscoveryRegisterParam {
-    std::string appid;
-    std::string hostname;
-    std::string env;
-    std::string zone;
-    std::string region;
-    std::string addrs;          // splitted by ','
-    int status;
-    std::string version;
-    std::string metadata;
+  std::string appid;
+  std::string hostname;
+  std::string env;
+  std::string zone;
+  std::string region;
+  std::string addrs;      // splitted by ','
+  int status;
+  std::string version;
+  std::string metadata;
 
-    bool IsValid() const;
+  bool IsValid() const;
 };
 
 // ONE DiscoveryClient corresponds to ONE service instance.
@@ -46,40 +46,40 @@ struct DiscoveryRegisterParam {
 // Note: Cancel to the server is automatically called in dtor.
 class DiscoveryClient {
 public:
-    DiscoveryClient();
-    ~DiscoveryClient();
+  DiscoveryClient();
+  ~DiscoveryClient();
 
-    // Initialize this client.
-    // Returns 0 on success.
-    // NOTE: Calling more than once does nothing and returns 0.
-    int Register(const DiscoveryRegisterParam& req);
-
-private:
-    static void* PeriodicRenew(void* arg);
-    int DoCancel() const;
-    int DoRegister();
-    int DoRenew() const;
+  // Initialize this client.
+  // Returns 0 on success.
+  // NOTE: Calling more than once does nothing and returns 0.
+  int Register(const DiscoveryRegisterParam& req);
 
 private:
-    bthread_t _th;
-    butil::atomic<bool> _registered;
-    DiscoveryRegisterParam _params;
-    butil::EndPoint _current_discovery_server;
+  static void* PeriodicRenew(void* arg);
+  int DoCancel() const;
+  int DoRegister();
+  int DoRenew() const;
+
+private:
+  bthread_t _th;
+  butil::atomic<bool> _registered;
+  DiscoveryRegisterParam _params;
+  butil::EndPoint _current_discovery_server;
 };
 
 class DiscoveryNamingService : public PeriodicNamingService {
 private:
-    int GetServers(const char* service_name,
-                   std::vector<ServerNode>* servers) override;
+  int GetServers(const char* service_name,
+           std::vector<ServerNode>* servers) override;
 
-    void Describe(std::ostream& os, const DescribeOptions&) const override;
+  void Describe(std::ostream& os, const DescribeOptions&) const override;
 
-    NamingService* New() const override;
+  NamingService* New() const override;
 
-    void Destroy() override;
+  void Destroy() override;
 
 private:
-    DiscoveryClient _client;
+  DiscoveryClient _client;
 };
 
 

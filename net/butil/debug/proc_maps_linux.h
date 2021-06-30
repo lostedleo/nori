@@ -17,10 +17,10 @@ namespace debug {
 // Describes a region of mapped memory and the path of the file mapped.
 struct MappedMemoryRegion {
   enum Permission {
-    READ = 1 << 0,
-    WRITE = 1 << 1,
-    EXECUTE = 1 << 2,
-    PRIVATE = 1 << 3,  // If set, region is private, otherwise it is shared.
+  READ = 1 << 0,
+  WRITE = 1 << 1,
+  EXECUTE = 1 << 2,
+  PRIVATE = 1 << 3,  // If set, region is private, otherwise it is shared.
   };
 
   // The address range [start,end) of mapped memory.
@@ -82,7 +82,7 @@ BUTIL_EXPORT bool ReadProcMaps(std::string* proc_maps);
 // Parses /proc/<pid>/maps input data and stores in |regions|. Returns true
 // and updates |regions| if and only if all of |input| was successfully parsed.
 BUTIL_EXPORT bool ParseProcMaps(const std::string& input,
-                               std::vector<MappedMemoryRegion>* regions);
+                 std::vector<MappedMemoryRegion>* regions);
 
 }  // namespace debug
 }  // namespace butil

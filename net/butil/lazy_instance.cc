@@ -22,9 +22,9 @@ bool NeedsLazyInstance(subtle::AtomicWord* state) {
   // kLazyInstanceStateCreating have no associated data (memory barriers are
   // all about ordering of memory accesses to *associated* data).
   if (subtle::NoBarrier_CompareAndSwap(state, 0,
-                                       kLazyInstanceStateCreating) == 0)
-    // Caller must create instance
-    return true;
+                     kLazyInstanceStateCreating) == 0)
+  // Caller must create instance
+  return true;
 
   // It's either in the process of being created, or already created. Spin.
   // The load has acquire memory ordering as a thread which sees
@@ -32,16 +32,16 @@ bool NeedsLazyInstance(subtle::AtomicWord* state) {
   // the associated data (buf_). Pairing Release_Store is in
   // CompleteLazyInstance().
   while (subtle::Acquire_Load(state) == kLazyInstanceStateCreating) {
-    PlatformThread::YieldCurrentThread();
+  PlatformThread::YieldCurrentThread();
   }
   // Someone else created the instance.
   return false;
 }
 
 void CompleteLazyInstance(subtle::AtomicWord* state,
-                          subtle::AtomicWord new_instance,
-                          void* lazy_instance,
-                          void (*dtor)(void*)) {
+              subtle::AtomicWord new_instance,
+              void* lazy_instance,
+              void (*dtor)(void*)) {
   // See the comment to the corresponding HAPPENS_AFTER in Pointer().
   ANNOTATE_HAPPENS_BEFORE(state);
 
@@ -52,7 +52,7 @@ void CompleteLazyInstance(subtle::AtomicWord* state,
 
   // Make sure that the lazily instantiated object will get destroyed at exit.
   if (dtor)
-    AtExitManager::RegisterCallback(dtor, lazy_instance);
+  AtExitManager::RegisterCallback(dtor, lazy_instance);
 }
 
 }  // namespace internal

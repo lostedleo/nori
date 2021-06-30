@@ -12,8 +12,8 @@ namespace butil {
 TEST(ScopedClearErrno, TestNoError) {
   errno = 1;
   {
-    ScopedClearErrno clear_error;
-    EXPECT_EQ(0, errno);
+  ScopedClearErrno clear_error;
+  EXPECT_EQ(0, errno);
   }
   EXPECT_EQ(1, errno);
 }
@@ -21,8 +21,8 @@ TEST(ScopedClearErrno, TestNoError) {
 TEST(ScopedClearErrno, TestError) {
   errno = 1;
   {
-    ScopedClearErrno clear_error;
-    errno = 2;
+  ScopedClearErrno clear_error;
+  errno = 2;
   }
   EXPECT_EQ(2, errno);
 }

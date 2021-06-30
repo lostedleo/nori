@@ -17,7 +17,7 @@ namespace debug {
 StackTrace::StackTrace(const void* const* trace, size_t count) {
   count = std::min(count, arraysize(trace_));
   if (count)
-    memcpy(trace_, trace, count * sizeof(trace_[0]));
+  memcpy(trace_, trace, count * sizeof(trace_[0]));
   count_ = count;
 }
 
@@ -27,7 +27,7 @@ StackTrace::~StackTrace() {
 const void *const *StackTrace::Addresses(size_t* count) const {
   *count = count_;
   if (count_)
-    return trace_;
+  return trace_;
   return NULL;
 }
 

@@ -17,13 +17,13 @@ namespace butil {
 //
 // 主要支持如下操作：
 //
-// - Put       在队尾添加元素
-// - Take      从队头取出元素, 若队列空，则一直等待，直到别的线程添加新元素
+// - Put     在队尾添加元素
+// - Take    从队头取出元素, 若队列空，则一直等待，直到别的线程添加新元素
 // - TryTake   同上 Take，但不等待，立即返回
 // - TimedTake 同上 Take，但设置了超时
-// - MultiTake    一次取出所有元素, 若队列空，则一直等待, 直到别的线程添加新元素
+// - MultiTake  一次取出所有元素, 若队列空，则一直等待, 直到别的线程添加新元素
 // - TryMultiTake 同上 MultiTake, 但不等待，立刻返回
-// - Close     关闭队列，之后不再允许添加新元素，但允许取出之前已经添加的元素
+// - Close   关闭队列，之后不再允许添加新元素，但允许取出之前已经添加的元素
 //   ...
 //
 // 该类的所有方法都是线程安全的
@@ -145,7 +145,7 @@ class BlockingQueue {
 template<class E>
 BlockingQueue<E>::BlockingQueue()
   : closed_(false),
-    cond_var_(&lock_) {
+  cond_var_(&lock_) {
 }
 
 template<class E>
@@ -165,7 +165,7 @@ bool BlockingQueue<E>::Put(E e) {
   AutoLock lock(lock_);
 
   if (closed_) {
-    return false;
+  return false;
   }
 
   queue_.push_back(e);
@@ -178,7 +178,7 @@ int BlockingQueue<E>::PutEx(E e) {
   AutoLock lock(lock_);
 
   if (closed_) {
-    return -1;
+  return -1;
   }
 
   queue_.push_back(e);
@@ -191,8 +191,8 @@ bool BlockingQueue<E>::Take(E* e) {
   AutoLock lock(lock_);
 
   while (queue_.empty()) {
-    if (closed_) return false;
-    cond_var_.Wait();
+  if (closed_) return false;
+  cond_var_.Wait();
   }
 
   *e = queue_.front();
@@ -205,8 +205,8 @@ E BlockingQueue<E>::Take() {
   AutoLock lock(lock_);
 
   while (queue_.empty()) {
-    if (closed_) return E();
-    cond_var_.Wait();
+  if (closed_) return E();
+  cond_var_.Wait();
   }
 
   E e = queue_.front();
@@ -219,11 +219,11 @@ int BlockingQueue<E>::TryTake(E *e) {
   AutoLock lock(lock_);
 
   if (queue_.empty()) {
-    if (closed_) {
-      return -1;
-    } else {
-      return 0;
-    }
+  if (closed_) {
+    return -1;
+  } else {
+    return 0;
+  }
   }
 
   *e = queue_.front();
@@ -241,23 +241,23 @@ int BlockingQueue<E>::TryTake(E *e) {
 template<class E>
 int BlockingQueue<E>::TimedTake(int millisecond, E *e) {
   if (millisecond <= 0) {
-    return this->TryTake(e);
+  return this->TryTake(e);
   }
 
   AutoLock lock(lock_);
 
   while (queue_.empty()) {
-    if (closed_) {
-      // 队列关闭
-      *e = E();
-      return -1;
-    }
-    // NOTE: |millisecond| will be updated by TimedWait.
-    if (!cond_var_.TimedWait(butil::TimeDelta::FromMilliseconds(millisecond))) {
-      // 超时
-      *e = E();
-      return 0;
-    }
+  if (closed_) {
+    // 队列关闭
+    *e = E();
+    return -1;
+  }
+  // NOTE: |millisecond| will be updated by TimedWait.
+  if (!cond_var_.TimedWait(butil::TimeDelta::FromMilliseconds(millisecond))) {
+    // 超时
+    *e = E();
+    return 0;
+  }
   }
 
   // 成功取得元素
@@ -278,7 +278,7 @@ int BlockingQueue<E>::TryMultiTake(std::deque<E> *result) {
   AutoLock lock(lock_);
 
   if (queue_.empty() && closed_) {
-    return -1;
+  return -1;
   }
 
   int ret = queue_.size();
@@ -294,7 +294,7 @@ int BlockingQueue<E>::TryMultiTake(OutputIterator out) {
   AutoLock lock(lock_);
 
   if (queue_.empty() && closed_) {
-    return -1;
+  return -1;
   }
 
   int ret = queue_.size();
@@ -310,12 +310,12 @@ int BlockingQueue<E>::MultiTake(OutputIterator out) {
   AutoLock lock(lock_);
 
   if (queue_.empty() && closed_) {
-    return -1;
+  return -1;
   }
 
   while (queue_.empty()) {
-    if (closed_) return -1;
-    cond_var_.Wait();
+  if (closed_) return -1;
+  cond_var_.Wait();
   }
 
   int ret = queue_.size();
@@ -330,12 +330,12 @@ int BlockingQueue<E>::MultiTake(std::deque<E> *result) {
   AutoLock lock(lock_);
 
   if (queue_.empty() && closed_) {
-    return -1;
+  return -1;
   }
 
   while (queue_.empty()) {
-    if (closed_) return -1;
-    cond_var_.Wait();
+  if (closed_) return -1;
+  cond_var_.Wait();
   }
 
   int ret = queue_.size();
@@ -350,18 +350,18 @@ int BlockingQueue<E>::TakeElements(E events[], int size) {
   AutoLock lock(lock_);
 
   if (queue_.empty() && closed_) {
-    return -1;
+  return -1;
   }
 
   while (queue_.empty()) {
-    if (closed_) return -1;
-    cond_var_.Wait();
+  if (closed_) return -1;
+  cond_var_.Wait();
   }
 
   int ret = static_cast<int>(queue_.size()) > size ? size : queue_.size();
   for (int i = 0; i < ret; ++i) {
-    events[i] = queue_.front();
-    queue_.pop_front();
+  events[i] = queue_.front();
+  queue_.pop_front();
   }
 
   return ret;
@@ -379,21 +379,21 @@ int BlockingQueue<E>::TakeElements(E events[], int size) {
 template<class E>
 int BlockingQueue<E>::TimedMultiTake(int millisecond, std::deque<E> *result) {
   if (millisecond <= 0) {
-    return this->TryMultiTake(result);
+  return this->TryMultiTake(result);
   }
 
   AutoLock lock(lock_);
 
   while (queue_.empty()) {
-    if (closed_) {
-      // 队列关闭
-      return -1;
-    }
-    // NOTE: |millisecond| will be updated by TimedWait.
-    if (!cond_var_.TimedWait(butil::TimeDelta::FromMilliseconds(millisecond))) {
-      // 超时
-      return 0;
-    }
+  if (closed_) {
+    // 队列关闭
+    return -1;
+  }
+  // NOTE: |millisecond| will be updated by TimedWait.
+  if (!cond_var_.TimedWait(butil::TimeDelta::FromMilliseconds(millisecond))) {
+    // 超时
+    return 0;
+  }
   }
 
   // 成功取得元素
@@ -409,7 +409,7 @@ void BlockingQueue<E>::Close() {
   AutoLock lock(lock_);
 
   if (closed_) {
-    return;
+  return;
   }
 
   closed_ = true;

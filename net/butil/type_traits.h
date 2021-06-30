@@ -100,9 +100,9 @@ template <class T> struct is_pod : std::is_pod<T> {};
 // is not a POD even if T and U are PODs.
 template <class T> struct is_pod
 : integral_constant<bool, (is_integral<T>::value ||
-                           is_floating_point<T>::value ||
-                           is_enum<T>::value ||
-                           is_pointer<T>::value)> { };
+               is_floating_point<T>::value ||
+               is_enum<T>::value ||
+               is_pointer<T>::value)> { };
 template <class T> struct is_pod<const T> : is_pod<T> { };
 template <class T> struct is_pod<volatile T> : is_pod<T> { };
 template <class T> struct is_pod<const volatile T> : is_pod<T> { };
@@ -134,10 +134,10 @@ template <typename R, typename Z, typename A, typename B, typename C>
 struct is_member_function_pointer<R(Z::*)(A, B, C) const> : true_type {};
 
 template <typename R, typename Z, typename A, typename B, typename C,
-          typename D>
+      typename D>
 struct is_member_function_pointer<R(Z::*)(A, B, C, D)> : true_type {};
 template <typename R, typename Z, typename A, typename B, typename C,
-          typename D>
+      typename D>
 struct is_member_function_pointer<R(Z::*)(A, B, C, D) const> : true_type {};
 
 // Specified by TR1 [4.6] Relationships between types
@@ -206,12 +206,12 @@ struct IsClassHelper {
 
 template <typename T>
 struct EmptyHelper1 : public T {
-    EmptyHelper1();  // hh compiler bug workaround
-    int i[256];
+  EmptyHelper1();  // hh compiler bug workaround
+  int i[256];
 private:
-    // suppress compiler warnings:
-    EmptyHelper1(const EmptyHelper1&);
-    EmptyHelper1& operator=(const EmptyHelper1&);
+  // suppress compiler warnings:
+  EmptyHelper1(const EmptyHelper1&);
+  EmptyHelper1& operator=(const EmptyHelper1&);
 };
 
 #if defined(COMPILER_MSVC)
@@ -219,7 +219,7 @@ private:
 #endif
 
 struct EmptyHelper2 {
-    int i[256];
+  int i[256];
 };
 
 }  // namespace internal
@@ -231,24 +231,24 @@ struct EmptyHelper2 {
 // of whether or not the conversion would emit a warning.
 template <typename From, typename To>
 struct is_convertible
-    : integral_constant<bool,
-                        sizeof(internal::ConvertHelper::Test<To>(
-                                   internal::ConvertHelper::Create<From>())) ==
-                        sizeof(internal::YesType)> {
+  : integral_constant<bool,
+            sizeof(internal::ConvertHelper::Test<To>(
+                   internal::ConvertHelper::Create<From>())) ==
+            sizeof(internal::YesType)> {
 };
 
 template <typename T>
 struct is_class
-    : integral_constant<bool,
-                        sizeof(internal::IsClassHelper::Test<T>(0)) ==
-                            sizeof(internal::YesType)> {
+  : integral_constant<bool,
+            sizeof(internal::IsClassHelper::Test<T>(0)) ==
+              sizeof(internal::YesType)> {
 };
 
 // True if T is an empty class/struct
 // NOTE: not work for union
 template <typename T>
 struct is_empty : integral_constant<bool, is_class<T>::value &&
-    sizeof(internal::EmptyHelper1<T>) == sizeof(internal::EmptyHelper2)> {};
+  sizeof(internal::EmptyHelper1<T>) == sizeof(internal::EmptyHelper2)> {};
 
 template <bool B, typename T = void>
 struct enable_if {};
@@ -259,25 +259,25 @@ struct enable_if<true, T> { typedef T type; };
 // Select type by C.
 template <bool C, typename TrueType, typename FalseType>
 struct conditional {
-    typedef TrueType type;
+  typedef TrueType type;
 };
 template <typename TrueType, typename FalseType>
 struct conditional<false, TrueType, FalseType> {
-    typedef FalseType type;
+  typedef FalseType type;
 };
 
 // Specified by TR1 [4.7.1]
 template <typename _Tp> struct add_const { typedef _Tp const  type; };
 template <typename _Tp> struct add_volatile { typedef _Tp volatile  type; };
 template <typename _Tp> struct add_cv {
-    typedef typename add_const<typename add_volatile<_Tp>::type>::type type;
+  typedef typename add_const<typename add_volatile<_Tp>::type>::type type;
 };
 template <typename T> struct remove_const { typedef T type; };
 template <typename T> struct remove_const<T const> { typedef T type; };
 template <typename T> struct remove_volatile { typedef T type; };
 template <typename T> struct remove_volatile<T volatile> { typedef T type; };
 template <typename T> struct remove_cv {
-    typedef typename remove_const<typename remove_volatile<T>::type>::type type;
+  typedef typename remove_const<typename remove_volatile<T>::type>::type type;
 };
 
 // Specified by TR1 [4.7.2] Reference modifications.
@@ -294,18 +294,18 @@ template <> struct add_reference<void const volatile> { typedef void const volat
 
 // Shortcut for adding/removing const&
 template <typename T> struct add_const_reference { 
-    typedef typename add_reference<typename add_const<T>::type>::type type;
+  typedef typename add_reference<typename add_const<T>::type>::type type;
 };
 template <typename T> struct remove_const_reference { 
-    typedef typename remove_const<typename remove_reference<T>::type>::type type;
+  typedef typename remove_const<typename remove_reference<T>::type>::type type;
 };
 
 // Add const& for non-integral types.
-// add_cr_non_integral<int>::type      -> int
+// add_cr_non_integral<int>::type    -> int
 // add_cr_non_integral<FooClass>::type -> const FooClass&
 template <typename T> struct add_cr_non_integral {
-    typedef typename conditional<is_integral<T>::value, T, 
-            typename add_reference<typename add_const<T>::type>::type>::type type;
+  typedef typename conditional<is_integral<T>::value, T, 
+      typename add_reference<typename add_const<T>::type>::type>::type type;
 };
 
 // Specified by TR1 [4.7.4] Pointer modifications.
@@ -314,7 +314,7 @@ template <typename T> struct remove_pointer<T*> { typedef T type; };
 template <typename T> struct remove_pointer<T* const> { typedef T type; };
 template <typename T> struct remove_pointer<T* volatile> { typedef T type; };
 template <typename T> struct remove_pointer<T* const volatile> {
-    typedef T type; 
+  typedef T type; 
 };
 
 // is_reference is false except for reference types.
@@ -325,19 +325,19 @@ namespace internal {
 // is_convertible chokes if the first argument is an array. That's why
 // we use add_reference here.
 template <bool NotUnum, typename T> struct is_enum_impl
-    : is_convertible<typename add_reference<T>::type, int> { };
+  : is_convertible<typename add_reference<T>::type, int> { };
 
 template <typename T> struct is_enum_impl<true, T> : false_type { };
 
 }
 
 template <typename T> struct is_enum
-    : internal::is_enum_impl<
-                is_same<T, void>::value ||
-                    is_integral<T>::value ||
-                    is_floating_point<T>::value ||
-                    is_reference<T>::value ||
-                    is_class<T>::value, T> { };
+  : internal::is_enum_impl<
+        is_same<T, void>::value ||
+          is_integral<T>::value ||
+          is_floating_point<T>::value ||
+          is_reference<T>::value ||
+          is_class<T>::value, T> { };
 
 template <typename T> struct is_enum<const T> : is_enum<T> { };
 template <typename T> struct is_enum<volatile T> : is_enum<T> { };

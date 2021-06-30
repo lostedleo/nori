@@ -50,33 +50,33 @@ class MultipleThreadMain : public PlatformThread::Delegate {
   virtual ~MultipleThreadMain() {}
 
   static void CleanUp() {
-    SharedMemory memory;
-    memory.Delete(s_test_name_);
+  SharedMemory memory;
+  memory.Delete(s_test_name_);
   }
 
   // PlatformThread::Delegate interface.
   virtual void ThreadMain() OVERRIDE {
 #if defined(OS_MACOSX)
-    mac::ScopedNSAutoreleasePool pool;
+  mac::ScopedNSAutoreleasePool pool;
 #endif
-    const uint32_t kDataSize = 1024;
-    SharedMemory memory;
-    bool rv = memory.CreateNamedDeprecated(s_test_name_, true, kDataSize);
-    EXPECT_TRUE(rv);
-    rv = memory.Map(kDataSize);
-    EXPECT_TRUE(rv);
-    int *ptr = static_cast<int*>(memory.memory()) + id_;
-    EXPECT_EQ(0, *ptr);
+  const uint32_t kDataSize = 1024;
+  SharedMemory memory;
+  bool rv = memory.CreateNamedDeprecated(s_test_name_, true, kDataSize);
+  EXPECT_TRUE(rv);
+  rv = memory.Map(kDataSize);
+  EXPECT_TRUE(rv);
+  int *ptr = static_cast<int*>(memory.memory()) + id_;
+  EXPECT_EQ(0, *ptr);
 
-    for (int idx = 0; idx < 100; idx++) {
-      *ptr = idx;
-      PlatformThread::Sleep(butil::TimeDelta::FromMilliseconds(1));
-      EXPECT_EQ(*ptr, idx);
-    }
-    // Reset back to 0 for the next test that uses the same name.
-    *ptr = 0;
+  for (int idx = 0; idx < 100; idx++) {
+    *ptr = idx;
+    PlatformThread::Sleep(butil::TimeDelta::FromMilliseconds(1));
+    EXPECT_EQ(*ptr, idx);
+  }
+  // Reset back to 0 for the next test that uses the same name.
+  *ptr = 0;
 
-    memory.Close();
+  memory.Close();
   }
 
  private:
@@ -88,7 +88,7 @@ class MultipleThreadMain : public PlatformThread::Delegate {
 };
 
 const char* const MultipleThreadMain::s_test_name_ =
-    "SharedMemoryOpenThreadTest";
+  "SharedMemoryOpenThreadTest";
 
 // TODO(port):
 // This test requires the ability to pass file descriptors between processes.
@@ -105,32 +105,32 @@ class MultipleLockThread : public PlatformThread::Delegate {
 
   // PlatformThread::Delegate interface.
   virtual void ThreadMain() OVERRIDE {
-    const uint32_t kDataSize = sizeof(int);
-    SharedMemoryHandle handle = NULL;
-    {
-      SharedMemory memory1;
-      EXPECT_TRUE(memory1.CreateNamedDeprecated(
-          "SharedMemoryMultipleLockThreadTest", true, kDataSize));
-      EXPECT_TRUE(memory1.ShareToProcess(GetCurrentProcess(), &handle));
-      // TODO(paulg): Implement this once we have a posix version of
-      // SharedMemory::ShareToProcess.
-      EXPECT_TRUE(true);
-    }
+  const uint32_t kDataSize = sizeof(int);
+  SharedMemoryHandle handle = NULL;
+  {
+    SharedMemory memory1;
+    EXPECT_TRUE(memory1.CreateNamedDeprecated(
+      "SharedMemoryMultipleLockThreadTest", true, kDataSize));
+    EXPECT_TRUE(memory1.ShareToProcess(GetCurrentProcess(), &handle));
+    // TODO(paulg): Implement this once we have a posix version of
+    // SharedMemory::ShareToProcess.
+    EXPECT_TRUE(true);
+  }
 
-    SharedMemory memory2(handle, false);
-    EXPECT_TRUE(memory2.Map(kDataSize));
-    volatile int* const ptr = static_cast<int*>(memory2.memory());
+  SharedMemory memory2(handle, false);
+  EXPECT_TRUE(memory2.Map(kDataSize));
+  volatile int* const ptr = static_cast<int*>(memory2.memory());
 
-    for (int idx = 0; idx < 20; idx++) {
-      memory2.LockDeprecated();
-      int i = (id_ << 16) + idx;
-      *ptr = i;
-      PlatformThread::Sleep(TimeDelta::FromMilliseconds(1));
-      EXPECT_EQ(*ptr, i);
-      memory2.UnlockDeprecated();
-    }
+  for (int idx = 0; idx < 20; idx++) {
+    memory2.LockDeprecated();
+    int i = (id_ << 16) + idx;
+    *ptr = i;
+    PlatformThread::Sleep(TimeDelta::FromMilliseconds(1));
+    EXPECT_EQ(*ptr, i);
+    memory2.UnlockDeprecated();
+  }
 
-    memory2.Close();
+  memory2.Close();
   }
 
  private:
@@ -182,7 +182,7 @@ TEST(SharedMemoryTest, OpenClose) {
   char *start_ptr = static_cast<char *>(memory2.memory());
   char *end_ptr = start_ptr + kDataSize;
   for (char* ptr = start_ptr; ptr < end_ptr; ptr++)
-    EXPECT_EQ(*ptr, '1');
+  EXPECT_EQ(*ptr, '1');
 
   // Close the second memory segment.
   memory2.Close();
@@ -198,7 +198,7 @@ TEST(SharedMemoryTest, OpenExclusive) {
   const uint32_t kDataSize2 = 2048;
   std::ostringstream test_name_stream;
   test_name_stream << "SharedMemoryOpenExclusiveTest."
-                   << Time::Now().ToDoubleT();
+           << Time::Now().ToDoubleT();
   std::string test_name = test_name_stream.str();
 
   // Open two handles to a memory segment and check that
@@ -218,7 +218,7 @@ TEST(SharedMemoryTest, OpenExclusive) {
 
   // The mapped memory1 shouldn't exceed rounding for allocation granularity.
   EXPECT_LT(memory1.mapped_size(),
-            kDataSize + butil::SysInfo::VMAllocationGranularity());
+      kDataSize + butil::SysInfo::VMAllocationGranularity());
 
   memset(memory1.memory(), 'G', kDataSize);
 
@@ -243,13 +243,13 @@ TEST(SharedMemoryTest, OpenExclusive) {
 
   // The mapped memory2 shouldn't exceed rounding for allocation granularity.
   EXPECT_LT(memory2.mapped_size(),
-            kDataSize2 + butil::SysInfo::VMAllocationGranularity());
+      kDataSize2 + butil::SysInfo::VMAllocationGranularity());
 
   // Verify that opening memory2 didn't truncate or delete memory 1.
   char *start_ptr = static_cast<char *>(memory2.memory());
   char *end_ptr = start_ptr + kDataSize;
   for (char* ptr = start_ptr; ptr < end_ptr; ptr++) {
-    EXPECT_EQ(*ptr, 'G');
+  EXPECT_EQ(*ptr, 'G');
   }
 
   memory1.Close();
@@ -273,26 +273,26 @@ TEST(SharedMemoryTest, MultipleThreads) {
 
   int threadcounts[] = { 1, kNumThreads };
   for (size_t i = 0; i < arraysize(threadcounts); i++) {
-    int numthreads = threadcounts[i];
-    scoped_ptr<PlatformThreadHandle[]> thread_handles;
-    scoped_ptr<MultipleThreadMain*[]> thread_delegates;
+  int numthreads = threadcounts[i];
+  scoped_ptr<PlatformThreadHandle[]> thread_handles;
+  scoped_ptr<MultipleThreadMain*[]> thread_delegates;
 
-    thread_handles.reset(new PlatformThreadHandle[numthreads]);
-    thread_delegates.reset(new MultipleThreadMain*[numthreads]);
+  thread_handles.reset(new PlatformThreadHandle[numthreads]);
+  thread_delegates.reset(new MultipleThreadMain*[numthreads]);
 
-    // Spawn the threads.
-    for (int16_t index = 0; index < numthreads; index++) {
-      PlatformThreadHandle pth;
-      thread_delegates[index] = new MultipleThreadMain(index);
-      EXPECT_TRUE(PlatformThread::Create(0, thread_delegates[index], &pth));
-      thread_handles[index] = pth;
-    }
+  // Spawn the threads.
+  for (int16_t index = 0; index < numthreads; index++) {
+    PlatformThreadHandle pth;
+    thread_delegates[index] = new MultipleThreadMain(index);
+    EXPECT_TRUE(PlatformThread::Create(0, thread_delegates[index], &pth));
+    thread_handles[index] = pth;
+  }
 
-    // Wait for the threads to finish.
-    for (int index = 0; index < numthreads; index++) {
-      PlatformThread::Join(thread_handles[index]);
-      delete thread_delegates[index];
-    }
+  // Wait for the threads to finish.
+  for (int index = 0; index < numthreads; index++) {
+    PlatformThread::Join(thread_handles[index]);
+    delete thread_delegates[index];
+  }
   }
   MultipleThreadMain::CleanUp();
 }
@@ -311,16 +311,16 @@ TEST(SharedMemoryTest, Lock) {
 
   // Spawn the threads.
   for (int index = 0; index < kNumThreads; ++index) {
-    PlatformThreadHandle pth;
-    thread_delegates[index] = new MultipleLockThread(index);
-    EXPECT_TRUE(PlatformThread::Create(0, thread_delegates[index], &pth));
-    thread_handles[index] = pth;
+  PlatformThreadHandle pth;
+  thread_delegates[index] = new MultipleLockThread(index);
+  EXPECT_TRUE(PlatformThread::Create(0, thread_delegates[index], &pth));
+  thread_handles[index] = pth;
   }
 
   // Wait for the threads to finish.
   for (int index = 0; index < kNumThreads; ++index) {
-    PlatformThread::Join(thread_handles[index]);
-    delete thread_delegates[index];
+  PlatformThread::Join(thread_handles[index]);
+  delete thread_delegates[index];
   }
 }
 #endif
@@ -340,32 +340,32 @@ TEST(SharedMemoryTest, AnonymousPrivate) {
   ASSERT_TRUE(pointers.get());
 
   for (i = 0; i < count; i++) {
-    rv = memories[i].CreateAndMapAnonymous(kDataSize);
-    EXPECT_TRUE(rv);
-    int *ptr = static_cast<int*>(memories[i].memory());
-    EXPECT_TRUE(ptr);
-    pointers[i] = ptr;
+  rv = memories[i].CreateAndMapAnonymous(kDataSize);
+  EXPECT_TRUE(rv);
+  int *ptr = static_cast<int*>(memories[i].memory());
+  EXPECT_TRUE(ptr);
+  pointers[i] = ptr;
   }
 
   for (i = 0; i < count; i++) {
-    // zero out the first int in each except for i; for that one, make it 100.
-    for (j = 0; j < count; j++) {
-      if (i == j)
-        pointers[j][0] = 100;
-      else
-        pointers[j][0] = 0;
-    }
-    // make sure there is no bleeding of the 100 into the other pointers
-    for (j = 0; j < count; j++) {
-      if (i == j)
-        EXPECT_EQ(100, pointers[j][0]);
-      else
-        EXPECT_EQ(0, pointers[j][0]);
-    }
+  // zero out the first int in each except for i; for that one, make it 100.
+  for (j = 0; j < count; j++) {
+    if (i == j)
+    pointers[j][0] = 100;
+    else
+    pointers[j][0] = 0;
+  }
+  // make sure there is no bleeding of the 100 into the other pointers
+  for (j = 0; j < count; j++) {
+    if (i == j)
+    EXPECT_EQ(100, pointers[j][0]);
+    else
+    EXPECT_EQ(0, pointers[j][0]);
+  }
   }
 
   for (int i = 0; i < count; i++) {
-    memories[i].Close();
+  memories[i].Close();
   }
 }
 
@@ -383,13 +383,13 @@ TEST(SharedMemoryTest, ShareReadOnly) {
 
   SharedMemoryHandle readonly_handle;
   ASSERT_TRUE(writable_shmem.ShareReadOnlyToProcess(GetCurrentProcessHandle(),
-                                                    &readonly_handle));
+                          &readonly_handle));
   SharedMemory readonly_shmem(readonly_handle, /*readonly=*/true);
 
   ASSERT_TRUE(readonly_shmem.Map(contents.size()));
   EXPECT_EQ(contents,
-            StringPiece(static_cast<const char*>(readonly_shmem.memory()),
-                        contents.size()));
+      StringPiece(static_cast<const char*>(readonly_shmem.memory()),
+            contents.size()));
   EXPECT_TRUE(readonly_shmem.Unmap());
 
   // Make sure the writable instance is still writable.
@@ -397,8 +397,8 @@ TEST(SharedMemoryTest, ShareReadOnly) {
   StringPiece new_contents = "Goodbye";
   memcpy(writable_shmem.memory(), new_contents.data(), new_contents.size());
   EXPECT_EQ(new_contents,
-            StringPiece(static_cast<const char*>(writable_shmem.memory()),
-                        new_contents.size()));
+      StringPiece(static_cast<const char*>(writable_shmem.memory()),
+            new_contents.size()));
 
   // We'd like to check that if we send the read-only segment to another
   // process, then that other process can't reopen it read/write.  (Since that
@@ -415,34 +415,34 @@ TEST(SharedMemoryTest, ShareReadOnly) {
   (void)handle;
 #elif defined(OS_POSIX)
   EXPECT_EQ(O_RDONLY, fcntl(handle.fd, F_GETFL) & O_ACCMODE)
-      << "The descriptor itself should be read-only.";
+    << "The descriptor itself should be read-only.";
 
   errno = 0;
   void* writable = mmap(
-      NULL, contents.size(), PROT_READ | PROT_WRITE, MAP_SHARED, handle.fd, 0);
+    NULL, contents.size(), PROT_READ | PROT_WRITE, MAP_SHARED, handle.fd, 0);
   int mmap_errno = errno;
   EXPECT_EQ(MAP_FAILED, writable)
-      << "It shouldn't be possible to re-mmap the descriptor writable.";
+    << "It shouldn't be possible to re-mmap the descriptor writable.";
   EXPECT_EQ(EACCES, mmap_errno) << strerror(mmap_errno);
   if (writable != MAP_FAILED)
-    EXPECT_EQ(0, munmap(writable, readonly_shmem.mapped_size()));
+  EXPECT_EQ(0, munmap(writable, readonly_shmem.mapped_size()));
 
 #elif defined(OS_WIN)
   EXPECT_EQ(NULL, MapViewOfFile(handle, FILE_MAP_WRITE, 0, 0, 0))
-      << "Shouldn't be able to map memory writable.";
+    << "Shouldn't be able to map memory writable.";
 
   HANDLE temp_handle;
   BOOL rv = ::DuplicateHandle(GetCurrentProcess(),
-                              handle,
-                              GetCurrentProcess,
-                              &temp_handle,
-                              FILE_MAP_ALL_ACCESS,
-                              false,
-                              0);
+                handle,
+                GetCurrentProcess,
+                &temp_handle,
+                FILE_MAP_ALL_ACCESS,
+                false,
+                0);
   EXPECT_EQ(FALSE, rv)
-      << "Shouldn't be able to duplicate the handle into a writable one.";
+    << "Shouldn't be able to duplicate the handle into a writable one.";
   if (rv)
-    butil::win::ScopedHandle writable_handle(temp_handle);
+  butil::win::ScopedHandle writable_handle(temp_handle);
 #else
 #error Unexpected platform; write a test that tries to make 'handle' writable.
 #endif  // defined(OS_POSIX) || defined(OS_WIN)
@@ -462,16 +462,16 @@ TEST(SharedMemoryTest, ShareToSelf) {
 
   ASSERT_TRUE(shared.Map(contents.size()));
   EXPECT_EQ(
-      contents,
-      StringPiece(static_cast<const char*>(shared.memory()), contents.size()));
+    contents,
+    StringPiece(static_cast<const char*>(shared.memory()), contents.size()));
 
   ASSERT_TRUE(shmem.ShareToProcess(GetCurrentProcessHandle(), &shared_handle));
   SharedMemory readonly(shared_handle, /*readonly=*/true);
 
   ASSERT_TRUE(readonly.Map(contents.size()));
   EXPECT_EQ(contents,
-            StringPiece(static_cast<const char*>(readonly.memory()),
-                        contents.size()));
+      StringPiece(static_cast<const char*>(readonly.memory()),
+            contents.size()));
 }
 
 TEST(SharedMemoryTest, MapAt) {
@@ -485,7 +485,7 @@ TEST(SharedMemoryTest, MapAt) {
   ASSERT_NE(ptr, static_cast<void*>(NULL));
 
   for (size_t i = 0; i < kCount; ++i) {
-    ptr[i] = i;
+  ptr[i] = i;
   }
 
   memory.Unmap();
@@ -496,7 +496,7 @@ TEST(SharedMemoryTest, MapAt) {
   ptr = static_cast<uint32_t*>(memory.memory());
   ASSERT_NE(ptr, static_cast<void*>(NULL));
   for (size_t i = offset; i < kCount; ++i) {
-    EXPECT_EQ(ptr[i - offset], i);
+  EXPECT_EQ(ptr[i - offset], i);
   }
 }
 
@@ -527,7 +527,7 @@ TEST(SharedMemoryTest, AnonymousExecutable) {
   EXPECT_TRUE(shared_memory.Map(shared_memory.requested_size()));
 
   EXPECT_EQ(0, mprotect(shared_memory.memory(), shared_memory.requested_size(),
-                        PROT_READ | PROT_EXEC));
+            PROT_READ | PROT_EXEC));
 }
 
 // Android supports a different permission model than POSIX for its "ashmem"
@@ -539,7 +539,7 @@ TEST(SharedMemoryTest, AnonymousExecutable) {
 class ScopedUmaskSetter {
  public:
   explicit ScopedUmaskSetter(mode_t target_mask) {
-    old_umask_ = umask(target_mask);
+  old_umask_ = umask(target_mask);
   }
   ~ScopedUmaskSetter() { umask(old_umask_); }
  private:
@@ -576,7 +576,7 @@ TEST(SharedMemoryTest, FilePermissionsNamed) {
   SharedMemoryCreateOptions options;
   options.size = kTestSize;
   std::string shared_mem_name = "shared_perm_test-" + IntToString(getpid()) +
-      "-" + Uint64ToString(RandUint64());
+    "-" + Uint64ToString(RandUint64());
   options.name_deprecated = &shared_mem_name;
   // Set a file mode creation mask that gives all permissions.
   ScopedUmaskSetter permissive_mask(S_IWGRP | S_IWOTH);
@@ -606,7 +606,7 @@ TEST(SharedMemoryTest, MapMinimumAlignment) {
   SharedMemory shared_memory;
   ASSERT_TRUE(shared_memory.CreateAndMapAnonymous(kDataSize));
   EXPECT_EQ(0U, reinterpret_cast<uintptr_t>(
-      shared_memory.memory()) & (SharedMemory::MAP_MINIMUM_ALIGNMENT - 1));
+    shared_memory.memory()) & (SharedMemory::MAP_MINIMUM_ALIGNMENT - 1));
   shared_memory.Close();
 }
 
@@ -618,39 +618,39 @@ class SharedMemoryProcessTest : public MultiProcessTest {
  public:
 
   static void CleanUp() {
-    SharedMemory memory;
-    memory.Delete(s_test_name_);
+  SharedMemory memory;
+  memory.Delete(s_test_name_);
   }
 
   static int TaskTestMain() {
-    int errors = 0;
+  int errors = 0;
 #if defined(OS_MACOSX)
-    mac::ScopedNSAutoreleasePool pool;
+  mac::ScopedNSAutoreleasePool pool;
 #endif
-    const uint32_t kDataSize = 1024;
-    SharedMemory memory;
-    bool rv = memory.CreateNamedDeprecated(s_test_name_, true, kDataSize);
-    EXPECT_TRUE(rv);
-    if (rv != true)
-      errors++;
-    rv = memory.Map(kDataSize);
-    EXPECT_TRUE(rv);
-    if (rv != true)
-      errors++;
-    int *ptr = static_cast<int*>(memory.memory());
+  const uint32_t kDataSize = 1024;
+  SharedMemory memory;
+  bool rv = memory.CreateNamedDeprecated(s_test_name_, true, kDataSize);
+  EXPECT_TRUE(rv);
+  if (rv != true)
+    errors++;
+  rv = memory.Map(kDataSize);
+  EXPECT_TRUE(rv);
+  if (rv != true)
+    errors++;
+  int *ptr = static_cast<int*>(memory.memory());
 
-    for (int idx = 0; idx < 20; idx++) {
-      memory.LockDeprecated();
-      int i = (1 << 16) + idx;
-      *ptr = i;
-      PlatformThread::Sleep(TimeDelta::FromMilliseconds(10));
-      if (*ptr != i)
-        errors++;
-      memory.UnlockDeprecated();
-    }
+  for (int idx = 0; idx < 20; idx++) {
+    memory.LockDeprecated();
+    int i = (1 << 16) + idx;
+    *ptr = i;
+    PlatformThread::Sleep(TimeDelta::FromMilliseconds(10));
+    if (*ptr != i)
+    errors++;
+    memory.UnlockDeprecated();
+  }
 
-    memory.Close();
-    return errors;
+  memory.Close();
+  return errors;
   }
 
  private:
@@ -664,14 +664,14 @@ TEST_F(SharedMemoryProcessTest, Tasks) {
 
   ProcessHandle handles[kNumTasks];
   for (int index = 0; index < kNumTasks; ++index) {
-    handles[index] = SpawnChild("SharedMemoryTestMain");
-    ASSERT_TRUE(handles[index]);
+  handles[index] = SpawnChild("SharedMemoryTestMain");
+  ASSERT_TRUE(handles[index]);
   }
 
   int exit_code = 0;
   for (int index = 0; index < kNumTasks; ++index) {
-    EXPECT_TRUE(WaitForExitCode(handles[index], &exit_code));
-    EXPECT_EQ(0, exit_code);
+  EXPECT_TRUE(WaitForExitCode(handles[index], &exit_code));
+  EXPECT_EQ(0, exit_code);
   }
 
   SharedMemoryProcessTest::CleanUp();

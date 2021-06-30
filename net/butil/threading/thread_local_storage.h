@@ -95,45 +95,45 @@ class BUTIL_EXPORT ThreadLocalStorage {
   // If you're not using a static variable, use the convenience class
   // ThreadLocalStorage::Slot (below) instead.
   struct BUTIL_EXPORT StaticSlot {
-    // Set up the TLS slot.  Called by the constructor.
-    // 'destructor' is a pointer to a function to perform per-thread cleanup of
-    // this object.  If set to NULL, no cleanup is done for this TLS slot.
-    // Returns false on error.
-    bool Initialize(TLSDestructorFunc destructor);
+  // Set up the TLS slot.  Called by the constructor.
+  // 'destructor' is a pointer to a function to perform per-thread cleanup of
+  // this object.  If set to NULL, no cleanup is done for this TLS slot.
+  // Returns false on error.
+  bool Initialize(TLSDestructorFunc destructor);
 
-    // Free a previously allocated TLS 'slot'.
-    // If a destructor was set for this slot, removes
-    // the destructor so that remaining threads exiting
-    // will not free data.
-    void Free();
+  // Free a previously allocated TLS 'slot'.
+  // If a destructor was set for this slot, removes
+  // the destructor so that remaining threads exiting
+  // will not free data.
+  void Free();
 
-    // Get the thread-local value stored in slot 'slot'.
-    // Values are guaranteed to initially be zero.
-    void* Get() const;
+  // Get the thread-local value stored in slot 'slot'.
+  // Values are guaranteed to initially be zero.
+  void* Get() const;
 
-    // Set the thread-local value stored in slot 'slot' to
-    // value 'value'.
-    void Set(void* value);
+  // Set the thread-local value stored in slot 'slot' to
+  // value 'value'.
+  void Set(void* value);
 
-    bool initialized() const { return initialized_; }
+  bool initialized() const { return initialized_; }
 
-    // The internals of this struct should be considered private.
-    bool initialized_;
-    int slot_;
+  // The internals of this struct should be considered private.
+  bool initialized_;
+  int slot_;
   };
 
   // A convenience wrapper around StaticSlot with a constructor. Can be used
   // as a member variable.
   class BUTIL_EXPORT Slot : public StaticSlot {
    public:
-    // Calls StaticSlot::Initialize().
-    explicit Slot(TLSDestructorFunc destructor = NULL);
+  // Calls StaticSlot::Initialize().
+  explicit Slot(TLSDestructorFunc destructor = NULL);
 
    private:
-    using StaticSlot::initialized_;
-    using StaticSlot::slot_;
+  using StaticSlot::initialized_;
+  using StaticSlot::slot_;
 
-    DISALLOW_COPY_AND_ASSIGN(Slot);
+  DISALLOW_COPY_AND_ASSIGN(Slot);
   };
 
   DISALLOW_COPY_AND_ASSIGN(ThreadLocalStorage);

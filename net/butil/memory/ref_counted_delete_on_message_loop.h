@@ -19,8 +19,8 @@ namespace butil {
 // class Foo : public RefCountedDeleteOnMessageLoop<Foo> {
 //
 //   Foo(const scoped_refptr<MessageLoopProxy>& loop)
-//       : RefCountedDeleteOnMessageLoop<Foo>(loop) {
-//     ...
+//     : RefCountedDeleteOnMessageLoop<Foo>(loop) {
+//   ...
 //   }
 //   ...
 //  private:
@@ -34,17 +34,17 @@ template <class T>
 class RefCountedDeleteOnMessageLoop : public subtle::RefCountedThreadSafeBase {
  public:
   RefCountedDeleteOnMessageLoop(
-      const scoped_refptr<MessageLoopProxy>& proxy) : proxy_(proxy) {
-    DCHECK(proxy_.get());
+    const scoped_refptr<MessageLoopProxy>& proxy) : proxy_(proxy) {
+  DCHECK(proxy_.get());
   }
 
   void AddRef() const {
-    subtle::RefCountedThreadSafeBase::AddRef();
+  subtle::RefCountedThreadSafeBase::AddRef();
   }
 
   void Release() const {
-    if (subtle::RefCountedThreadSafeBase::Release())
-      DestructOnMessageLoop();
+  if (subtle::RefCountedThreadSafeBase::Release())
+    DestructOnMessageLoop();
   }
 
  protected:
@@ -52,11 +52,11 @@ class RefCountedDeleteOnMessageLoop : public subtle::RefCountedThreadSafeBase {
   ~RefCountedDeleteOnMessageLoop() {}
 
   void DestructOnMessageLoop() const {
-    const T* t = static_cast<const T*>(this);
-    if (proxy_->BelongsToCurrentThread())
-      delete t;
-    else
-      proxy_->DeleteSoon(FROM_HERE, t);
+  const T* t = static_cast<const T*>(this);
+  if (proxy_->BelongsToCurrentThread())
+    delete t;
+  else
+    proxy_->DeleteSoon(FROM_HERE, t);
   }
 
   scoped_refptr<MessageLoopProxy> proxy_;

@@ -25,20 +25,20 @@ namespace brpc {
 
 // Representing a server inside a NamingService.
 struct ServerNode {
-    ServerNode() {}
-    
-    explicit ServerNode(const butil::EndPoint& pt) : addr(pt) {}
+  ServerNode() {}
+  
+  explicit ServerNode(const butil::EndPoint& pt) : addr(pt) {}
 
-    ServerNode(butil::ip_t ip, int port, const std::string& tag2)
-        : addr(ip, port), tag(tag2) {}
+  ServerNode(butil::ip_t ip, int port, const std::string& tag2)
+    : addr(ip, port), tag(tag2) {}
 
-    ServerNode(const butil::EndPoint& pt, const std::string& tag2)
-        : addr(pt), tag(tag2) {}
+  ServerNode(const butil::EndPoint& pt, const std::string& tag2)
+    : addr(pt), tag(tag2) {}
 
-    ServerNode(butil::ip_t ip, int port) : addr(ip, port) {}
+  ServerNode(butil::ip_t ip, int port) : addr(ip, port) {}
 
-    butil::EndPoint addr;
-    std::string tag;
+  butil::EndPoint addr;
+  std::string tag;
 };
 
 inline bool operator<(const ServerNode& n1, const ServerNode& n2)
@@ -51,11 +51,11 @@ inline bool operator!=(const ServerNode& n1, const ServerNode& n2)
 { return !(n1 == n2); }
 
 inline std::ostream& operator<<(std::ostream& os, const ServerNode& n) {
-    os << n.addr;
-    if (!n.tag.empty()) {
-        os << "(tag=" << n.tag << ')';
-    }
-    return os;
+  os << n.addr;
+  if (!n.tag.empty()) {
+    os << "(tag=" << n.tag << ')';
+  }
+  return os;
 }
 
 } // namespace brpc

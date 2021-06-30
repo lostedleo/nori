@@ -101,29 +101,29 @@ class BUTIL_EXPORT WaitableEvent {
   // of the wait-list
   class Waiter {
    public:
-    // Signal the waiter to wake up.
-    //
-    // Consider the case of a Waiter which is in multiple WaitableEvent's
-    // wait-lists. Each WaitableEvent is automatic-reset and two of them are
-    // signaled at the same time. Now, each will wake only the first waiter in
-    // the wake-list before resetting. However, if those two waiters happen to
-    // be the same object (as can happen if another thread didn't have a chance
-    // to dequeue the waiter from the other wait-list in time), two auto-resets
-    // will have happened, but only one waiter has been signaled!
-    //
-    // Because of this, a Waiter may "reject" a wake by returning false. In
-    // this case, the auto-reset WaitableEvent shouldn't act as if anything has
-    // been notified.
-    virtual bool Fire(WaitableEvent* signaling_event) = 0;
+  // Signal the waiter to wake up.
+  //
+  // Consider the case of a Waiter which is in multiple WaitableEvent's
+  // wait-lists. Each WaitableEvent is automatic-reset and two of them are
+  // signaled at the same time. Now, each will wake only the first waiter in
+  // the wake-list before resetting. However, if those two waiters happen to
+  // be the same object (as can happen if another thread didn't have a chance
+  // to dequeue the waiter from the other wait-list in time), two auto-resets
+  // will have happened, but only one waiter has been signaled!
+  //
+  // Because of this, a Waiter may "reject" a wake by returning false. In
+  // this case, the auto-reset WaitableEvent shouldn't act as if anything has
+  // been notified.
+  virtual bool Fire(WaitableEvent* signaling_event) = 0;
 
-    // Waiters may implement this in order to provide an extra condition for
-    // two Waiters to be considered equal. In WaitableEvent::Dequeue, if the
-    // pointers match then this function is called as a final check. See the
-    // comments in ~Handle for why.
-    virtual bool Compare(void* tag) = 0;
+  // Waiters may implement this in order to provide an extra condition for
+  // two Waiters to be considered equal. In WaitableEvent::Dequeue, if the
+  // pointers match then this function is called as a final check. See the
+  // comments in ~Handle for why.
+  virtual bool Compare(void* tag) = 0;
 
    protected:
-    virtual ~Waiter() {}
+  virtual ~Waiter() {}
   };
 
  private:
@@ -141,20 +141,20 @@ class BUTIL_EXPORT WaitableEvent {
   // WaitableEventWatchers may then take a reference and thus match the Windows
   // behaviour.
   struct WaitableEventKernel :
-      public RefCountedThreadSafe<WaitableEventKernel> {
+    public RefCountedThreadSafe<WaitableEventKernel> {
    public:
-    WaitableEventKernel(bool manual_reset, bool initially_signaled);
+  WaitableEventKernel(bool manual_reset, bool initially_signaled);
 
-    bool Dequeue(Waiter* waiter, void* tag);
+  bool Dequeue(Waiter* waiter, void* tag);
 
-    butil::Lock lock_;
-    const bool manual_reset_;
-    bool signaled_;
-    std::list<Waiter*> waiters_;
+  butil::Lock lock_;
+  const bool manual_reset_;
+  bool signaled_;
+  std::list<Waiter*> waiters_;
 
    private:
-    friend class RefCountedThreadSafe<WaitableEventKernel>;
-    ~WaitableEventKernel();
+  friend class RefCountedThreadSafe<WaitableEventKernel>;
+  ~WaitableEventKernel();
   };
 
   typedef std::pair<WaitableEvent*, size_t> WaiterAndIndex;
@@ -165,7 +165,7 @@ class BUTIL_EXPORT WaitableEvent {
   // second element is the index of the WaitableEvent in the original,
   // unsorted, array.
   static size_t EnqueueMany(WaiterAndIndex* waitables,
-                            size_t count, Waiter* waiter);
+              size_t count, Waiter* waiter);
 
   bool SignalAll();
   bool SignalOne();

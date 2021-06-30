@@ -21,7 +21,7 @@ namespace butil {
 // The usage is simple. Early in the main() or WinMain() scope create an
 // AtExitManager object on the stack:
 // int main(...) {
-//    butil::AtExitManager exit_manager;
+//  butil::AtExitManager exit_manager;
 //
 // }
 // When the exit_manager object goes out of scope, all the registered
@@ -54,8 +54,8 @@ class BUTIL_EXPORT AtExitManager {
 
  private:
   struct Callback {
-    AtExitCallbackType func;
-    void* param;
+  AtExitCallbackType func;
+  void* param;
   };
   butil::Lock lock_;
   std::stack<Callback> stack_;

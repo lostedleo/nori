@@ -25,8 +25,8 @@ namespace detail {
 
 template <typename Op, typename T1, typename T2>
 inline void call_op_returning_void(
-    const Op& op, T1& v1, const T2& v2) {
-    return op(v1, v2);
+  const Op& op, T1& v1, const T2& v2) {
+  return op(v1, v2);
 }
 
 }  // namespace detail

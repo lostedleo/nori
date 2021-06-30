@@ -30,7 +30,7 @@ namespace butil {
 // All functions in this header are thread-safe.
 
 struct FastRandSeed {
-    uint64_t s[2];
+  uint64_t s[2];
 };
 
 // Initialize the seed.
@@ -54,13 +54,13 @@ uint64_t fast_rand_less_than(uint64_t range);
 // NOTE: this function needs to be a template to be overloadable properly.
 // Cost: ~30ns
 template <typename T> T fast_rand_in(T min, T max) {
-    extern int64_t fast_rand_in_64(int64_t min, int64_t max);
-    extern uint64_t fast_rand_in_u64(uint64_t min, uint64_t max);
-    if ((T)-1 < 0) {
-        return fast_rand_in_64((int64_t)min, (int64_t)max);
-    } else {
-        return fast_rand_in_u64((uint64_t)min, (uint64_t)max);
-    }
+  extern int64_t fast_rand_in_64(int64_t min, int64_t max);
+  extern uint64_t fast_rand_in_u64(uint64_t min, uint64_t max);
+  if ((T)-1 < 0) {
+    return fast_rand_in_64((int64_t)min, (int64_t)max);
+  } else {
+    return fast_rand_in_u64((uint64_t)min, (uint64_t)max);
+  }
 }
 
 // Generate a random double in [0, 1) from thread-local seed.

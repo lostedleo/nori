@@ -18,7 +18,7 @@ class SetIntRunner : public DelegateSimpleThread::Delegate {
   virtual ~SetIntRunner() { }
 
   virtual void Run() OVERRIDE {
-    *ptr_ = val_;
+  *ptr_ = val_;
   }
 
  private:
@@ -32,9 +32,9 @@ class WaitEventRunner : public DelegateSimpleThread::Delegate {
   virtual ~WaitEventRunner() { }
 
   virtual void Run() OVERRIDE {
-    EXPECT_FALSE(event_->IsSignaled());
-    event_->Signal();
-    EXPECT_TRUE(event_->IsSignaled());
+  EXPECT_FALSE(event_->IsSignaled());
+  event_->Signal();
+  EXPECT_TRUE(event_->IsSignaled());
   }
  private:
   WaitableEvent* event_;
@@ -44,7 +44,7 @@ class SeqRunner : public DelegateSimpleThread::Delegate {
  public:
   explicit SeqRunner(AtomicSequenceNumber* seq) : seq_(seq) { }
   virtual void Run() OVERRIDE {
-    seq_->GetNext();
+  seq_->GetNext();
   }
 
  private:
@@ -57,15 +57,15 @@ class SeqRunner : public DelegateSimpleThread::Delegate {
 class VerifyPoolRunner : public DelegateSimpleThread::Delegate {
  public:
   VerifyPoolRunner(AtomicSequenceNumber* seq,
-                   int total, WaitableEvent* event)
-      : seq_(seq), total_(total), event_(event) { }
+           int total, WaitableEvent* event)
+    : seq_(seq), total_(total), event_(event) { }
 
   virtual void Run() OVERRIDE {
-    if (seq_->GetNext() == total_) {
-      event_->Signal();
-    } else {
-      event_->Wait();
-    }
+  if (seq_->GetNext() == total_) {
+    event_->Signal();
+  } else {
+    event_->Wait();
+  }
   }
 
  private:
@@ -123,7 +123,7 @@ TEST(SimpleThreadTest, NamedWithOptions) {
   thread.Start();
   EXPECT_EQ(thread.name_prefix(), "event_waiter");
   EXPECT_EQ(thread.name(),
-            std::string("event_waiter/") + IntToString(thread.tid()));
+      std::string("event_waiter/") + IntToString(thread.tid()));
   event.Wait();
 
   EXPECT_TRUE(event.IsSignaled());
@@ -132,7 +132,7 @@ TEST(SimpleThreadTest, NamedWithOptions) {
   // We keep the name and tid, even after the thread is gone.
   EXPECT_EQ(thread.name_prefix(), "event_waiter");
   EXPECT_EQ(thread.name(),
-            std::string("event_waiter/") + IntToString(thread.tid()));
+      std::string("event_waiter/") + IntToString(thread.tid()));
 }
 
 TEST(SimpleThreadTest, ThreadPool) {

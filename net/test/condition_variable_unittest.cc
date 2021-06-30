@@ -36,12 +36,12 @@ class ConditionVariableTest : public testing::Test {
   const TimeDelta kOneHundredMs;
 
   ConditionVariableTest()
-      : kZeroMs(TimeDelta::FromMilliseconds(0)),
-        kTenMs(TimeDelta::FromMilliseconds(10)),
-        kThirtyMs(TimeDelta::FromMilliseconds(30)),
-        kFortyFiveMs(TimeDelta::FromMilliseconds(45)),
-        kSixtyMs(TimeDelta::FromMilliseconds(60)),
-        kOneHundredMs(TimeDelta::FromMilliseconds(100)) {
+    : kZeroMs(TimeDelta::FromMilliseconds(0)),
+    kTenMs(TimeDelta::FromMilliseconds(10)),
+    kThirtyMs(TimeDelta::FromMilliseconds(30)),
+    kFortyFiveMs(TimeDelta::FromMilliseconds(45)),
+    kSixtyMs(TimeDelta::FromMilliseconds(60)),
+    kOneHundredMs(TimeDelta::FromMilliseconds(100)) {
   }
 };
 
@@ -150,7 +150,7 @@ TEST_F(ConditionVariableTest, StartupShutdownTest) {
 
   // First try trivial startup/shutdown.
   {
-    ConditionVariable cv1(&lock);
+  ConditionVariable cv1(&lock);
   }  // Call for cv1 destruction.
 
   // Exercise with at least a few waits.
@@ -218,9 +218,9 @@ TEST_F(ConditionVariableTest, MAYBE_MultiThreadConsumerTest) {
   Time start_time;  // Used to time task processing.
 
   {
-    butil::AutoLock auto_lock(*queue.lock());
-    while (!queue.EveryIdWasAllocated())
-      queue.all_threads_have_ids()->Wait();
+  butil::AutoLock auto_lock(*queue.lock());
+  while (!queue.EveryIdWasAllocated())
+    queue.all_threads_have_ids()->Wait();
   }
 
   // If threads aren't in a wait state, they may start to gobble up tasks in
@@ -228,23 +228,23 @@ TEST_F(ConditionVariableTest, MAYBE_MultiThreadConsumerTest) {
   queue.SpinUntilAllThreadsAreWaiting();
 
   {
-    // Since we have no tasks yet, all threads should be waiting by now.
-    butil::AutoLock auto_lock(*queue.lock());
-    EXPECT_EQ(0, queue.GetNumThreadsTakingAssignments());
-    EXPECT_EQ(0, queue.GetNumThreadsCompletingTasks());
-    EXPECT_EQ(0, queue.task_count());
-    EXPECT_EQ(0, queue.GetMaxCompletionsByWorkerThread());
-    EXPECT_EQ(0, queue.GetMinCompletionsByWorkerThread());
-    EXPECT_EQ(0, queue.GetNumberOfCompletedTasks());
+  // Since we have no tasks yet, all threads should be waiting by now.
+  butil::AutoLock auto_lock(*queue.lock());
+  EXPECT_EQ(0, queue.GetNumThreadsTakingAssignments());
+  EXPECT_EQ(0, queue.GetNumThreadsCompletingTasks());
+  EXPECT_EQ(0, queue.task_count());
+  EXPECT_EQ(0, queue.GetMaxCompletionsByWorkerThread());
+  EXPECT_EQ(0, queue.GetMinCompletionsByWorkerThread());
+  EXPECT_EQ(0, queue.GetNumberOfCompletedTasks());
 
-    // Set up to make each task include getting help from another worker, so
-    // so that the work gets done in paralell.
-    queue.ResetHistory();
-    queue.SetTaskCount(kTaskCount);
-    queue.SetWorkTime(kThirtyMs);
-    queue.SetAllowHelp(true);
+  // Set up to make each task include getting help from another worker, so
+  // so that the work gets done in paralell.
+  queue.ResetHistory();
+  queue.SetTaskCount(kTaskCount);
+  queue.SetWorkTime(kThirtyMs);
+  queue.SetAllowHelp(true);
 
-    start_time = Time::Now();
+  start_time = Time::Now();
   }
 
   queue.work_is_available()->Signal();  // But each worker can signal another.
@@ -254,22 +254,22 @@ TEST_F(ConditionVariableTest, MAYBE_MultiThreadConsumerTest) {
   queue.SpinUntilAllThreadsAreWaiting();
 
   {
-    // Wait until all work tasks have at least been assigned.
-    butil::AutoLock auto_lock(*queue.lock());
-    while (queue.task_count())
-      queue.no_more_tasks()->Wait();
+  // Wait until all work tasks have at least been assigned.
+  butil::AutoLock auto_lock(*queue.lock());
+  while (queue.task_count())
+    queue.no_more_tasks()->Wait();
 
-    // To avoid racy assumptions, we'll just assert that at least 2 threads
-    // did work.  We know that the first worker should have gone to sleep, and
-    // hence a second worker should have gotten an assignment.
-    EXPECT_LE(2, queue.GetNumThreadsTakingAssignments());
-    EXPECT_EQ(kTaskCount, queue.GetNumberOfCompletedTasks());
+  // To avoid racy assumptions, we'll just assert that at least 2 threads
+  // did work.  We know that the first worker should have gone to sleep, and
+  // hence a second worker should have gotten an assignment.
+  EXPECT_LE(2, queue.GetNumThreadsTakingAssignments());
+  EXPECT_EQ(kTaskCount, queue.GetNumberOfCompletedTasks());
 
-    // Try to ask all workers to help, and only a few will do the work.
-    queue.ResetHistory();
-    queue.SetTaskCount(3);
-    queue.SetWorkTime(kThirtyMs);
-    queue.SetAllowHelp(false);
+  // Try to ask all workers to help, and only a few will do the work.
+  queue.ResetHistory();
+  queue.SetTaskCount(3);
+  queue.SetWorkTime(kThirtyMs);
+  queue.SetAllowHelp(false);
   }
   queue.work_is_available()->Broadcast();  // Make them all try.
   // Wait till we at least start to handle tasks (and we're not all waiting).
@@ -278,19 +278,19 @@ TEST_F(ConditionVariableTest, MAYBE_MultiThreadConsumerTest) {
   queue.SpinUntilAllThreadsAreWaiting();
 
   {
-    butil::AutoLock auto_lock(*queue.lock());
-    EXPECT_EQ(3, queue.GetNumThreadsTakingAssignments());
-    EXPECT_EQ(3, queue.GetNumThreadsCompletingTasks());
-    EXPECT_EQ(0, queue.task_count());
-    EXPECT_EQ(1, queue.GetMaxCompletionsByWorkerThread());
-    EXPECT_EQ(0, queue.GetMinCompletionsByWorkerThread());
-    EXPECT_EQ(3, queue.GetNumberOfCompletedTasks());
+  butil::AutoLock auto_lock(*queue.lock());
+  EXPECT_EQ(3, queue.GetNumThreadsTakingAssignments());
+  EXPECT_EQ(3, queue.GetNumThreadsCompletingTasks());
+  EXPECT_EQ(0, queue.task_count());
+  EXPECT_EQ(1, queue.GetMaxCompletionsByWorkerThread());
+  EXPECT_EQ(0, queue.GetMinCompletionsByWorkerThread());
+  EXPECT_EQ(3, queue.GetNumberOfCompletedTasks());
 
-    // Set up to make each task get help from another worker.
-    queue.ResetHistory();
-    queue.SetTaskCount(3);
-    queue.SetWorkTime(kThirtyMs);
-    queue.SetAllowHelp(true);  // Allow (unnecessary) help requests.
+  // Set up to make each task get help from another worker.
+  queue.ResetHistory();
+  queue.SetTaskCount(3);
+  queue.SetWorkTime(kThirtyMs);
+  queue.SetAllowHelp(true);  // Allow (unnecessary) help requests.
   }
   queue.work_is_available()->Broadcast();  // Signal all threads.
   // Wait till we at least start to handle tasks (and we're not all waiting).
@@ -299,19 +299,19 @@ TEST_F(ConditionVariableTest, MAYBE_MultiThreadConsumerTest) {
   queue.SpinUntilAllThreadsAreWaiting();
 
   {
-    butil::AutoLock auto_lock(*queue.lock());
-    EXPECT_EQ(3, queue.GetNumThreadsTakingAssignments());
-    EXPECT_EQ(3, queue.GetNumThreadsCompletingTasks());
-    EXPECT_EQ(0, queue.task_count());
-    EXPECT_EQ(1, queue.GetMaxCompletionsByWorkerThread());
-    EXPECT_EQ(0, queue.GetMinCompletionsByWorkerThread());
-    EXPECT_EQ(3, queue.GetNumberOfCompletedTasks());
+  butil::AutoLock auto_lock(*queue.lock());
+  EXPECT_EQ(3, queue.GetNumThreadsTakingAssignments());
+  EXPECT_EQ(3, queue.GetNumThreadsCompletingTasks());
+  EXPECT_EQ(0, queue.task_count());
+  EXPECT_EQ(1, queue.GetMaxCompletionsByWorkerThread());
+  EXPECT_EQ(0, queue.GetMinCompletionsByWorkerThread());
+  EXPECT_EQ(3, queue.GetNumberOfCompletedTasks());
 
-    // Set up to make each task get help from another worker.
-    queue.ResetHistory();
-    queue.SetTaskCount(20);  // 2 tasks per thread.
-    queue.SetWorkTime(kThirtyMs);
-    queue.SetAllowHelp(true);
+  // Set up to make each task get help from another worker.
+  queue.ResetHistory();
+  queue.SetTaskCount(20);  // 2 tasks per thread.
+  queue.SetWorkTime(kThirtyMs);
+  queue.SetAllowHelp(true);
   }
   queue.work_is_available()->Signal();  // But each worker can signal another.
   // Wait till we at least start to handle tasks (and we're not all waiting).
@@ -320,17 +320,17 @@ TEST_F(ConditionVariableTest, MAYBE_MultiThreadConsumerTest) {
   queue.SpinUntilAllThreadsAreWaiting();  // Should take about 60 ms.
 
   {
-    butil::AutoLock auto_lock(*queue.lock());
-    EXPECT_EQ(10, queue.GetNumThreadsTakingAssignments());
-    EXPECT_EQ(10, queue.GetNumThreadsCompletingTasks());
-    EXPECT_EQ(0, queue.task_count());
-    EXPECT_EQ(20, queue.GetNumberOfCompletedTasks());
+  butil::AutoLock auto_lock(*queue.lock());
+  EXPECT_EQ(10, queue.GetNumThreadsTakingAssignments());
+  EXPECT_EQ(10, queue.GetNumThreadsCompletingTasks());
+  EXPECT_EQ(0, queue.task_count());
+  EXPECT_EQ(20, queue.GetNumberOfCompletedTasks());
 
-    // Same as last test, but with Broadcast().
-    queue.ResetHistory();
-    queue.SetTaskCount(20);  // 2 tasks per thread.
-    queue.SetWorkTime(kThirtyMs);
-    queue.SetAllowHelp(true);
+  // Same as last test, but with Broadcast().
+  queue.ResetHistory();
+  queue.SetTaskCount(20);  // 2 tasks per thread.
+  queue.SetWorkTime(kThirtyMs);
+  queue.SetAllowHelp(true);
   }
   queue.work_is_available()->Broadcast();
   // Wait till we at least start to handle tasks (and we're not all waiting).
@@ -339,18 +339,18 @@ TEST_F(ConditionVariableTest, MAYBE_MultiThreadConsumerTest) {
   queue.SpinUntilAllThreadsAreWaiting();  // Should take about 60 ms.
 
   {
-    butil::AutoLock auto_lock(*queue.lock());
-    EXPECT_EQ(10, queue.GetNumThreadsTakingAssignments());
-    EXPECT_EQ(10, queue.GetNumThreadsCompletingTasks());
-    EXPECT_EQ(0, queue.task_count());
-    EXPECT_EQ(20, queue.GetNumberOfCompletedTasks());
+  butil::AutoLock auto_lock(*queue.lock());
+  EXPECT_EQ(10, queue.GetNumThreadsTakingAssignments());
+  EXPECT_EQ(10, queue.GetNumThreadsCompletingTasks());
+  EXPECT_EQ(0, queue.task_count());
+  EXPECT_EQ(20, queue.GetNumberOfCompletedTasks());
 
-    queue.SetShutdown();
+  queue.SetShutdown();
   }
   queue.work_is_available()->Broadcast();  // Force check for shutdown.
 
   SPIN_FOR_TIMEDELTA_OR_UNTIL_TRUE(TimeDelta::FromMinutes(1),
-                                   queue.ThreadSafeCheckShutdown(kThreadCount));
+                   queue.ThreadSafeCheckShutdown(kThreadCount));
 }
 
 TEST_F(ConditionVariableTest, LargeFastTaskTest) {
@@ -362,86 +362,86 @@ TEST_F(ConditionVariableTest, LargeFastTaskTest) {
   ConditionVariable private_cv(&private_lock);
 
   {
-    butil::AutoLock auto_lock(*queue.lock());
-    while (!queue.EveryIdWasAllocated())
-      queue.all_threads_have_ids()->Wait();
+  butil::AutoLock auto_lock(*queue.lock());
+  while (!queue.EveryIdWasAllocated())
+    queue.all_threads_have_ids()->Wait();
   }
 
   // Wait a bit more to allow threads to reach their wait state.
   queue.SpinUntilAllThreadsAreWaiting();
 
   {
-    // Since we have no tasks, all threads should be waiting by now.
-    butil::AutoLock auto_lock(*queue.lock());
-    EXPECT_EQ(0, queue.GetNumThreadsTakingAssignments());
-    EXPECT_EQ(0, queue.GetNumThreadsCompletingTasks());
-    EXPECT_EQ(0, queue.task_count());
-    EXPECT_EQ(0, queue.GetMaxCompletionsByWorkerThread());
-    EXPECT_EQ(0, queue.GetMinCompletionsByWorkerThread());
-    EXPECT_EQ(0, queue.GetNumberOfCompletedTasks());
+  // Since we have no tasks, all threads should be waiting by now.
+  butil::AutoLock auto_lock(*queue.lock());
+  EXPECT_EQ(0, queue.GetNumThreadsTakingAssignments());
+  EXPECT_EQ(0, queue.GetNumThreadsCompletingTasks());
+  EXPECT_EQ(0, queue.task_count());
+  EXPECT_EQ(0, queue.GetMaxCompletionsByWorkerThread());
+  EXPECT_EQ(0, queue.GetMinCompletionsByWorkerThread());
+  EXPECT_EQ(0, queue.GetNumberOfCompletedTasks());
 
-    // Set up to make all workers do (an average of) 20 tasks.
-    queue.ResetHistory();
-    queue.SetTaskCount(20 * kThreadCount);
-    queue.SetWorkTime(kFortyFiveMs);
-    queue.SetAllowHelp(false);
+  // Set up to make all workers do (an average of) 20 tasks.
+  queue.ResetHistory();
+  queue.SetTaskCount(20 * kThreadCount);
+  queue.SetWorkTime(kFortyFiveMs);
+  queue.SetAllowHelp(false);
   }
   queue.work_is_available()->Broadcast();  // Start up all threads.
   // Wait until we've handed out all tasks.
   {
-    butil::AutoLock auto_lock(*queue.lock());
-    while (queue.task_count() != 0)
-      queue.no_more_tasks()->Wait();
+  butil::AutoLock auto_lock(*queue.lock());
+  while (queue.task_count() != 0)
+    queue.no_more_tasks()->Wait();
   }
 
   // Wait till the last of the tasks complete.
   queue.SpinUntilAllThreadsAreWaiting();
 
   {
-    // With Broadcast(), every thread should have participated.
-    // but with racing.. they may not all have done equal numbers of tasks.
-    butil::AutoLock auto_lock(*queue.lock());
-    EXPECT_EQ(kThreadCount, queue.GetNumThreadsTakingAssignments());
-    EXPECT_EQ(kThreadCount, queue.GetNumThreadsCompletingTasks());
-    EXPECT_EQ(0, queue.task_count());
-    EXPECT_LE(20, queue.GetMaxCompletionsByWorkerThread());
-    EXPECT_EQ(20 * kThreadCount, queue.GetNumberOfCompletedTasks());
+  // With Broadcast(), every thread should have participated.
+  // but with racing.. they may not all have done equal numbers of tasks.
+  butil::AutoLock auto_lock(*queue.lock());
+  EXPECT_EQ(kThreadCount, queue.GetNumThreadsTakingAssignments());
+  EXPECT_EQ(kThreadCount, queue.GetNumThreadsCompletingTasks());
+  EXPECT_EQ(0, queue.task_count());
+  EXPECT_LE(20, queue.GetMaxCompletionsByWorkerThread());
+  EXPECT_EQ(20 * kThreadCount, queue.GetNumberOfCompletedTasks());
 
-    // Set up to make all workers do (an average of) 4 tasks.
-    queue.ResetHistory();
-    queue.SetTaskCount(kThreadCount * 4);
-    queue.SetWorkTime(kFortyFiveMs);
-    queue.SetAllowHelp(true);  // Might outperform Broadcast().
+  // Set up to make all workers do (an average of) 4 tasks.
+  queue.ResetHistory();
+  queue.SetTaskCount(kThreadCount * 4);
+  queue.SetWorkTime(kFortyFiveMs);
+  queue.SetAllowHelp(true);  // Might outperform Broadcast().
   }
   queue.work_is_available()->Signal();  // Start up one thread.
 
   // Wait until we've handed out all tasks
   {
-    butil::AutoLock auto_lock(*queue.lock());
-    while (queue.task_count() != 0)
-      queue.no_more_tasks()->Wait();
+  butil::AutoLock auto_lock(*queue.lock());
+  while (queue.task_count() != 0)
+    queue.no_more_tasks()->Wait();
   }
 
   // Wait till the last of the tasks complete.
   queue.SpinUntilAllThreadsAreWaiting();
 
   {
-    // With Signal(), every thread should have participated.
-    // but with racing.. they may not all have done four tasks.
-    butil::AutoLock auto_lock(*queue.lock());
-    EXPECT_EQ(kThreadCount, queue.GetNumThreadsTakingAssignments());
-    EXPECT_EQ(kThreadCount, queue.GetNumThreadsCompletingTasks());
-    EXPECT_EQ(0, queue.task_count());
-    EXPECT_LE(4, queue.GetMaxCompletionsByWorkerThread());
-    EXPECT_EQ(4 * kThreadCount, queue.GetNumberOfCompletedTasks());
+  // With Signal(), every thread should have participated.
+  // but with racing.. they may not all have done four tasks.
+  butil::AutoLock auto_lock(*queue.lock());
+  EXPECT_EQ(kThreadCount, queue.GetNumThreadsTakingAssignments());
+  EXPECT_EQ(kThreadCount, queue.GetNumThreadsCompletingTasks());
+  EXPECT_EQ(0, queue.task_count());
+  EXPECT_LE(4, queue.GetMaxCompletionsByWorkerThread());
+  EXPECT_EQ(4 * kThreadCount, queue.GetNumberOfCompletedTasks());
 
-    queue.SetShutdown();
+  queue.SetShutdown();
   }
   queue.work_is_available()->Broadcast();  // Force check for shutdown.
 
   // Wait for shutdowns to complete.
   SPIN_FOR_TIMEDELTA_OR_UNTIL_TRUE(TimeDelta::FromMinutes(1),
-                                   queue.ThreadSafeCheckShutdown(kThreadCount));
+                   queue.ThreadSafeCheckShutdown(kThreadCount));
 }
 
 //------------------------------------------------------------------------------
@@ -450,40 +450,40 @@ TEST_F(ConditionVariableTest, LargeFastTaskTest) {
 
 WorkQueue::WorkQueue(int thread_count)
   : lock_(),
-    work_is_available_(&lock_),
-    all_threads_have_ids_(&lock_),
-    no_more_tasks_(&lock_),
-    thread_count_(thread_count),
-    waiting_thread_count_(0),
-    thread_handles_(new PlatformThreadHandle[thread_count]),
-    assignment_history_(thread_count),
-    completion_history_(thread_count),
-    thread_started_counter_(0),
-    shutdown_task_count_(0),
-    task_count_(0),
-    allow_help_requests_(false),
-    shutdown_(false) {
+  work_is_available_(&lock_),
+  all_threads_have_ids_(&lock_),
+  no_more_tasks_(&lock_),
+  thread_count_(thread_count),
+  waiting_thread_count_(0),
+  thread_handles_(new PlatformThreadHandle[thread_count]),
+  assignment_history_(thread_count),
+  completion_history_(thread_count),
+  thread_started_counter_(0),
+  shutdown_task_count_(0),
+  task_count_(0),
+  allow_help_requests_(false),
+  shutdown_(false) {
   EXPECT_GE(thread_count_, 1);
   ResetHistory();
   SetTaskCount(0);
   SetWorkTime(TimeDelta::FromMilliseconds(30));
 
   for (int i = 0; i < thread_count_; ++i) {
-    PlatformThreadHandle pth;
-    EXPECT_TRUE(PlatformThread::Create(0, this, &pth));
-    thread_handles_[i] = pth;
+  PlatformThreadHandle pth;
+  EXPECT_TRUE(PlatformThread::Create(0, this, &pth));
+  thread_handles_[i] = pth;
   }
 }
 
 WorkQueue::~WorkQueue() {
   {
-    butil::AutoLock auto_lock(lock_);
-    SetShutdown();
+  butil::AutoLock auto_lock(lock_);
+  SetShutdown();
   }
   work_is_available_.Broadcast();  // Tell them all to terminate.
 
   for (int i = 0; i < thread_count_; ++i) {
-    PlatformThread::Join(thread_handles_[i]);
+  PlatformThread::Join(thread_handles_[i]);
   }
   EXPECT_EQ(0, waiting_thread_count_);
 }
@@ -504,7 +504,7 @@ TimeDelta WorkQueue::GetAnAssignment(int thread_id) {
   DCHECK_LT(0, task_count_);
   assignment_history_[thread_id]++;
   if (0 == --task_count_) {
-    no_more_tasks_.Signal();
+  no_more_tasks_.Signal();
   }
   return worker_delay_;
 }
@@ -537,9 +537,9 @@ bool WorkQueue::ThreadSafeCheckShutdown(int thread_count) {
   bool all_shutdown;
   butil::AutoLock auto_lock(lock_);
   {
-    // Declare in scope so DFAKE is guranteed to be destroyed before AutoLock.
-    DFAKE_SCOPED_RECURSIVE_LOCK(locked_methods_);
-    all_shutdown = (shutdown_task_count_ == thread_count);
+  // Declare in scope so DFAKE is guranteed to be destroyed before AutoLock.
+  DFAKE_SCOPED_RECURSIVE_LOCK(locked_methods_);
+  all_shutdown = (shutdown_task_count_ == thread_count);
   }
   return all_shutdown;
 }
@@ -568,45 +568,45 @@ ConditionVariable* WorkQueue::no_more_tasks() {
 
 void WorkQueue::ResetHistory() {
   for (int i = 0; i < thread_count_; ++i) {
-    assignment_history_[i] = 0;
-    completion_history_[i] = 0;
+  assignment_history_[i] = 0;
+  completion_history_[i] = 0;
   }
 }
 
 int WorkQueue::GetMinCompletionsByWorkerThread() const {
   int minumum = completion_history_[0];
   for (int i = 0; i < thread_count_; ++i)
-    minumum = std::min(minumum, completion_history_[i]);
+  minumum = std::min(minumum, completion_history_[i]);
   return minumum;
 }
 
 int WorkQueue::GetMaxCompletionsByWorkerThread() const {
   int maximum = completion_history_[0];
   for (int i = 0; i < thread_count_; ++i)
-    maximum = std::max(maximum, completion_history_[i]);
+  maximum = std::max(maximum, completion_history_[i]);
   return maximum;
 }
 
 int WorkQueue::GetNumThreadsTakingAssignments() const {
   int count = 0;
   for (int i = 0; i < thread_count_; ++i)
-    if (assignment_history_[i])
-      count++;
+  if (assignment_history_[i])
+    count++;
   return count;
 }
 
 int WorkQueue::GetNumThreadsCompletingTasks() const {
   int count = 0;
   for (int i = 0; i < thread_count_; ++i)
-    if (completion_history_[i])
-      count++;
+  if (completion_history_[i])
+    count++;
   return count;
 }
 
 int WorkQueue::GetNumberOfCompletedTasks() const {
   int total = 0;
   for (int i = 0; i < thread_count_; ++i)
-    total += completion_history_[i];
+  total += completion_history_[i];
   return total;
 }
 
@@ -629,23 +629,23 @@ void WorkQueue::SetShutdown() {
 
 void WorkQueue::SpinUntilAllThreadsAreWaiting() {
   while (true) {
-    {
-      butil::AutoLock auto_lock(lock_);
-      if (waiting_thread_count_ == thread_count_)
-        break;
-    }
-    PlatformThread::Sleep(TimeDelta::FromMilliseconds(30));
+  {
+    butil::AutoLock auto_lock(lock_);
+    if (waiting_thread_count_ == thread_count_)
+    break;
+  }
+  PlatformThread::Sleep(TimeDelta::FromMilliseconds(30));
   }
 }
 
 void WorkQueue::SpinUntilTaskCountLessThan(int task_count) {
   while (true) {
-    {
-      butil::AutoLock auto_lock(lock_);
-      if (task_count_ < task_count)
-        break;
-    }
-    PlatformThread::Sleep(TimeDelta::FromMilliseconds(30));
+  {
+    butil::AutoLock auto_lock(lock_);
+    if (task_count_ < task_count)
+    break;
+  }
+  PlatformThread::Sleep(TimeDelta::FromMilliseconds(30));
   }
 }
 
@@ -659,7 +659,7 @@ void WorkQueue::SpinUntilTaskCountLessThan(int task_count) {
 // directed by an instance of the class WorkQueue.
 // The task is to:
 // a) Check to see if there are more tasks (there is a task counter).
-//    a1) Wait on condition variable if there are no tasks currently.
+//  a1) Wait on condition variable if there are no tasks currently.
 // b) Call a function to see what should be done.
 // c) Do some computation based on the number of milliseconds returned in (b).
 // d) go back to (a).
@@ -671,50 +671,50 @@ void WorkQueue::SpinUntilTaskCountLessThan(int task_count) {
 void WorkQueue::ThreadMain() {
   int thread_id;
   {
-    butil::AutoLock auto_lock(lock_);
-    thread_id = GetThreadId();
-    if (EveryIdWasAllocated())
-      all_threads_have_ids()->Signal();  // Tell creator we're ready.
+  butil::AutoLock auto_lock(lock_);
+  thread_id = GetThreadId();
+  if (EveryIdWasAllocated())
+    all_threads_have_ids()->Signal();  // Tell creator we're ready.
   }
 
   Lock private_lock;  // Used to waste time on "our work".
   while (1) {  // This is the main consumer loop.
-    TimeDelta work_time;
-    bool could_use_help;
-    {
-      butil::AutoLock auto_lock(lock_);
-      while (0 == task_count() && !shutdown()) {
-        ++waiting_thread_count_;
-        work_is_available()->Wait();
-        --waiting_thread_count_;
-      }
-      if (shutdown()) {
-        // Ack the notification of a shutdown message back to the controller.
-        thread_shutting_down();
-        return;  // Terminate.
-      }
-      // Get our task duration from the queue.
-      work_time = GetAnAssignment(thread_id);
-      could_use_help = (task_count() > 0) && allow_help_requests();
-    }  // Release lock
-
-    // Do work (outside of locked region.
-    if (could_use_help)
-      work_is_available()->Signal();  // Get help from other threads.
-
-    if (work_time > TimeDelta::FromMilliseconds(0)) {
-      // We could just sleep(), but we'll instead further exercise the
-      // condition variable class, and do a timed wait.
-      butil::AutoLock auto_lock(private_lock);
-      ConditionVariable private_cv(&private_lock);
-      private_cv.TimedWait(work_time);  // Unsynchronized waiting.
+  TimeDelta work_time;
+  bool could_use_help;
+  {
+    butil::AutoLock auto_lock(lock_);
+    while (0 == task_count() && !shutdown()) {
+    ++waiting_thread_count_;
+    work_is_available()->Wait();
+    --waiting_thread_count_;
     }
-
-    {
-      butil::AutoLock auto_lock(lock_);
-      // Send notification that we completed our "work."
-      WorkIsCompleted(thread_id);
+    if (shutdown()) {
+    // Ack the notification of a shutdown message back to the controller.
+    thread_shutting_down();
+    return;  // Terminate.
     }
+    // Get our task duration from the queue.
+    work_time = GetAnAssignment(thread_id);
+    could_use_help = (task_count() > 0) && allow_help_requests();
+  }  // Release lock
+
+  // Do work (outside of locked region.
+  if (could_use_help)
+    work_is_available()->Signal();  // Get help from other threads.
+
+  if (work_time > TimeDelta::FromMilliseconds(0)) {
+    // We could just sleep(), but we'll instead further exercise the
+    // condition variable class, and do a timed wait.
+    butil::AutoLock auto_lock(private_lock);
+    ConditionVariable private_cv(&private_lock);
+    private_cv.TimedWait(work_time);  // Unsynchronized waiting.
+  }
+
+  {
+    butil::AutoLock auto_lock(lock_);
+    // Send notification that we completed our "work."
+    WorkIsCompleted(thread_id);
+  }
   }
 }
 

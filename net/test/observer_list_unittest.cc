@@ -24,7 +24,7 @@ class Adder : public Foo {
  public:
   explicit Adder(int scaler) : total(0), scaler_(scaler) {}
   virtual void Observe(int x) OVERRIDE {
-    total += x * scaler_;
+  total += x * scaler_;
   }
   virtual ~Adder() {}
   int total;
@@ -36,12 +36,12 @@ class Adder : public Foo {
 class Disrupter : public Foo {
  public:
   Disrupter(ObserverList<Foo>* list, Foo* doomed)
-      : list_(list),
-        doomed_(doomed) {
+    : list_(list),
+    doomed_(doomed) {
   }
   virtual ~Disrupter() {}
   virtual void Observe(int x) OVERRIDE {
-    list_->RemoveObserver(doomed_);
+  list_->RemoveObserver(doomed_);
   }
 
  private:
@@ -53,16 +53,16 @@ template <typename ObserverListType>
 class AddInObserve : public Foo {
  public:
   explicit AddInObserve(ObserverListType* observer_list)
-      : added(false),
-        observer_list(observer_list),
-        adder(1) {
+    : added(false),
+    observer_list(observer_list),
+    adder(1) {
   }
 
   virtual void Observe(int x) OVERRIDE {
-    if (!added) {
-      added = true;
-      observer_list->AddObserver(&adder);
-    }
+  if (!added) {
+    added = true;
+    observer_list->AddObserver(&adder);
+  }
   }
 
   bool added;
@@ -119,12 +119,12 @@ TEST(ObserverListTest, Existing) {
 class AddInClearObserve : public Foo {
  public:
   explicit AddInClearObserve(ObserverList<Foo>* list)
-      : list_(list), added_(false), adder_(1) {}
+    : list_(list), added_(false), adder_(1) {}
 
   virtual void Observe(int /* x */) OVERRIDE {
-    list_->Clear();
-    list_->AddObserver(&adder_);
-    added_ = true;
+  list_->Clear();
+  list_->AddObserver(&adder_);
+  added_ = true;
   }
 
   bool added() const { return added_; }
@@ -146,7 +146,7 @@ TEST(ObserverListTest, ClearNotifyAll) {
   FOR_EACH_OBSERVER(Foo, observer_list, Observe(1));
   EXPECT_TRUE(a.added());
   EXPECT_EQ(1, a.adder().total)
-      << "Adder should observe once and have sum of 1.";
+    << "Adder should observe once and have sum of 1.";
 }
 
 TEST(ObserverListTest, ClearNotifyExistingOnly) {
@@ -158,7 +158,7 @@ TEST(ObserverListTest, ClearNotifyExistingOnly) {
   FOR_EACH_OBSERVER(Foo, observer_list, Observe(1));
   EXPECT_TRUE(a.added());
   EXPECT_EQ(0, a.adder().total)
-      << "Adder should not observe, so sum should still be 0.";
+    << "Adder should not observe, so sum should still be 0.";
 }
 
 class ListDestructor : public Foo {
@@ -167,7 +167,7 @@ class ListDestructor : public Foo {
   virtual ~ListDestructor() {}
 
   virtual void Observe(int x) OVERRIDE {
-    delete list_;
+  delete list_;
   }
 
  private:

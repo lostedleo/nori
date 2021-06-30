@@ -21,13 +21,13 @@ namespace butil {
 class BUTIL_EXPORT OffsetAdjuster {
  public:
   struct BUTIL_EXPORT Adjustment {
-    Adjustment(size_t original_offset,
-               size_t original_length,
-               size_t output_length);
+  Adjustment(size_t original_offset,
+         size_t original_length,
+         size_t output_length);
 
-    size_t original_offset;
-    size_t original_length;
-    size_t output_length;
+  size_t original_offset;
+  size_t original_length;
+  size_t output_length;
   };
   typedef std::vector<Adjustment> Adjustments;
 
@@ -42,12 +42,12 @@ class BUTIL_EXPORT OffsetAdjuster {
   // adjusted (e.g., because it points into the middle of a multibyte sequence),
   // it will be set to string16::npos.
   static void AdjustOffsets(const Adjustments& adjustments,
-                            std::vector<size_t>* offsets_for_adjustment);
+              std::vector<size_t>* offsets_for_adjustment);
 
   // Adjusts the single |offset| to reflect the adjustments recorded in
   // |adjustments|.
   static void AdjustOffset(const Adjustments& adjustments,
-                           size_t* offset);
+               size_t* offset);
 
   // Adjusts all offsets in |offsets_for_unadjustment| to reflect the reverse
   // of the adjustments recorded in |adjustments|.  In other words, the offsets
@@ -56,12 +56,12 @@ class BUTIL_EXPORT OffsetAdjuster {
   // offset cannot be successfully unadjusted (e.g., because it points into
   // the middle of a multibyte sequence), it will be set to string16::npos.
   static void UnadjustOffsets(const Adjustments& adjustments,
-                              std::vector<size_t>* offsets_for_unadjustment);
+                std::vector<size_t>* offsets_for_unadjustment);
 
   // Adjusts the single |offset| to reflect the reverse of the adjustments
   // recorded in |adjustments|.
   static void UnadjustOffset(const Adjustments& adjustments,
-                             size_t* offset);
+               size_t* offset);
 
   // Combines two sequential sets of adjustments, storing the combined revised
   // adjustments in |adjustments_on_adjusted_string|.  That is, suppose a
@@ -79,30 +79,30 @@ class BUTIL_EXPORT OffsetAdjuster {
   // WARNING: Only supports |first_adjustments| that involve collapsing ranges
   // of text, not expanding ranges.
   static void MergeSequentialAdjustments(
-      const Adjustments& first_adjustments,
-      Adjustments* adjustments_on_adjusted_string);
+    const Adjustments& first_adjustments,
+    Adjustments* adjustments_on_adjusted_string);
 };
 
 // Like the conversions in utf_string_conversions.h, but also fills in an
 // |adjustments| parameter that reflects the alterations done to the string.
 // It may be NULL.
 BUTIL_EXPORT bool UTF8ToUTF16WithAdjustments(
-    const char* src,
-    size_t src_len,
-    string16* output,
-    butil::OffsetAdjuster::Adjustments* adjustments);
+  const char* src,
+  size_t src_len,
+  string16* output,
+  butil::OffsetAdjuster::Adjustments* adjustments);
 BUTIL_EXPORT string16 UTF8ToUTF16WithAdjustments(
-    const butil::StringPiece& utf8,
-    butil::OffsetAdjuster::Adjustments* adjustments);
+  const butil::StringPiece& utf8,
+  butil::OffsetAdjuster::Adjustments* adjustments);
 // As above, but instead internally examines the adjustments and applies them
 // to |offsets_for_adjustment|.  See comments by AdjustOffsets().
 BUTIL_EXPORT string16 UTF8ToUTF16AndAdjustOffsets(
-    const butil::StringPiece& utf8,
-    std::vector<size_t>* offsets_for_adjustment);
+  const butil::StringPiece& utf8,
+  std::vector<size_t>* offsets_for_adjustment);
 
 BUTIL_EXPORT std::string UTF16ToUTF8AndAdjustOffsets(
-    const butil::StringPiece16& utf16,
-    std::vector<size_t>* offsets_for_adjustment);
+  const butil::StringPiece16& utf16,
+  std::vector<size_t>* offsets_for_adjustment);
 
 // Limiting function callable by std::for_each which will replace any value
 // which is greater than |limit| with npos.  Typically this is called with a
@@ -111,11 +111,11 @@ BUTIL_EXPORT std::string UTF16ToUTF8AndAdjustOffsets(
 template <typename T>
 struct LimitOffset {
   explicit LimitOffset(size_t limit)
-    : limit_(limit) {}
+  : limit_(limit) {}
 
   void operator()(size_t& offset) {
-    if (offset > limit_)
-      offset = T::npos;
+  if (offset > limit_)
+    offset = T::npos;
   }
 
   size_t limit_;

@@ -22,8 +22,8 @@
 #ifndef BTHREAD_ERRNO_H
 #define BTHREAD_ERRNO_H
 
-#include <errno.h>                    // errno
-#include "butil/errno.h"               // berror(), DEFINE_BTHREAD_ERRNO
+#include <errno.h>          // errno
+#include "butil/errno.h"         // berror(), DEFINE_BTHREAD_ERRNO
 
 __BEGIN_DECLS
 

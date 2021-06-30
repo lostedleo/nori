@@ -60,75 +60,75 @@ inline void MemoryBarrier() {
 // any known ARMv6 or ARMv7 variant, where it is possible to directly
 // use ldrex/strex instructions to implement fast atomic operations.
 #if defined(__ARM_ARCH_7__) || defined(__ARM_ARCH_7A__) || \
-    defined(__ARM_ARCH_7R__) || defined(__ARM_ARCH_7M__) || \
-    defined(__ARM_ARCH_6__) || defined(__ARM_ARCH_6J__) || \
-    defined(__ARM_ARCH_6K__) || defined(__ARM_ARCH_6Z__) || \
-    defined(__ARM_ARCH_6ZK__) || defined(__ARM_ARCH_6T2__)
+  defined(__ARM_ARCH_7R__) || defined(__ARM_ARCH_7M__) || \
+  defined(__ARM_ARCH_6__) || defined(__ARM_ARCH_6J__) || \
+  defined(__ARM_ARCH_6K__) || defined(__ARM_ARCH_6Z__) || \
+  defined(__ARM_ARCH_6ZK__) || defined(__ARM_ARCH_6T2__)
 
 inline Atomic32 NoBarrier_CompareAndSwap(volatile Atomic32* ptr,
-                                         Atomic32 old_value,
-                                         Atomic32 new_value) {
+                     Atomic32 old_value,
+                     Atomic32 new_value) {
   Atomic32 prev_value;
   int reloop;
   do {
-    // The following is equivalent to:
-    //
-    //   prev_value = LDREX(ptr)
-    //   reloop = 0
-    //   if (prev_value != old_value)
-    //      reloop = STREX(ptr, new_value)
-    __asm__ __volatile__("    ldrex %0, [%3]\n"
-                         "    mov %1, #0\n"
-                         "    cmp %0, %4\n"
+  // The following is equivalent to:
+  //
+  //   prev_value = LDREX(ptr)
+  //   reloop = 0
+  //   if (prev_value != old_value)
+  //    reloop = STREX(ptr, new_value)
+  __asm__ __volatile__("  ldrex %0, [%3]\n"
+             "  mov %1, #0\n"
+             "  cmp %0, %4\n"
 #ifdef __thumb2__
-                         "    it eq\n"
+             "  it eq\n"
 #endif
-                         "    strexeq %1, %5, [%3]\n"
-                         : "=&r"(prev_value), "=&r"(reloop), "+m"(*ptr)
-                         : "r"(ptr), "r"(old_value), "r"(new_value)
-                         : "cc", "memory");
+             "  strexeq %1, %5, [%3]\n"
+             : "=&r"(prev_value), "=&r"(reloop), "+m"(*ptr)
+             : "r"(ptr), "r"(old_value), "r"(new_value)
+             : "cc", "memory");
   } while (reloop != 0);
   return prev_value;
 }
 
 inline Atomic32 Acquire_CompareAndSwap(volatile Atomic32* ptr,
-                                       Atomic32 old_value,
-                                       Atomic32 new_value) {
+                     Atomic32 old_value,
+                     Atomic32 new_value) {
   Atomic32 result = NoBarrier_CompareAndSwap(ptr, old_value, new_value);
   MemoryBarrier();
   return result;
 }
 
 inline Atomic32 Release_CompareAndSwap(volatile Atomic32* ptr,
-                                       Atomic32 old_value,
-                                       Atomic32 new_value) {
+                     Atomic32 old_value,
+                     Atomic32 new_value) {
   MemoryBarrier();
   return NoBarrier_CompareAndSwap(ptr, old_value, new_value);
 }
 
 inline Atomic32 NoBarrier_AtomicIncrement(volatile Atomic32* ptr,
-                                          Atomic32 increment) {
+                      Atomic32 increment) {
   Atomic32 value;
   int reloop;
   do {
-    // Equivalent to:
-    //
-    //  value = LDREX(ptr)
-    //  value += increment
-    //  reloop = STREX(ptr, value)
-    //
-    __asm__ __volatile__("    ldrex %0, [%3]\n"
-                         "    add %0, %0, %4\n"
-                         "    strex %1, %0, [%3]\n"
-                         : "=&r"(value), "=&r"(reloop), "+m"(*ptr)
-                         : "r"(ptr), "r"(increment)
-                         : "cc", "memory");
+  // Equivalent to:
+  //
+  //  value = LDREX(ptr)
+  //  value += increment
+  //  reloop = STREX(ptr, value)
+  //
+  __asm__ __volatile__("  ldrex %0, [%3]\n"
+             "  add %0, %0, %4\n"
+             "  strex %1, %0, [%3]\n"
+             : "=&r"(value), "=&r"(reloop), "+m"(*ptr)
+             : "r"(ptr), "r"(increment)
+             : "cc", "memory");
   } while (reloop);
   return value;
 }
 
 inline Atomic32 Barrier_AtomicIncrement(volatile Atomic32* ptr,
-                                        Atomic32 increment) {
+                    Atomic32 increment) {
   // TODO(digit): Investigate if it's possible to implement this with
   // a single MemoryBarrier() operation between the LDREX and STREX.
   // See http://crbug.com/246514
@@ -139,24 +139,24 @@ inline Atomic32 Barrier_AtomicIncrement(volatile Atomic32* ptr,
 }
 
 inline Atomic32 NoBarrier_AtomicExchange(volatile Atomic32* ptr,
-                                         Atomic32 new_value) {
+                     Atomic32 new_value) {
   Atomic32 old_value;
   int reloop;
   do {
-    // old_value = LDREX(ptr)
-    // reloop = STREX(ptr, new_value)
-    __asm__ __volatile__("   ldrex %0, [%3]\n"
-                         "   strex %1, %4, [%3]\n"
-                         : "=&r"(old_value), "=&r"(reloop), "+m"(*ptr)
-                         : "r"(ptr), "r"(new_value)
-                         : "cc", "memory");
+  // old_value = LDREX(ptr)
+  // reloop = STREX(ptr, new_value)
+  __asm__ __volatile__("   ldrex %0, [%3]\n"
+             "   strex %1, %4, [%3]\n"
+             : "=&r"(old_value), "=&r"(reloop), "+m"(*ptr)
+             : "r"(ptr), "r"(new_value)
+             : "cc", "memory");
   } while (reloop != 0);
   return old_value;
 }
 
 // This tests against any known ARMv5 variant.
 #elif defined(__ARM_ARCH_5__) || defined(__ARM_ARCH_5T__) || \
-      defined(__ARM_ARCH_5TE__) || defined(__ARM_ARCH_5TEJ__)
+    defined(__ARM_ARCH_5TE__) || defined(__ARM_ARCH_5TEJ__)
 
 // The kernel also provides a helper function to perform an atomic
 // compare-and-swap operation at the hard-wired address 0xffff0fc0.
@@ -173,8 +173,8 @@ inline Atomic32 NoBarrier_AtomicExchange(volatile Atomic32* ptr,
 namespace {
 
 inline int LinuxKernelCmpxchg(Atomic32 old_value,
-                              Atomic32 new_value,
-                              volatile Atomic32* ptr) {
+                Atomic32 new_value,
+                volatile Atomic32* ptr) {
   typedef int (*KernelCmpxchgFunc)(Atomic32, Atomic32, volatile Atomic32*);
   return ((KernelCmpxchgFunc)0xffff0fc0)(old_value, new_value, ptr);
 }
@@ -182,68 +182,68 @@ inline int LinuxKernelCmpxchg(Atomic32 old_value,
 }  // namespace
 
 inline Atomic32 NoBarrier_CompareAndSwap(volatile Atomic32* ptr,
-                                         Atomic32 old_value,
-                                         Atomic32 new_value) {
+                     Atomic32 old_value,
+                     Atomic32 new_value) {
   Atomic32 prev_value;
   for (;;) {
-    prev_value = *ptr;
-    if (prev_value != old_value)
-      return prev_value;
-    if (!LinuxKernelCmpxchg(old_value, new_value, ptr))
-      return old_value;
+  prev_value = *ptr;
+  if (prev_value != old_value)
+    return prev_value;
+  if (!LinuxKernelCmpxchg(old_value, new_value, ptr))
+    return old_value;
   }
 }
 
 inline Atomic32 NoBarrier_AtomicExchange(volatile Atomic32* ptr,
-                                         Atomic32 new_value) {
+                     Atomic32 new_value) {
   Atomic32 old_value;
   do {
-    old_value = *ptr;
+  old_value = *ptr;
   } while (LinuxKernelCmpxchg(old_value, new_value, ptr));
   return old_value;
 }
 
 inline Atomic32 NoBarrier_AtomicIncrement(volatile Atomic32* ptr,
-                                          Atomic32 increment) {
+                      Atomic32 increment) {
   return Barrier_AtomicIncrement(ptr, increment);
 }
 
 inline Atomic32 Barrier_AtomicIncrement(volatile Atomic32* ptr,
-                                        Atomic32 increment) {
+                    Atomic32 increment) {
   for (;;) {
-    // Atomic exchange the old value with an incremented one.
-    Atomic32 old_value = *ptr;
-    Atomic32 new_value = old_value + increment;
-    if (!LinuxKernelCmpxchg(old_value, new_value, ptr)) {
-      // The exchange took place as expected.
-      return new_value;
-    }
-    // Otherwise, *ptr changed mid-loop and we need to retry.
+  // Atomic exchange the old value with an incremented one.
+  Atomic32 old_value = *ptr;
+  Atomic32 new_value = old_value + increment;
+  if (!LinuxKernelCmpxchg(old_value, new_value, ptr)) {
+    // The exchange took place as expected.
+    return new_value;
+  }
+  // Otherwise, *ptr changed mid-loop and we need to retry.
   }
 }
 
 inline Atomic32 Acquire_CompareAndSwap(volatile Atomic32* ptr,
-                                       Atomic32 old_value,
-                                       Atomic32 new_value) {
+                     Atomic32 old_value,
+                     Atomic32 new_value) {
   Atomic32 prev_value;
   for (;;) {
-    prev_value = *ptr;
-    if (prev_value != old_value) {
-      // Always ensure acquire semantics.
-      MemoryBarrier();
-      return prev_value;
-    }
-    if (!LinuxKernelCmpxchg(old_value, new_value, ptr))
-      return old_value;
+  prev_value = *ptr;
+  if (prev_value != old_value) {
+    // Always ensure acquire semantics.
+    MemoryBarrier();
+    return prev_value;
+  }
+  if (!LinuxKernelCmpxchg(old_value, new_value, ptr))
+    return old_value;
   }
 }
 
 inline Atomic32 Release_CompareAndSwap(volatile Atomic32* ptr,
-                                       Atomic32 old_value,
-                                       Atomic32 new_value) {
+                     Atomic32 old_value,
+                     Atomic32 new_value) {
   // This could be implemented as:
-  //    MemoryBarrier();
-  //    return NoBarrier_CompareAndSwap();
+  //  MemoryBarrier();
+  //  return NoBarrier_CompareAndSwap();
   //
   // But would use 3 barriers per succesful CAS. To save performance,
   // use Acquire_CompareAndSwap(). Its implementation guarantees that:

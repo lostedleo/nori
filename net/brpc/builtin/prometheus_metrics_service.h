@@ -25,10 +25,10 @@ namespace brpc {
 
 class PrometheusMetricsService : public brpc_metrics {
 public:
-    void default_method(::google::protobuf::RpcController* cntl_base,
-                        const ::brpc::MetricsRequest* request,
-                        ::brpc::MetricsResponse* response,
-                        ::google::protobuf::Closure* done) override;
+  void default_method(::google::protobuf::RpcController* cntl_base,
+            const ::brpc::MetricsRequest* request,
+            ::brpc::MetricsResponse* response,
+            ::google::protobuf::Closure* done) override;
 };
 
 int DumpPrometheusMetricsToIOBuf(butil::IOBuf* output);

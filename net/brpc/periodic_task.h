@@ -32,14 +32,14 @@ namespace brpc {
 // with OnDestroyingTask() and will not be scheduled anymore.
 class PeriodicTask {
 public:
-    virtual ~PeriodicTask();
-    virtual bool OnTriggeringTask(timespec* next_abstime) = 0;
-    virtual void OnDestroyingTask() = 0;
+  virtual ~PeriodicTask();
+  virtual bool OnTriggeringTask(timespec* next_abstime) = 0;
+  virtual void OnDestroyingTask() = 0;
 };
 
 class PeriodicTaskManager {
 public:
-    static void StartTaskAt(PeriodicTask* task, const timespec& abstime);
+  static void StartTaskAt(PeriodicTask* task, const timespec& abstime);
 };
 
 

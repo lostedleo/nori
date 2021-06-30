@@ -22,15 +22,15 @@ class AtomicSequenceNumber;
 class StaticAtomicSequenceNumber {
  public:
   inline int GetNext() {
-    return static_cast<int>(
-        butil::subtle::NoBarrier_AtomicIncrement(&seq_, 1) - 1);
+  return static_cast<int>(
+    butil::subtle::NoBarrier_AtomicIncrement(&seq_, 1) - 1);
   }
 
  private:
   friend class AtomicSequenceNumber;
 
   inline void Reset() {
-    butil::subtle::Release_Store(&seq_, 0);
+  butil::subtle::Release_Store(&seq_, 0);
   }
 
   butil::subtle::Atomic32 seq_;
@@ -43,11 +43,11 @@ class StaticAtomicSequenceNumber {
 class AtomicSequenceNumber {
  public:
   AtomicSequenceNumber() {
-    seq_.Reset();
+  seq_.Reset();
   }
 
   inline int GetNext() {
-    return seq_.GetNext();
+  return seq_.GetNext();
   }
 
  private:

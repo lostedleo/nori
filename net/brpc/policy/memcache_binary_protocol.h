@@ -27,28 +27,28 @@ namespace policy {
 
 // Parse memcache messags.
 ParseResult ParseMemcacheMessage(butil::IOBuf* source, Socket *socket, bool read_eof,
-        const void *arg);
+    const void *arg);
 
 // Actions to a memcache response.
 void ProcessMemcacheResponse(InputMessageBase* msg);
 
 // Serialize a memcache request.
 void SerializeMemcacheRequest(butil::IOBuf* buf,
-                              Controller* cntl,
-                              const google::protobuf::Message* request);
+                Controller* cntl,
+                const google::protobuf::Message* request);
 
 // Pack `request' to `method' into `buf'.
 void PackMemcacheRequest(butil::IOBuf* buf,
-                         SocketMessage**,
-                         uint64_t correlation_id,
-                         const google::protobuf::MethodDescriptor* method,
-                         Controller* controller,
-                         const butil::IOBuf& request,
-                         const Authenticator* auth);
+             SocketMessage**,
+             uint64_t correlation_id,
+             const google::protobuf::MethodDescriptor* method,
+             Controller* controller,
+             const butil::IOBuf& request,
+             const Authenticator* auth);
 
 const std::string& GetMemcacheMethodName(
-    const google::protobuf::MethodDescriptor*,
-    const Controller*);
+  const google::protobuf::MethodDescriptor*,
+  const Controller*);
 
 }  // namespace policy
 } // namespace brpc

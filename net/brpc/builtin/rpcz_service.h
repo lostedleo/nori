@@ -27,37 +27,37 @@ namespace brpc {
 
 class RpczService : public rpcz, public Tabbed {
 public:
-    void enable(::google::protobuf::RpcController* cntl_base,
-                const ::brpc::RpczRequest* request,
-                ::brpc::RpczResponse* response,
-                ::google::protobuf::Closure* done);
+  void enable(::google::protobuf::RpcController* cntl_base,
+        const ::brpc::RpczRequest* request,
+        ::brpc::RpczResponse* response,
+        ::google::protobuf::Closure* done);
 
-    void disable(::google::protobuf::RpcController* cntl_base,
-                 const ::brpc::RpczRequest* request,
-                 ::brpc::RpczResponse* response,
-                 ::google::protobuf::Closure* done);
+  void disable(::google::protobuf::RpcController* cntl_base,
+         const ::brpc::RpczRequest* request,
+         ::brpc::RpczResponse* response,
+         ::google::protobuf::Closure* done);
 
-    void stats(::google::protobuf::RpcController* cntl_base,
-               const ::brpc::RpczRequest* request,
-               ::brpc::RpczResponse* response,
-               ::google::protobuf::Closure* done);
+  void stats(::google::protobuf::RpcController* cntl_base,
+         const ::brpc::RpczRequest* request,
+         ::brpc::RpczResponse* response,
+         ::google::protobuf::Closure* done);
 
-    void hex_log_id(::google::protobuf::RpcController* cntl_base,
-                    const ::brpc::RpczRequest* request,
-                    ::brpc::RpczResponse* response,
-                    ::google::protobuf::Closure* done);
+  void hex_log_id(::google::protobuf::RpcController* cntl_base,
+          const ::brpc::RpczRequest* request,
+          ::brpc::RpczResponse* response,
+          ::google::protobuf::Closure* done);
 
-    void dec_log_id(::google::protobuf::RpcController* cntl_base,
-                    const ::brpc::RpczRequest* request,
-                    ::brpc::RpczResponse* response,
-                    ::google::protobuf::Closure* done);
+  void dec_log_id(::google::protobuf::RpcController* cntl_base,
+          const ::brpc::RpczRequest* request,
+          ::brpc::RpczResponse* response,
+          ::google::protobuf::Closure* done);
 
-    void default_method(::google::protobuf::RpcController* cntl_base,
-                        const ::brpc::RpczRequest* request,
-                        ::brpc::RpczResponse* response,
-                        ::google::protobuf::Closure* done);
+  void default_method(::google::protobuf::RpcController* cntl_base,
+            const ::brpc::RpczRequest* request,
+            ::brpc::RpczResponse* response,
+            ::google::protobuf::Closure* done);
 
-    void GetTabInfo(brpc::TabInfoList*) const;
+  void GetTabInfo(brpc::TabInfoList*) const;
 };
 
 } // namespace brpc

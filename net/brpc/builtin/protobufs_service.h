@@ -28,23 +28,23 @@ namespace brpc {
 class Server;
 
 // Show DebugString of protobuf messages used in the server.
-//   /protobufs         : list all supported messages.
+//   /protobufs     : list all supported messages.
 //   /protobufs/<msg>/  : Show DebugString() of <msg>
 
 class ProtobufsService : public protobufs {
 public:
-    explicit ProtobufsService(Server* server);
-    
-    void default_method(::google::protobuf::RpcController* cntl_base,
-                        const ::brpc::ProtobufsRequest* request,
-                        ::brpc::ProtobufsResponse* response,
-                        ::google::protobuf::Closure* done);
+  explicit ProtobufsService(Server* server);
+  
+  void default_method(::google::protobuf::RpcController* cntl_base,
+            const ::brpc::ProtobufsRequest* request,
+            ::brpc::ProtobufsResponse* response,
+            ::google::protobuf::Closure* done);
 private:
-    int Init();
-    
-    Server* _server;
-    typedef std::map<std::string, std::string> Map;
-    Map _map;
+  int Init();
+  
+  Server* _server;
+  typedef std::map<std::string, std::string> Map;
+  Map _map;
 };
 
 } // namespace brpc

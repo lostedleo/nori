@@ -53,9 +53,9 @@ TEST(WeakPtrFactoryTest, OutOfScope) {
   WeakPtr<int> ptr;
   EXPECT_EQ(NULL, ptr.get());
   {
-    int data;
-    WeakPtrFactory<int> factory(&data);
-    ptr = factory.GetWeakPtr();
+  int data;
+  WeakPtrFactory<int> factory(&data);
+  ptr = factory.GetWeakPtr();
   }
   EXPECT_EQ(NULL, ptr.get());
 }
@@ -63,12 +63,12 @@ TEST(WeakPtrFactoryTest, OutOfScope) {
 TEST(WeakPtrFactoryTest, Multiple) {
   WeakPtr<int> a, b;
   {
-    int data;
-    WeakPtrFactory<int> factory(&data);
-    a = factory.GetWeakPtr();
-    b = factory.GetWeakPtr();
-    EXPECT_EQ(&data, a.get());
-    EXPECT_EQ(&data, b.get());
+  int data;
+  WeakPtrFactory<int> factory(&data);
+  a = factory.GetWeakPtr();
+  b = factory.GetWeakPtr();
+  EXPECT_EQ(&data, a.get());
+  EXPECT_EQ(&data, b.get());
   }
   EXPECT_EQ(NULL, a.get());
   EXPECT_EQ(NULL, b.get());
@@ -77,13 +77,13 @@ TEST(WeakPtrFactoryTest, Multiple) {
 TEST(WeakPtrFactoryTest, MultipleStaged) {
   WeakPtr<int> a;
   {
-    int data;
-    WeakPtrFactory<int> factory(&data);
-    a = factory.GetWeakPtr();
-    {
-      WeakPtr<int> b = factory.GetWeakPtr();
-    }
-    EXPECT_TRUE(NULL != a.get());
+  int data;
+  WeakPtrFactory<int> factory(&data);
+  a = factory.GetWeakPtr();
+  {
+    WeakPtr<int> b = factory.GetWeakPtr();
+  }
+  EXPECT_TRUE(NULL != a.get());
   }
   EXPECT_EQ(NULL, a.get());
 }
@@ -143,8 +143,8 @@ TEST(WeakPtrTest, HasWeakPtrs) {
   int data;
   WeakPtrFactory<int> factory(&data);
   {
-    WeakPtr<int> ptr = factory.GetWeakPtr();
-    EXPECT_TRUE(factory.HasWeakPtrs());
+  WeakPtr<int> ptr = factory.GetWeakPtr();
+  EXPECT_TRUE(factory.HasWeakPtrs());
   }
   EXPECT_FALSE(factory.HasWeakPtrs());
 }

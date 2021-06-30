@@ -26,10 +26,10 @@ namespace brpc {
 
 class DirService : public dir {
 public:
-    void default_method(::google::protobuf::RpcController* cntl_base,
-                        const ::brpc::DirRequest* request,
-                        ::brpc::DirResponse* response,
-                        ::google::protobuf::Closure* done);
+  void default_method(::google::protobuf::RpcController* cntl_base,
+            const ::brpc::DirRequest* request,
+            ::brpc::DirResponse* response,
+            ::google::protobuf::Closure* done);
 };
 
 } // namespace brpc

@@ -19,24 +19,24 @@ class BasicLockTestThread : public PlatformThread::Delegate {
   explicit BasicLockTestThread(Lock* lock) : lock_(lock), acquired_(0) {}
 
   virtual void ThreadMain() OVERRIDE {
-    for (int i = 0; i < 10; i++) {
-      lock_->Acquire();
-      acquired_++;
-      lock_->Release();
+  for (int i = 0; i < 10; i++) {
+    lock_->Acquire();
+    acquired_++;
+    lock_->Release();
+  }
+  for (int i = 0; i < 10; i++) {
+    lock_->Acquire();
+    acquired_++;
+    PlatformThread::Sleep(TimeDelta::FromMilliseconds(rand() % 20));
+    lock_->Release();
+  }
+  for (int i = 0; i < 10; i++) {
+    if (lock_->Try()) {
+    acquired_++;
+    PlatformThread::Sleep(TimeDelta::FromMilliseconds(rand() % 20));
+    lock_->Release();
     }
-    for (int i = 0; i < 10; i++) {
-      lock_->Acquire();
-      acquired_++;
-      PlatformThread::Sleep(TimeDelta::FromMilliseconds(rand() % 20));
-      lock_->Release();
-    }
-    for (int i = 0; i < 10; i++) {
-      if (lock_->Try()) {
-        acquired_++;
-        PlatformThread::Sleep(TimeDelta::FromMilliseconds(rand() % 20));
-        lock_->Release();
-      }
-    }
+  }
   }
 
   int acquired() const { return acquired_; }
@@ -57,28 +57,28 @@ TEST(LockTest, Basic) {
 
   int acquired = 0;
   for (int i = 0; i < 5; i++) {
-    lock.Acquire();
-    acquired++;
-    lock.Release();
+  lock.Acquire();
+  acquired++;
+  lock.Release();
   }
   for (int i = 0; i < 10; i++) {
-    lock.Acquire();
+  lock.Acquire();
+  acquired++;
+  PlatformThread::Sleep(TimeDelta::FromMilliseconds(rand() % 20));
+  lock.Release();
+  }
+  for (int i = 0; i < 10; i++) {
+  if (lock.Try()) {
     acquired++;
     PlatformThread::Sleep(TimeDelta::FromMilliseconds(rand() % 20));
     lock.Release();
   }
-  for (int i = 0; i < 10; i++) {
-    if (lock.Try()) {
-      acquired++;
-      PlatformThread::Sleep(TimeDelta::FromMilliseconds(rand() % 20));
-      lock.Release();
-    }
   }
   for (int i = 0; i < 5; i++) {
-    lock.Acquire();
-    acquired++;
-    PlatformThread::Sleep(TimeDelta::FromMilliseconds(rand() % 20));
-    lock.Release();
+  lock.Acquire();
+  acquired++;
+  PlatformThread::Sleep(TimeDelta::FromMilliseconds(rand() % 20));
+  lock.Release();
   }
 
   PlatformThread::Join(handle);
@@ -94,9 +94,9 @@ class TryLockTestThread : public PlatformThread::Delegate {
   explicit TryLockTestThread(Lock* lock) : lock_(lock), got_lock_(false) {}
 
   virtual void ThreadMain() OVERRIDE {
-    got_lock_ = lock_->Try();
-    if (got_lock_)
-      lock_->Release();
+  got_lock_ = lock_->Try();
+  if (got_lock_)
+    lock_->Release();
   }
 
   bool got_lock() const { return got_lock_; }
@@ -116,30 +116,30 @@ TEST(LockTest, TryLock) {
 
   // This thread will not be able to get the lock.
   {
-    TryLockTestThread thread(&lock);
-    PlatformThreadHandle handle;
+  TryLockTestThread thread(&lock);
+  PlatformThreadHandle handle;
 
-    ASSERT_TRUE(PlatformThread::Create(0, &thread, &handle));
+  ASSERT_TRUE(PlatformThread::Create(0, &thread, &handle));
 
-    PlatformThread::Join(handle);
+  PlatformThread::Join(handle);
 
-    ASSERT_FALSE(thread.got_lock());
+  ASSERT_FALSE(thread.got_lock());
   }
 
   lock.Release();
 
   // This thread will....
   {
-    TryLockTestThread thread(&lock);
-    PlatformThreadHandle handle;
+  TryLockTestThread thread(&lock);
+  PlatformThreadHandle handle;
 
-    ASSERT_TRUE(PlatformThread::Create(0, &thread, &handle));
+  ASSERT_TRUE(PlatformThread::Create(0, &thread, &handle));
 
-    PlatformThread::Join(handle);
+  PlatformThread::Join(handle);
 
-    ASSERT_TRUE(thread.got_lock());
-    // But it released it....
-    ASSERT_TRUE(lock.Try());
+  ASSERT_TRUE(thread.got_lock());
+  // But it released it....
+  ASSERT_TRUE(lock.Try());
   }
 
   lock.Release();
@@ -153,17 +153,17 @@ class MutexLockTestThread : public PlatformThread::Delegate {
 
   // Static helper which can also be called from the main thread.
   static void DoStuff(Lock* lock, int* value) {
-    for (int i = 0; i < 40; i++) {
-      lock->Acquire();
-      int v = *value;
-      PlatformThread::Sleep(TimeDelta::FromMilliseconds(rand() % 10));
-      *value = v + 1;
-      lock->Release();
-    }
+  for (int i = 0; i < 40; i++) {
+    lock->Acquire();
+    int v = *value;
+    PlatformThread::Sleep(TimeDelta::FromMilliseconds(rand() % 10));
+    *value = v + 1;
+    lock->Release();
+  }
   }
 
   virtual void ThreadMain() OVERRIDE {
-    DoStuff(lock_, value_);
+  DoStuff(lock_, value_);
   }
 
  private:

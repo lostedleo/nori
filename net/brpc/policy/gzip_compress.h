@@ -19,9 +19,9 @@
 #ifndef BRPC_POLICY_GZIP_COMPRESS_H
 #define BRPC_POLICY_GZIP_COMPRESS_H
 
-#include <google/protobuf/message.h>              // Message
+#include <google/protobuf/message.h>        // Message
 #include <google/protobuf/io/gzip_stream.h>
-#include "butil/iobuf.h"                           // butil::IOBuf
+#include "butil/iobuf.h"               // butil::IOBuf
 
 
 namespace brpc {
@@ -39,7 +39,7 @@ bool ZlibDecompress(const butil::IOBuf& buf, google::protobuf::Message* msg);
 
 // Put compressed `in' into `out'.
 bool GzipCompress(const butil::IOBuf& in, butil::IOBuf* out,
-                  const GzipCompressOptions*);
+          const GzipCompressOptions*);
 
 // Put decompressed `in' into `out'.
 bool GzipDecompress(const butil::IOBuf& in, butil::IOBuf* out);

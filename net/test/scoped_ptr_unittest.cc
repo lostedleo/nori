@@ -38,7 +38,7 @@ class ConDecLogger : public ConDecLoggerParent {
 struct CountingDeleter {
   explicit CountingDeleter(int* count) : count_(count) {}
   inline void operator()(double* ptr) const {
-    (*count_)++;
+  (*count_)++;
   }
   int* count_;
 };
@@ -51,18 +51,18 @@ struct CountingDeleterChild : public CountingDeleter {
 class OverloadedNewAndDelete {
  public:
   void* operator new(size_t size) {
-    g_new_count++;
-    return malloc(size);
+  g_new_count++;
+  return malloc(size);
   }
 
   void operator delete(void* ptr) {
-    g_delete_count++;
-    free(ptr);
+  g_delete_count++;
+  free(ptr);
   }
 
   static void ResetCounters() {
-    g_new_count = 0;
-    g_delete_count = 0;
+  g_new_count = 0;
+  g_delete_count = 0;
   }
 
   static int new_count() { return g_new_count; }
@@ -90,7 +90,7 @@ scoped_ptr<ConDecLogger> TestReturnOfType(int* constructed) {
 }
 
 scoped_ptr<ConDecLoggerParent> UpcastUsingPassAs(
-    scoped_ptr<ConDecLogger> object) {
+  scoped_ptr<ConDecLogger> object) {
   return object.PassAs<ConDecLoggerParent>();
 }
 
@@ -101,68 +101,68 @@ TEST(ScopedPtrTest, ScopedPtr) {
 
   // Ensure size of scoped_ptr<> doesn't increase unexpectedly.
   COMPILE_ASSERT(sizeof(int*) >= sizeof(scoped_ptr<int>),
-                 scoped_ptr_larger_than_raw_ptr);
+         scoped_ptr_larger_than_raw_ptr);
 
   {
-    scoped_ptr<ConDecLogger> scoper(new ConDecLogger(&constructed));
-    EXPECT_EQ(1, constructed);
-    EXPECT_TRUE(scoper.get());
+  scoped_ptr<ConDecLogger> scoper(new ConDecLogger(&constructed));
+  EXPECT_EQ(1, constructed);
+  EXPECT_TRUE(scoper.get());
 
-    EXPECT_EQ(10, scoper->SomeMeth(10));
-    EXPECT_EQ(10, scoper.get()->SomeMeth(10));
-    EXPECT_EQ(10, (*scoper).SomeMeth(10));
+  EXPECT_EQ(10, scoper->SomeMeth(10));
+  EXPECT_EQ(10, scoper.get()->SomeMeth(10));
+  EXPECT_EQ(10, (*scoper).SomeMeth(10));
   }
   EXPECT_EQ(0, constructed);
 
   // Test reset() and release()
   {
-    scoped_ptr<ConDecLogger> scoper(new ConDecLogger(&constructed));
-    EXPECT_EQ(1, constructed);
-    EXPECT_TRUE(scoper.get());
+  scoped_ptr<ConDecLogger> scoper(new ConDecLogger(&constructed));
+  EXPECT_EQ(1, constructed);
+  EXPECT_TRUE(scoper.get());
 
-    scoper.reset(new ConDecLogger(&constructed));
-    EXPECT_EQ(1, constructed);
-    EXPECT_TRUE(scoper.get());
+  scoper.reset(new ConDecLogger(&constructed));
+  EXPECT_EQ(1, constructed);
+  EXPECT_TRUE(scoper.get());
 
-    scoper.reset();
-    EXPECT_EQ(0, constructed);
-    EXPECT_FALSE(scoper.get());
+  scoper.reset();
+  EXPECT_EQ(0, constructed);
+  EXPECT_FALSE(scoper.get());
 
-    scoper.reset(new ConDecLogger(&constructed));
-    EXPECT_EQ(1, constructed);
-    EXPECT_TRUE(scoper.get());
+  scoper.reset(new ConDecLogger(&constructed));
+  EXPECT_EQ(1, constructed);
+  EXPECT_TRUE(scoper.get());
 
-    ConDecLogger* take = scoper.release();
-    EXPECT_EQ(1, constructed);
-    EXPECT_FALSE(scoper.get());
-    delete take;
-    EXPECT_EQ(0, constructed);
+  ConDecLogger* take = scoper.release();
+  EXPECT_EQ(1, constructed);
+  EXPECT_FALSE(scoper.get());
+  delete take;
+  EXPECT_EQ(0, constructed);
 
-    scoper.reset(new ConDecLogger(&constructed));
-    EXPECT_EQ(1, constructed);
-    EXPECT_TRUE(scoper.get());
+  scoper.reset(new ConDecLogger(&constructed));
+  EXPECT_EQ(1, constructed);
+  EXPECT_TRUE(scoper.get());
   }
   EXPECT_EQ(0, constructed);
 
   // Test swap(), == and !=
   {
-    scoped_ptr<ConDecLogger> scoper1;
-    scoped_ptr<ConDecLogger> scoper2;
-    EXPECT_TRUE(scoper1 == scoper2.get());
-    EXPECT_FALSE(scoper1 != scoper2.get());
+  scoped_ptr<ConDecLogger> scoper1;
+  scoped_ptr<ConDecLogger> scoper2;
+  EXPECT_TRUE(scoper1 == scoper2.get());
+  EXPECT_FALSE(scoper1 != scoper2.get());
 
-    ConDecLogger* logger = new ConDecLogger(&constructed);
-    scoper1.reset(logger);
-    EXPECT_EQ(logger, scoper1.get());
-    EXPECT_FALSE(scoper2.get());
-    EXPECT_FALSE(scoper1 == scoper2.get());
-    EXPECT_TRUE(scoper1 != scoper2.get());
+  ConDecLogger* logger = new ConDecLogger(&constructed);
+  scoper1.reset(logger);
+  EXPECT_EQ(logger, scoper1.get());
+  EXPECT_FALSE(scoper2.get());
+  EXPECT_FALSE(scoper1 == scoper2.get());
+  EXPECT_TRUE(scoper1 != scoper2.get());
 
-    scoper2.swap(scoper1);
-    EXPECT_EQ(logger, scoper2.get());
-    EXPECT_FALSE(scoper1.get());
-    EXPECT_FALSE(scoper1 == scoper2.get());
-    EXPECT_TRUE(scoper1 != scoper2.get());
+  scoper2.swap(scoper1);
+  EXPECT_EQ(logger, scoper2.get());
+  EXPECT_FALSE(scoper1.get());
+  EXPECT_FALSE(scoper1 == scoper2.get());
+  EXPECT_TRUE(scoper1 != scoper2.get());
   }
   EXPECT_EQ(0, constructed);
 }
@@ -172,108 +172,108 @@ TEST(ScopedPtrTest, ScopedPtrDepthSubtyping) {
 
   // Test construction from a scoped_ptr to a derived class.
   {
-    scoped_ptr<ConDecLogger> scoper(new ConDecLogger(&constructed));
-    EXPECT_EQ(1, constructed);
-    EXPECT_TRUE(scoper.get());
+  scoped_ptr<ConDecLogger> scoper(new ConDecLogger(&constructed));
+  EXPECT_EQ(1, constructed);
+  EXPECT_TRUE(scoper.get());
 
-    scoped_ptr<ConDecLoggerParent> scoper_parent(scoper.Pass());
-    EXPECT_EQ(1, constructed);
-    EXPECT_TRUE(scoper_parent.get());
-    EXPECT_FALSE(scoper.get());
+  scoped_ptr<ConDecLoggerParent> scoper_parent(scoper.Pass());
+  EXPECT_EQ(1, constructed);
+  EXPECT_TRUE(scoper_parent.get());
+  EXPECT_FALSE(scoper.get());
 
-    EXPECT_EQ(10, scoper_parent->SomeMeth(10));
-    EXPECT_EQ(10, scoper_parent.get()->SomeMeth(10));
-    EXPECT_EQ(10, (*scoper_parent).SomeMeth(10));
+  EXPECT_EQ(10, scoper_parent->SomeMeth(10));
+  EXPECT_EQ(10, scoper_parent.get()->SomeMeth(10));
+  EXPECT_EQ(10, (*scoper_parent).SomeMeth(10));
   }
   EXPECT_EQ(0, constructed);
 
   // Test assignment from a scoped_ptr to a derived class.
   {
-    scoped_ptr<ConDecLogger> scoper(new ConDecLogger(&constructed));
-    EXPECT_EQ(1, constructed);
-    EXPECT_TRUE(scoper.get());
+  scoped_ptr<ConDecLogger> scoper(new ConDecLogger(&constructed));
+  EXPECT_EQ(1, constructed);
+  EXPECT_TRUE(scoper.get());
 
-    scoped_ptr<ConDecLoggerParent> scoper_parent;
-    scoper_parent = scoper.Pass();
-    EXPECT_EQ(1, constructed);
-    EXPECT_TRUE(scoper_parent.get());
-    EXPECT_FALSE(scoper.get());
+  scoped_ptr<ConDecLoggerParent> scoper_parent;
+  scoper_parent = scoper.Pass();
+  EXPECT_EQ(1, constructed);
+  EXPECT_TRUE(scoper_parent.get());
+  EXPECT_FALSE(scoper.get());
   }
   EXPECT_EQ(0, constructed);
 
   // Test construction of a scoped_ptr with an additional const annotation.
   {
-    scoped_ptr<ConDecLogger> scoper(new ConDecLogger(&constructed));
-    EXPECT_EQ(1, constructed);
-    EXPECT_TRUE(scoper.get());
+  scoped_ptr<ConDecLogger> scoper(new ConDecLogger(&constructed));
+  EXPECT_EQ(1, constructed);
+  EXPECT_TRUE(scoper.get());
 
-    scoped_ptr<const ConDecLogger> scoper_const(scoper.Pass());
-    EXPECT_EQ(1, constructed);
-    EXPECT_TRUE(scoper_const.get());
-    EXPECT_FALSE(scoper.get());
+  scoped_ptr<const ConDecLogger> scoper_const(scoper.Pass());
+  EXPECT_EQ(1, constructed);
+  EXPECT_TRUE(scoper_const.get());
+  EXPECT_FALSE(scoper.get());
 
-    EXPECT_EQ(10, scoper_const->SomeMeth(10));
-    EXPECT_EQ(10, scoper_const.get()->SomeMeth(10));
-    EXPECT_EQ(10, (*scoper_const).SomeMeth(10));
+  EXPECT_EQ(10, scoper_const->SomeMeth(10));
+  EXPECT_EQ(10, scoper_const.get()->SomeMeth(10));
+  EXPECT_EQ(10, (*scoper_const).SomeMeth(10));
   }
   EXPECT_EQ(0, constructed);
 
   // Test assignment to a scoped_ptr with an additional const annotation.
   {
-    scoped_ptr<ConDecLogger> scoper(new ConDecLogger(&constructed));
-    EXPECT_EQ(1, constructed);
-    EXPECT_TRUE(scoper.get());
+  scoped_ptr<ConDecLogger> scoper(new ConDecLogger(&constructed));
+  EXPECT_EQ(1, constructed);
+  EXPECT_TRUE(scoper.get());
 
-    scoped_ptr<const ConDecLogger> scoper_const;
-    scoper_const = scoper.Pass();
-    EXPECT_EQ(1, constructed);
-    EXPECT_TRUE(scoper_const.get());
-    EXPECT_FALSE(scoper.get());
+  scoped_ptr<const ConDecLogger> scoper_const;
+  scoper_const = scoper.Pass();
+  EXPECT_EQ(1, constructed);
+  EXPECT_TRUE(scoper_const.get());
+  EXPECT_FALSE(scoper.get());
   }
   EXPECT_EQ(0, constructed);
 
   // Test assignment to a scoped_ptr deleter of parent type.
   {
-    // Custom deleters never touch these value.
-    double dummy_value, dummy_value2;
-    int deletes = 0;
-    int alternate_deletes = 0;
-    scoped_ptr<double, CountingDeleter> scoper(&dummy_value,
-                                               CountingDeleter(&deletes));
-    scoped_ptr<double, CountingDeleterChild> scoper_child(
-        &dummy_value2, CountingDeleterChild(&alternate_deletes));
+  // Custom deleters never touch these value.
+  double dummy_value, dummy_value2;
+  int deletes = 0;
+  int alternate_deletes = 0;
+  scoped_ptr<double, CountingDeleter> scoper(&dummy_value,
+                         CountingDeleter(&deletes));
+  scoped_ptr<double, CountingDeleterChild> scoper_child(
+    &dummy_value2, CountingDeleterChild(&alternate_deletes));
 
-    EXPECT_TRUE(scoper);
-    EXPECT_TRUE(scoper_child);
-    EXPECT_EQ(0, deletes);
-    EXPECT_EQ(0, alternate_deletes);
+  EXPECT_TRUE(scoper);
+  EXPECT_TRUE(scoper_child);
+  EXPECT_EQ(0, deletes);
+  EXPECT_EQ(0, alternate_deletes);
 
-    // Test this compiles and correctly overwrites the deleter state.
-    scoper = scoper_child.Pass();
-    EXPECT_TRUE(scoper);
-    EXPECT_FALSE(scoper_child);
-    EXPECT_EQ(1, deletes);
-    EXPECT_EQ(0, alternate_deletes);
+  // Test this compiles and correctly overwrites the deleter state.
+  scoper = scoper_child.Pass();
+  EXPECT_TRUE(scoper);
+  EXPECT_FALSE(scoper_child);
+  EXPECT_EQ(1, deletes);
+  EXPECT_EQ(0, alternate_deletes);
 
-    scoper.reset();
-    EXPECT_FALSE(scoper);
-    EXPECT_FALSE(scoper_child);
-    EXPECT_EQ(1, deletes);
-    EXPECT_EQ(1, alternate_deletes);
+  scoper.reset();
+  EXPECT_FALSE(scoper);
+  EXPECT_FALSE(scoper_child);
+  EXPECT_EQ(1, deletes);
+  EXPECT_EQ(1, alternate_deletes);
 
-    scoper_child.reset(&dummy_value);
-    EXPECT_TRUE(scoper_child);
-    EXPECT_EQ(1, deletes);
-    EXPECT_EQ(1, alternate_deletes);
-    scoped_ptr<double, CountingDeleter> scoper_construct(scoper_child.Pass());
-    EXPECT_TRUE(scoper_construct);
-    EXPECT_FALSE(scoper_child);
-    EXPECT_EQ(1, deletes);
-    EXPECT_EQ(1, alternate_deletes);
+  scoper_child.reset(&dummy_value);
+  EXPECT_TRUE(scoper_child);
+  EXPECT_EQ(1, deletes);
+  EXPECT_EQ(1, alternate_deletes);
+  scoped_ptr<double, CountingDeleter> scoper_construct(scoper_child.Pass());
+  EXPECT_TRUE(scoper_construct);
+  EXPECT_FALSE(scoper_child);
+  EXPECT_EQ(1, deletes);
+  EXPECT_EQ(1, alternate_deletes);
 
-    scoper_construct.reset();
-    EXPECT_EQ(1, deletes);
-    EXPECT_EQ(2, alternate_deletes);
+  scoper_construct.reset();
+  EXPECT_EQ(1, deletes);
+  EXPECT_EQ(2, alternate_deletes);
   }
 }
 
@@ -283,95 +283,95 @@ TEST(ScopedPtrTest, ScopedPtrWithArray) {
   int constructed = 0;
 
   {
-    scoped_ptr<ConDecLogger[]> scoper(new ConDecLogger[kNumLoggers]);
-    EXPECT_TRUE(scoper);
-    EXPECT_EQ(&scoper[0], scoper.get());
-    for (int i = 0; i < kNumLoggers; ++i) {
-      scoper[i].SetPtr(&constructed);
-    }
-    EXPECT_EQ(12, constructed);
+  scoped_ptr<ConDecLogger[]> scoper(new ConDecLogger[kNumLoggers]);
+  EXPECT_TRUE(scoper);
+  EXPECT_EQ(&scoper[0], scoper.get());
+  for (int i = 0; i < kNumLoggers; ++i) {
+    scoper[i].SetPtr(&constructed);
+  }
+  EXPECT_EQ(12, constructed);
 
-    EXPECT_EQ(10, scoper.get()->SomeMeth(10));
-    EXPECT_EQ(10, scoper[2].SomeMeth(10));
+  EXPECT_EQ(10, scoper.get()->SomeMeth(10));
+  EXPECT_EQ(10, scoper[2].SomeMeth(10));
   }
   EXPECT_EQ(0, constructed);
 
   // Test reset() and release()
   {
-    scoped_ptr<ConDecLogger[]> scoper;
-    EXPECT_FALSE(scoper.get());
-    EXPECT_FALSE(scoper.release());
-    EXPECT_FALSE(scoper.get());
-    scoper.reset();
-    EXPECT_FALSE(scoper.get());
+  scoped_ptr<ConDecLogger[]> scoper;
+  EXPECT_FALSE(scoper.get());
+  EXPECT_FALSE(scoper.release());
+  EXPECT_FALSE(scoper.get());
+  scoper.reset();
+  EXPECT_FALSE(scoper.get());
 
-    scoper.reset(new ConDecLogger[kNumLoggers]);
-    for (int i = 0; i < kNumLoggers; ++i) {
-      scoper[i].SetPtr(&constructed);
-    }
-    EXPECT_EQ(12, constructed);
-    scoper.reset();
-    EXPECT_EQ(0, constructed);
+  scoper.reset(new ConDecLogger[kNumLoggers]);
+  for (int i = 0; i < kNumLoggers; ++i) {
+    scoper[i].SetPtr(&constructed);
+  }
+  EXPECT_EQ(12, constructed);
+  scoper.reset();
+  EXPECT_EQ(0, constructed);
 
-    scoper.reset(new ConDecLogger[kNumLoggers]);
-    for (int i = 0; i < kNumLoggers; ++i) {
-      scoper[i].SetPtr(&constructed);
-    }
-    EXPECT_EQ(12, constructed);
-    ConDecLogger* ptr = scoper.release();
-    EXPECT_EQ(12, constructed);
-    delete[] ptr;
-    EXPECT_EQ(0, constructed);
+  scoper.reset(new ConDecLogger[kNumLoggers]);
+  for (int i = 0; i < kNumLoggers; ++i) {
+    scoper[i].SetPtr(&constructed);
+  }
+  EXPECT_EQ(12, constructed);
+  ConDecLogger* ptr = scoper.release();
+  EXPECT_EQ(12, constructed);
+  delete[] ptr;
+  EXPECT_EQ(0, constructed);
   }
   EXPECT_EQ(0, constructed);
 
   // Test swap(), ==, !=, and type-safe Boolean.
   {
-    scoped_ptr<ConDecLogger[]> scoper1;
-    scoped_ptr<ConDecLogger[]> scoper2;
-    EXPECT_TRUE(scoper1 == scoper2.get());
-    EXPECT_FALSE(scoper1 != scoper2.get());
+  scoped_ptr<ConDecLogger[]> scoper1;
+  scoped_ptr<ConDecLogger[]> scoper2;
+  EXPECT_TRUE(scoper1 == scoper2.get());
+  EXPECT_FALSE(scoper1 != scoper2.get());
 
-    ConDecLogger* loggers = new ConDecLogger[kNumLoggers];
-    for (int i = 0; i < kNumLoggers; ++i) {
-      loggers[i].SetPtr(&constructed);
-    }
-    scoper1.reset(loggers);
-    EXPECT_TRUE(scoper1);
-    EXPECT_EQ(loggers, scoper1.get());
-    EXPECT_FALSE(scoper2);
-    EXPECT_FALSE(scoper2.get());
-    EXPECT_FALSE(scoper1 == scoper2.get());
-    EXPECT_TRUE(scoper1 != scoper2.get());
+  ConDecLogger* loggers = new ConDecLogger[kNumLoggers];
+  for (int i = 0; i < kNumLoggers; ++i) {
+    loggers[i].SetPtr(&constructed);
+  }
+  scoper1.reset(loggers);
+  EXPECT_TRUE(scoper1);
+  EXPECT_EQ(loggers, scoper1.get());
+  EXPECT_FALSE(scoper2);
+  EXPECT_FALSE(scoper2.get());
+  EXPECT_FALSE(scoper1 == scoper2.get());
+  EXPECT_TRUE(scoper1 != scoper2.get());
 
-    scoper2.swap(scoper1);
-    EXPECT_EQ(loggers, scoper2.get());
-    EXPECT_FALSE(scoper1.get());
-    EXPECT_FALSE(scoper1 == scoper2.get());
-    EXPECT_TRUE(scoper1 != scoper2.get());
+  scoper2.swap(scoper1);
+  EXPECT_EQ(loggers, scoper2.get());
+  EXPECT_FALSE(scoper1.get());
+  EXPECT_FALSE(scoper1 == scoper2.get());
+  EXPECT_TRUE(scoper1 != scoper2.get());
   }
   EXPECT_EQ(0, constructed);
 
   {
-    ConDecLogger* loggers = new ConDecLogger[kNumLoggers];
-    scoped_ptr<ConDecLogger[]> scoper(loggers);
-    EXPECT_TRUE(scoper);
-    for (int i = 0; i < kNumLoggers; ++i) {
-      scoper[i].SetPtr(&constructed);
-    }
-    EXPECT_EQ(kNumLoggers, constructed);
+  ConDecLogger* loggers = new ConDecLogger[kNumLoggers];
+  scoped_ptr<ConDecLogger[]> scoper(loggers);
+  EXPECT_TRUE(scoper);
+  for (int i = 0; i < kNumLoggers; ++i) {
+    scoper[i].SetPtr(&constructed);
+  }
+  EXPECT_EQ(kNumLoggers, constructed);
 
-    // Test Pass() with constructor;
-    scoped_ptr<ConDecLogger[]> scoper2(scoper.Pass());
-    EXPECT_EQ(kNumLoggers, constructed);
+  // Test Pass() with constructor;
+  scoped_ptr<ConDecLogger[]> scoper2(scoper.Pass());
+  EXPECT_EQ(kNumLoggers, constructed);
 
-    // Test Pass() with assignment;
-    scoped_ptr<ConDecLogger[]> scoper3;
-    scoper3 = scoper2.Pass();
-    EXPECT_EQ(kNumLoggers, constructed);
-    EXPECT_FALSE(scoper);
-    EXPECT_FALSE(scoper2);
-    EXPECT_TRUE(scoper3);
+  // Test Pass() with assignment;
+  scoped_ptr<ConDecLogger[]> scoper3;
+  scoper3 = scoper2.Pass();
+  EXPECT_EQ(kNumLoggers, constructed);
+  EXPECT_FALSE(scoper);
+  EXPECT_FALSE(scoper2);
+  EXPECT_TRUE(scoper3);
   }
   EXPECT_EQ(0, constructed);
 }
@@ -379,44 +379,44 @@ TEST(ScopedPtrTest, ScopedPtrWithArray) {
 TEST(ScopedPtrTest, PassBehavior) {
   int constructed = 0;
   {
-    ConDecLogger* logger = new ConDecLogger(&constructed);
-    scoped_ptr<ConDecLogger> scoper(logger);
-    EXPECT_EQ(1, constructed);
+  ConDecLogger* logger = new ConDecLogger(&constructed);
+  scoped_ptr<ConDecLogger> scoper(logger);
+  EXPECT_EQ(1, constructed);
 
-    // Test Pass() with constructor;
-    scoped_ptr<ConDecLogger> scoper2(scoper.Pass());
-    EXPECT_EQ(1, constructed);
+  // Test Pass() with constructor;
+  scoped_ptr<ConDecLogger> scoper2(scoper.Pass());
+  EXPECT_EQ(1, constructed);
 
-    // Test Pass() with assignment;
-    scoped_ptr<ConDecLogger> scoper3;
-    scoper3 = scoper2.Pass();
-    EXPECT_EQ(1, constructed);
-    EXPECT_FALSE(scoper.get());
-    EXPECT_FALSE(scoper2.get());
-    EXPECT_TRUE(scoper3.get());
+  // Test Pass() with assignment;
+  scoped_ptr<ConDecLogger> scoper3;
+  scoper3 = scoper2.Pass();
+  EXPECT_EQ(1, constructed);
+  EXPECT_FALSE(scoper.get());
+  EXPECT_FALSE(scoper2.get());
+  EXPECT_TRUE(scoper3.get());
   }
 
   // Test uncaught Pass() does not leak.
   {
-    ConDecLogger* logger = new ConDecLogger(&constructed);
-    scoped_ptr<ConDecLogger> scoper(logger);
-    EXPECT_EQ(1, constructed);
+  ConDecLogger* logger = new ConDecLogger(&constructed);
+  scoped_ptr<ConDecLogger> scoper(logger);
+  EXPECT_EQ(1, constructed);
 
-    // Should auto-destruct logger by end of scope.
-    scoper.Pass();
-    EXPECT_FALSE(scoper.get());
+  // Should auto-destruct logger by end of scope.
+  scoper.Pass();
+  EXPECT_FALSE(scoper.get());
   }
   EXPECT_EQ(0, constructed);
 
   // Test that passing to function which does nothing does not leak.
   {
-    ConDecLogger* logger = new ConDecLogger(&constructed);
-    scoped_ptr<ConDecLogger> scoper(logger);
-    EXPECT_EQ(1, constructed);
+  ConDecLogger* logger = new ConDecLogger(&constructed);
+  scoped_ptr<ConDecLogger> scoper(logger);
+  EXPECT_EQ(1, constructed);
 
-    // Should auto-destruct logger by end of scope.
-    GrabAndDrop(scoper.Pass());
-    EXPECT_FALSE(scoper.get());
+  // Should auto-destruct logger by end of scope.
+  GrabAndDrop(scoper.Pass());
+  EXPECT_FALSE(scoper.get());
   }
   EXPECT_EQ(0, constructed);
 }
@@ -426,31 +426,31 @@ TEST(ScopedPtrTest, ReturnTypeBehavior) {
 
   // Test that we can return a scoped_ptr.
   {
-    ConDecLogger* logger = new ConDecLogger(&constructed);
-    scoped_ptr<ConDecLogger> scoper(logger);
-    EXPECT_EQ(1, constructed);
+  ConDecLogger* logger = new ConDecLogger(&constructed);
+  scoped_ptr<ConDecLogger> scoper(logger);
+  EXPECT_EQ(1, constructed);
 
-    PassThru(scoper.Pass());
-    EXPECT_FALSE(scoper.get());
+  PassThru(scoper.Pass());
+  EXPECT_FALSE(scoper.get());
   }
   EXPECT_EQ(0, constructed);
 
   // Test uncaught return type not leak.
   {
-    ConDecLogger* logger = new ConDecLogger(&constructed);
-    scoped_ptr<ConDecLogger> scoper(logger);
-    EXPECT_EQ(1, constructed);
+  ConDecLogger* logger = new ConDecLogger(&constructed);
+  scoped_ptr<ConDecLogger> scoper(logger);
+  EXPECT_EQ(1, constructed);
 
-    // Should auto-destruct logger by end of scope.
-    PassThru(scoper.Pass());
-    EXPECT_FALSE(scoper.get());
+  // Should auto-destruct logger by end of scope.
+  PassThru(scoper.Pass());
+  EXPECT_FALSE(scoper.get());
   }
   EXPECT_EQ(0, constructed);
 
   // Call TestReturnOfType() so the compiler doesn't warn for an unused
   // function.
   {
-    TestReturnOfType(&constructed);
+  TestReturnOfType(&constructed);
   }
   EXPECT_EQ(0, constructed);
 }
@@ -458,15 +458,15 @@ TEST(ScopedPtrTest, ReturnTypeBehavior) {
 TEST(ScopedPtrTest, PassAs) {
   int constructed = 0;
   {
-    scoped_ptr<ConDecLogger> scoper(new ConDecLogger(&constructed));
-    EXPECT_EQ(1, constructed);
-    EXPECT_TRUE(scoper.get());
+  scoped_ptr<ConDecLogger> scoper(new ConDecLogger(&constructed));
+  EXPECT_EQ(1, constructed);
+  EXPECT_TRUE(scoper.get());
 
-    scoped_ptr<ConDecLoggerParent> scoper_parent;
-    scoper_parent = UpcastUsingPassAs(scoper.Pass());
-    EXPECT_EQ(1, constructed);
-    EXPECT_TRUE(scoper_parent.get());
-    EXPECT_FALSE(scoper.get());
+  scoped_ptr<ConDecLoggerParent> scoper_parent;
+  scoper_parent = UpcastUsingPassAs(scoper.Pass());
+  EXPECT_EQ(1, constructed);
+  EXPECT_TRUE(scoper_parent.get());
+  EXPECT_FALSE(scoper.get());
   }
   EXPECT_EQ(0, constructed);
 }
@@ -478,32 +478,32 @@ TEST(ScopedPtrTest, CustomDeleter) {
 
   // Normal delete support.
   {
-    deletes = 0;
-    scoped_ptr<double, CountingDeleter> scoper(&dummy_value,
-                                               CountingDeleter(&deletes));
-    EXPECT_EQ(0, deletes);
-    EXPECT_TRUE(scoper.get());
+  deletes = 0;
+  scoped_ptr<double, CountingDeleter> scoper(&dummy_value,
+                         CountingDeleter(&deletes));
+  EXPECT_EQ(0, deletes);
+  EXPECT_TRUE(scoper.get());
   }
   EXPECT_EQ(1, deletes);
 
   // Test reset() and release().
   deletes = 0;
   {
-    scoped_ptr<double, CountingDeleter> scoper(NULL,
-                                               CountingDeleter(&deletes));
-    EXPECT_FALSE(scoper.get());
-    EXPECT_FALSE(scoper.release());
-    EXPECT_FALSE(scoper.get());
-    scoper.reset();
-    EXPECT_FALSE(scoper.get());
-    EXPECT_EQ(0, deletes);
+  scoped_ptr<double, CountingDeleter> scoper(NULL,
+                         CountingDeleter(&deletes));
+  EXPECT_FALSE(scoper.get());
+  EXPECT_FALSE(scoper.release());
+  EXPECT_FALSE(scoper.get());
+  scoper.reset();
+  EXPECT_FALSE(scoper.get());
+  EXPECT_EQ(0, deletes);
 
-    scoper.reset(&dummy_value);
-    scoper.reset();
-    EXPECT_EQ(1, deletes);
+  scoper.reset(&dummy_value);
+  scoper.reset();
+  EXPECT_EQ(1, deletes);
 
-    scoper.reset(&dummy_value);
-    EXPECT_EQ(&dummy_value, scoper.release());
+  scoper.reset(&dummy_value);
+  EXPECT_EQ(&dummy_value, scoper.release());
   }
   EXPECT_EQ(1, deletes);
 
@@ -511,23 +511,23 @@ TEST(ScopedPtrTest, CustomDeleter) {
   deletes = 0;
   alternate_deletes = 0;
   {
-    scoped_ptr<double, CountingDeleter> scoper(&dummy_value,
-                                               CountingDeleter(&deletes));
-    // Call deleter manually.
-    EXPECT_EQ(0, deletes);
-    scoper.get_deleter()(&dummy_value);
-    EXPECT_EQ(1, deletes);
+  scoped_ptr<double, CountingDeleter> scoper(&dummy_value,
+                         CountingDeleter(&deletes));
+  // Call deleter manually.
+  EXPECT_EQ(0, deletes);
+  scoper.get_deleter()(&dummy_value);
+  EXPECT_EQ(1, deletes);
 
-    // Deleter is still there after reset.
-    scoper.reset();
-    EXPECT_EQ(2, deletes);
-    scoper.get_deleter()(&dummy_value);
-    EXPECT_EQ(3, deletes);
+  // Deleter is still there after reset.
+  scoper.reset();
+  EXPECT_EQ(2, deletes);
+  scoper.get_deleter()(&dummy_value);
+  EXPECT_EQ(3, deletes);
 
-    // Deleter can be assigned into (matches C++11 unique_ptr<> spec).
-    scoper.get_deleter() = CountingDeleter(&alternate_deletes);
-    scoper.reset(&dummy_value);
-    EXPECT_EQ(0, alternate_deletes);
+  // Deleter can be assigned into (matches C++11 unique_ptr<> spec).
+  scoper.get_deleter() = CountingDeleter(&alternate_deletes);
+  scoper.reset(&dummy_value);
+  EXPECT_EQ(0, alternate_deletes);
 
   }
   EXPECT_EQ(3, deletes);
@@ -537,25 +537,25 @@ TEST(ScopedPtrTest, CustomDeleter) {
   deletes = 0;
   alternate_deletes = 0;
   {
-    double dummy_value2;
-    scoped_ptr<double, CountingDeleter> scoper(&dummy_value,
-                                               CountingDeleter(&deletes));
-    scoped_ptr<double, CountingDeleter> scoper2(
-        &dummy_value2,
-        CountingDeleter(&alternate_deletes));
-    EXPECT_EQ(0, deletes);
-    EXPECT_EQ(0, alternate_deletes);
+  double dummy_value2;
+  scoped_ptr<double, CountingDeleter> scoper(&dummy_value,
+                         CountingDeleter(&deletes));
+  scoped_ptr<double, CountingDeleter> scoper2(
+    &dummy_value2,
+    CountingDeleter(&alternate_deletes));
+  EXPECT_EQ(0, deletes);
+  EXPECT_EQ(0, alternate_deletes);
 
-    // Pass the second deleter through a constructor and an operator=. Then
-    // reinitialize the empty scopers to ensure that each one is deleting
-    // properly.
-    scoped_ptr<double, CountingDeleter> scoper3(scoper2.Pass());
-    scoper = scoper3.Pass();
-    EXPECT_EQ(1, deletes);
+  // Pass the second deleter through a constructor and an operator=. Then
+  // reinitialize the empty scopers to ensure that each one is deleting
+  // properly.
+  scoped_ptr<double, CountingDeleter> scoper3(scoper2.Pass());
+  scoper = scoper3.Pass();
+  EXPECT_EQ(1, deletes);
 
-    scoper2.reset(&dummy_value2);
-    scoper3.reset(&dummy_value2);
-    EXPECT_EQ(0, alternate_deletes);
+  scoper2.reset(&dummy_value2);
+  scoper3.reset(&dummy_value2);
+  EXPECT_EQ(0, alternate_deletes);
 
   }
   EXPECT_EQ(1, deletes);
@@ -563,26 +563,26 @@ TEST(ScopedPtrTest, CustomDeleter) {
 
   // Test swap(), ==, !=, and type-safe Boolean.
   {
-    scoped_ptr<double, CountingDeleter> scoper1(NULL,
-                                                CountingDeleter(&deletes));
-    scoped_ptr<double, CountingDeleter> scoper2(NULL,
-                                                CountingDeleter(&deletes));
-    EXPECT_TRUE(scoper1 == scoper2.get());
-    EXPECT_FALSE(scoper1 != scoper2.get());
+  scoped_ptr<double, CountingDeleter> scoper1(NULL,
+                        CountingDeleter(&deletes));
+  scoped_ptr<double, CountingDeleter> scoper2(NULL,
+                        CountingDeleter(&deletes));
+  EXPECT_TRUE(scoper1 == scoper2.get());
+  EXPECT_FALSE(scoper1 != scoper2.get());
 
-    scoper1.reset(&dummy_value);
-    EXPECT_TRUE(scoper1);
-    EXPECT_EQ(&dummy_value, scoper1.get());
-    EXPECT_FALSE(scoper2);
-    EXPECT_FALSE(scoper2.get());
-    EXPECT_FALSE(scoper1 == scoper2.get());
-    EXPECT_TRUE(scoper1 != scoper2.get());
+  scoper1.reset(&dummy_value);
+  EXPECT_TRUE(scoper1);
+  EXPECT_EQ(&dummy_value, scoper1.get());
+  EXPECT_FALSE(scoper2);
+  EXPECT_FALSE(scoper2.get());
+  EXPECT_FALSE(scoper1 == scoper2.get());
+  EXPECT_TRUE(scoper1 != scoper2.get());
 
-    scoper2.swap(scoper1);
-    EXPECT_EQ(&dummy_value, scoper2.get());
-    EXPECT_FALSE(scoper1.get());
-    EXPECT_FALSE(scoper1 == scoper2.get());
-    EXPECT_TRUE(scoper1 != scoper2.get());
+  scoper2.swap(scoper1);
+  EXPECT_EQ(&dummy_value, scoper2.get());
+  EXPECT_FALSE(scoper1.get());
+  EXPECT_FALSE(scoper1 == scoper2.get());
+  EXPECT_TRUE(scoper1 != scoper2.get());
   }
 }
 
@@ -591,11 +591,11 @@ TEST(ScopedPtrTest, CustomDeleter) {
 // above.
 TEST(ScopedPtrTest, OverloadedNewAndDelete) {
   {
-    OverloadedNewAndDelete::ResetCounters();
-    scoped_ptr<OverloadedNewAndDelete> scoper(new OverloadedNewAndDelete());
-    EXPECT_TRUE(scoper.get());
+  OverloadedNewAndDelete::ResetCounters();
+  scoped_ptr<OverloadedNewAndDelete> scoper(new OverloadedNewAndDelete());
+  EXPECT_TRUE(scoper.get());
 
-    scoped_ptr<OverloadedNewAndDelete> scoper2(scoper.Pass());
+  scoped_ptr<OverloadedNewAndDelete> scoper2(scoper.Pass());
   }
   EXPECT_EQ(1, OverloadedNewAndDelete::delete_count());
   EXPECT_EQ(1, OverloadedNewAndDelete::new_count());

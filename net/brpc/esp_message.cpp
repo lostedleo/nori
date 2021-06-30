@@ -17,126 +17,126 @@
 
 #include "esp_message.h"
 
-#include <google/protobuf/reflection_ops.h>     // ReflectionOps::Merge
-#include <google/protobuf/wire_format.h>        // WireFormatLite::GetTagWireType
+#include <google/protobuf/reflection_ops.h>   // ReflectionOps::Merge
+#include <google/protobuf/wire_format.h>    // WireFormatLite::GetTagWireType
 
 namespace brpc {
 
 EspMessage::EspMessage()
-    : ::google::protobuf::Message() {
-    SharedCtor();
+  : ::google::protobuf::Message() {
+  SharedCtor();
 }
 
 EspMessage::EspMessage(const EspMessage& from)
-    : ::google::protobuf::Message() {
-    SharedCtor();
-    MergeFrom(from);
+  : ::google::protobuf::Message() {
+  SharedCtor();
+  MergeFrom(from);
 }
 
 void EspMessage::SharedCtor() {
-    memset(&head, 0, sizeof(head));
+  memset(&head, 0, sizeof(head));
 }
 
 EspMessage::~EspMessage() {
-    SharedDtor();
+  SharedDtor();
 }
 
 void EspMessage::SharedDtor() {
 }
 
 const ::google::protobuf::Descriptor* EspMessage::descriptor() {
-    return EspMessageBase::descriptor();
+  return EspMessageBase::descriptor();
 }
 
 EspMessage* EspMessage::New() const {
-    return new EspMessage;
+  return new EspMessage;
 }
 
 void EspMessage::Clear() {
-    head.body_len = 0;
-    body.clear();
+  head.body_len = 0;
+  body.clear();
 }
 
 bool EspMessage::MergePartialFromCodedStream(
-        ::google::protobuf::io::CodedInputStream* input) {
+    ::google::protobuf::io::CodedInputStream* input) {
 #define DO_(EXPRESSION) if (!(EXPRESSION)) return false
-    ::google::protobuf::uint32 tag;
+  ::google::protobuf::uint32 tag;
 
-    while ((tag = input->ReadTag()) != 0) {
-        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
-                ::google::protobuf::internal::WireFormatLite::WIRETYPE_END_GROUP) {
-            return true;
-        }
+  while ((tag = input->ReadTag()) != 0) {
+    if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
+        ::google::protobuf::internal::WireFormatLite::WIRETYPE_END_GROUP) {
+      return true;
     }
-    return true;
+  }
+  return true;
 #undef DO_
 }
 
 void EspMessage::SerializeWithCachedSizes(
-        ::google::protobuf::io::CodedOutputStream*) const {
+    ::google::protobuf::io::CodedOutputStream*) const {
 }
 
 ::google::protobuf::uint8* EspMessage::SerializeWithCachedSizesToArray(
-        ::google::protobuf::uint8* target) const {
-    return target;
+    ::google::protobuf::uint8* target) const {
+  return target;
 }
 
 int EspMessage::ByteSize() const {
-    return sizeof(head) + body.size();
+  return sizeof(head) + body.size();
 }
 
 void EspMessage::MergeFrom(const ::google::protobuf::Message& from) {
-    GOOGLE_CHECK_NE(&from, this);
-    const EspMessage* source = dynamic_cast<const EspMessage*>(&from);
-    if (source == NULL) {
-        ::google::protobuf::internal::ReflectionOps::Merge(from, this);
-    } else {
-        MergeFrom(*source);
-    }
+  GOOGLE_CHECK_NE(&from, this);
+  const EspMessage* source = dynamic_cast<const EspMessage*>(&from);
+  if (source == NULL) {
+    ::google::protobuf::internal::ReflectionOps::Merge(from, this);
+  } else {
+    MergeFrom(*source);
+  }
 }
 
 void EspMessage::MergeFrom(const EspMessage& from) {
-    GOOGLE_CHECK_NE(&from, this);
-    head = from.head;
-    body = from.body;
+  GOOGLE_CHECK_NE(&from, this);
+  head = from.head;
+  body = from.body;
 }
 
 void EspMessage::CopyFrom(const ::google::protobuf::Message& from) {
-    if (&from == this) {
-        return;
-    }
+  if (&from == this) {
+    return;
+  }
 
-    Clear();
-    MergeFrom(from);
+  Clear();
+  MergeFrom(from);
 }
 
 void EspMessage::CopyFrom(const EspMessage& from) {
-    if (&from == this) {
-        return;
-    }
+  if (&from == this) {
+    return;
+  }
 
-    Clear();
-    MergeFrom(from);
+  Clear();
+  MergeFrom(from);
 }
 
 bool EspMessage::IsInitialized() const {
-    return true;
+  return true;
 }
 
 void EspMessage::Swap(EspMessage* other) {
-    if (other != this) {
-        const EspHead tmp = other->head;
-        other->head = head;
-        head = tmp;
-        body.swap(other->body);
-    }
+  if (other != this) {
+    const EspHead tmp = other->head;
+    other->head = head;
+    head = tmp;
+    body.swap(other->body);
+  }
 }
 
 ::google::protobuf::Metadata EspMessage::GetMetadata() const {
-    ::google::protobuf::Metadata metadata;
-    metadata.descriptor = EspMessage::descriptor();
-    metadata.reflection = NULL;
-    return metadata;
+  ::google::protobuf::Metadata metadata;
+  metadata.descriptor = EspMessage::descriptor();
+  metadata.reflection = NULL;
+  return metadata;
 }
 
 } // namespace brpc

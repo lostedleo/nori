@@ -43,7 +43,7 @@ class SecureHashAlgorithm {
 
   // 20 bytes of message digest.
   const unsigned char* Digest() const {
-    return reinterpret_cast<const unsigned char*>(H);
+  return reinterpret_cast<const unsigned char*>(H);
   }
 
  private:
@@ -55,8 +55,8 @@ class SecureHashAlgorithm {
   uint32_t H[5];
 
   union {
-    uint32_t W[80];
-    uint8_t M[64];
+  uint32_t W[80];
+  uint8_t M[64];
   };
 
   uint32_t cursor;
@@ -65,13 +65,13 @@ class SecureHashAlgorithm {
 
 static inline uint32_t f(uint32_t t, uint32_t B, uint32_t C, uint32_t D) {
   if (t < 20) {
-    return (B & C) | ((~B) & D);
+  return (B & C) | ((~B) & D);
   } else if (t < 40) {
-    return B ^ C ^ D;
+  return B ^ C ^ D;
   } else if (t < 60) {
-    return (B & C) | (B & D) | (C & D);
+  return (B & C) | (B & D) | (C & D);
   } else {
-    return B ^ C ^ D;
+  return B ^ C ^ D;
   }
 }
 
@@ -81,21 +81,21 @@ static inline uint32_t S(uint32_t n, uint32_t X) {
 
 static inline uint32_t K(uint32_t t) {
   if (t < 20) {
-    return 0x5a827999;
+  return 0x5a827999;
   } else if (t < 40) {
-    return 0x6ed9eba1;
+  return 0x6ed9eba1;
   } else if (t < 60) {
-    return 0x8f1bbcdc;
+  return 0x8f1bbcdc;
   } else {
-    return 0xca62c1d6;
+  return 0xca62c1d6;
   }
 }
 
 static inline void swapends(uint32_t* t) {
   *t = ((*t & 0xff000000) >> 24) |
-       ((*t & 0xff0000) >> 8) |
-       ((*t & 0xff00) << 8) |
-       ((*t & 0xff) << 24);
+     ((*t & 0xff0000) >> 8) |
+     ((*t & 0xff00) << 8) |
+     ((*t & 0xff) << 24);
 }
 
 const int SecureHashAlgorithm::kDigestSizeBytes = 20;
@@ -120,16 +120,16 @@ void SecureHashAlgorithm::Final() {
   Process();
 
   for (int t = 0; t < 5; ++t)
-    swapends(&H[t]);
+  swapends(&H[t]);
 }
 
 void SecureHashAlgorithm::Update(const void* data, size_t nbytes) {
   const uint8_t* d = reinterpret_cast<const uint8_t*>(data);
   while (nbytes--) {
-    M[cursor++] = *d++;
-    if (cursor >= 64)
-      Process();
-    l += 8;
+  M[cursor++] = *d++;
+  if (cursor >= 64)
+    Process();
+  l += 8;
   }
 }
 
@@ -137,15 +137,15 @@ void SecureHashAlgorithm::Pad() {
   M[cursor++] = 0x80;
 
   if (cursor > 64-8) {
-    // pad out to next block
-    while (cursor < 64)
-      M[cursor++] = 0;
+  // pad out to next block
+  while (cursor < 64)
+    M[cursor++] = 0;
 
-    Process();
+  Process();
   }
 
   while (cursor < 64-4)
-    M[cursor++] = 0;
+  M[cursor++] = 0;
 
   M[64-4] = (l & 0xff000000) >> 24;
   M[64-3] = (l & 0xff0000) >> 16;
@@ -163,11 +163,11 @@ void SecureHashAlgorithm::Process() {
   // W and M are in a union, so no need to memcpy.
   // memcpy(W, M, sizeof(M));
   for (t = 0; t < 16; ++t)
-    swapends(&W[t]);
+  swapends(&W[t]);
 
   // b.
   for (t = 16; t < 80; ++t)
-    W[t] = S(1, W[t - 3] ^ W[t - 8] ^ W[t - 14] ^ W[t - 16]);
+  W[t] = S(1, W[t - 3] ^ W[t - 8] ^ W[t - 14] ^ W[t - 16]);
 
   // c.
   A = H[0];
@@ -178,12 +178,12 @@ void SecureHashAlgorithm::Process() {
 
   // d.
   for (t = 0; t < 80; ++t) {
-    uint32_t TEMP = S(5, A) + f(t, B, C, D) + E + W[t] + K(t);
-    E = D;
-    D = C;
-    C = S(30, B);
-    B = A;
-    A = TEMP;
+  uint32_t TEMP = S(5, A) + f(t, B, C, D) + E + W[t] + K(t);
+  E = D;
+  D = C;
+  C = S(30, B);
+  B = A;
+  A = TEMP;
   }
 
   // e.
@@ -199,12 +199,12 @@ void SecureHashAlgorithm::Process() {
 std::string SHA1HashString(const std::string& str) {
   char hash[SecureHashAlgorithm::kDigestSizeBytes];
   SHA1HashBytes(reinterpret_cast<const unsigned char*>(str.c_str()),
-                str.length(), reinterpret_cast<unsigned char*>(hash));
+        str.length(), reinterpret_cast<unsigned char*>(hash));
   return std::string(hash, SecureHashAlgorithm::kDigestSizeBytes);
 }
 
 void SHA1HashBytes(const unsigned char* data, size_t len,
-                   unsigned char* hash) {
+           unsigned char* hash) {
   SecureHashAlgorithm sha;
   sha.Update(data, len);
   sha.Final();

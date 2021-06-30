@@ -31,53 +31,53 @@ namespace butil {
 // Example:
 //
 //   butil::FileEnumerator enum(my_dir, false, butil::FileEnumerator::FILES,
-//                             FILE_PATH_LITERAL("*.txt"));
+//               FILE_PATH_LITERAL("*.txt"));
 //   for (butil::FilePath name = enum.Next(); !name.empty(); name = enum.Next())
-//     ...
+//   ...
 class BUTIL_EXPORT FileEnumerator {
  public:
   // Note: copy & assign supported.
   class BUTIL_EXPORT FileInfo {
    public:
-    FileInfo();
-    ~FileInfo();
+  FileInfo();
+  ~FileInfo();
 
-    bool IsDirectory() const;
+  bool IsDirectory() const;
 
-    // The name of the file. This will not include any path information. This
-    // is in constrast to the value returned by FileEnumerator.Next() which
-    // includes the |root_path| passed into the FileEnumerator constructor.
-    FilePath GetName() const;
+  // The name of the file. This will not include any path information. This
+  // is in constrast to the value returned by FileEnumerator.Next() which
+  // includes the |root_path| passed into the FileEnumerator constructor.
+  FilePath GetName() const;
 
-    int64_t GetSize() const;
-    Time GetLastModifiedTime() const;
+  int64_t GetSize() const;
+  Time GetLastModifiedTime() const;
 
 #if defined(OS_WIN)
-    // Note that the cAlternateFileName (used to hold the "short" 8.3 name)
-    // of the WIN32_FIND_DATA will be empty. Since we don't use short file
-    // names, we tell Windows to omit it which speeds up the query slightly.
-    const WIN32_FIND_DATA& find_data() const { return find_data_; }
+  // Note that the cAlternateFileName (used to hold the "short" 8.3 name)
+  // of the WIN32_FIND_DATA will be empty. Since we don't use short file
+  // names, we tell Windows to omit it which speeds up the query slightly.
+  const WIN32_FIND_DATA& find_data() const { return find_data_; }
 #elif defined(OS_POSIX)
-    const struct stat& stat() const { return stat_; }
+  const struct stat& stat() const { return stat_; }
 #endif
 
    private:
-    friend class FileEnumerator;
+  friend class FileEnumerator;
 
 #if defined(OS_WIN)
-    WIN32_FIND_DATA find_data_;
+  WIN32_FIND_DATA find_data_;
 #elif defined(OS_POSIX)
-    struct stat stat_;
-    FilePath filename_;
+  struct stat stat_;
+  FilePath filename_;
 #endif
   };
 
   enum FileType {
-    FILES                 = 1 << 0,
-    DIRECTORIES           = 1 << 1,
-    INCLUDE_DOT_DOT       = 1 << 2,
+  FILES         = 1 << 0,
+  DIRECTORIES       = 1 << 1,
+  INCLUDE_DOT_DOT     = 1 << 2,
 #if defined(OS_POSIX)
-    SHOW_SYM_LINKS        = 1 << 4,
+  SHOW_SYM_LINKS    = 1 << 4,
 #endif
   };
 
@@ -102,12 +102,12 @@ class BUTIL_EXPORT FileEnumerator {
   // recursive subdirectories.
   // TODO(erikkay): Fix the pattern matching to work at all levels.
   FileEnumerator(const FilePath& root_path,
-                 bool recursive,
-                 int file_type);
+         bool recursive,
+         int file_type);
   FileEnumerator(const FilePath& root_path,
-                 bool recursive,
-                 int file_type,
-                 const FilePath::StringType& pattern);
+         bool recursive,
+         int file_type,
+         const FilePath::StringType& pattern);
   ~FileEnumerator();
 
   // Returns the next file or an empty string if there are no more results.
@@ -133,7 +133,7 @@ class BUTIL_EXPORT FileEnumerator {
 
   // Read the filenames in source into the vector of DirectoryEntryInfo's
   static bool ReadDirectory(std::vector<FileInfo>* entries,
-                            const FilePath& source, bool show_links);
+              const FilePath& source, bool show_links);
 
   // The files in the current directory
   std::vector<FileInfo> directory_entries_;

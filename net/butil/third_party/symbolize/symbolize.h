@@ -5,13 +5,13 @@
 // modification, are permitted provided that the following conditions are
 // met:
 //
-//     * Redistributions of source code must retain the above copyright
+//   * Redistributions of source code must retain the above copyright
 // notice, this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above
+//   * Redistributions in binary form must reproduce the above
 // copyright notice, this list of conditions and the following disclaimer
 // in the documentation and/or other materials provided with the
 // distribution.
-//     * Neither the name of Google Inc. nor the names of its
+//   * Neither the name of Google Inc. nor the names of its
 // contributors may be used to endorse or promote products derived from
 // this software without specific prior written permission.
 //
@@ -97,7 +97,7 @@ _START_GOOGLE_NAMESPACE_
 // Gets the section header for the given name, if it exists. Returns true on
 // success. Otherwise, returns false.
 bool GetSectionHeaderByName(int fd, const char *name, size_t name_len,
-                            ElfW(Shdr) *out);
+              ElfW(Shdr) *out);
 
 _END_GOOGLE_NAMESPACE_
 
@@ -117,7 +117,7 @@ _START_GOOGLE_NAMESPACE_
 // and return the size of the output written. On error, the callback
 // function should return -1.
 typedef int (*SymbolizeCallback)(int fd, void *pc, char *out, size_t out_size,
-                                 uint64_t relocation);
+                 uint64_t relocation);
 void InstallSymbolizeCallback(SymbolizeCallback callback);
 
 // Installs a callback function, which will be called instead of
@@ -131,12 +131,12 @@ void InstallSymbolizeCallback(SymbolizeCallback callback);
 // returns -1.  |out_file_name_size| is the size of the file name buffer
 // (including the null-terminator).
 typedef int (*SymbolizeOpenObjectFileCallback)(uint64_t pc,
-                                               uint64_t &start_address,
-                                               uint64_t &base_address,
-                                               char *out_file_name,
-                                               int out_file_name_size);
+                         uint64_t &start_address,
+                         uint64_t &base_address,
+                         char *out_file_name,
+                         int out_file_name_size);
 void InstallSymbolizeOpenObjectFileCallback(
-    SymbolizeOpenObjectFileCallback callback);
+  SymbolizeOpenObjectFileCallback callback);
 
 _END_GOOGLE_NAMESPACE_
 

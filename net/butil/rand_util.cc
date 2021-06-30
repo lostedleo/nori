@@ -51,11 +51,11 @@ uint64_t RandGenerator(uint64_t range) {
   // MAX_UINT64 was 7 and |range| was 5, then a result of 1 would be twice
   // as likely as a result of 3 or 4).
   uint64_t max_acceptable_value =
-      (std::numeric_limits<uint64_t>::max() / range) * range - 1;
+    (std::numeric_limits<uint64_t>::max() / range) * range - 1;
 
   uint64_t value;
   do {
-    value = butil::RandUint64();
+  value = butil::RandUint64();
   } while (value > max_acceptable_value);
 
   return value % range;

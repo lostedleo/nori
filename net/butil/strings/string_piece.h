@@ -62,92 +62,92 @@ BUTIL_EXPORT void AppendToString(const StringPiece& self, std::string* target);
 BUTIL_EXPORT void AppendToString(const StringPiece16& self, string16* target);
 
 BUTIL_EXPORT size_t copy(const StringPiece& self,
-                        char* buf,
-                        size_t n,
-                        size_t pos);
+            char* buf,
+            size_t n,
+            size_t pos);
 BUTIL_EXPORT size_t copy(const StringPiece16& self,
-                        char16* buf,
-                        size_t n,
-                        size_t pos);
+            char16* buf,
+            size_t n,
+            size_t pos);
 
 BUTIL_EXPORT size_t find(const StringPiece& self,
-                        const StringPiece& s,
-                        size_t pos);
+            const StringPiece& s,
+            size_t pos);
 BUTIL_EXPORT size_t find(const StringPiece16& self,
-                        const StringPiece16& s,
-                        size_t pos);
+            const StringPiece16& s,
+            size_t pos);
 BUTIL_EXPORT size_t find(const StringPiece& self,
-                        char c,
-                        size_t pos);
+            char c,
+            size_t pos);
 BUTIL_EXPORT size_t find(const StringPiece16& self,
-                        char16 c,
-                        size_t pos);
+            char16 c,
+            size_t pos);
 
 BUTIL_EXPORT size_t rfind(const StringPiece& self,
-                         const StringPiece& s,
-                         size_t pos);
+             const StringPiece& s,
+             size_t pos);
 BUTIL_EXPORT size_t rfind(const StringPiece16& self,
-                         const StringPiece16& s,
-                         size_t pos);
+             const StringPiece16& s,
+             size_t pos);
 BUTIL_EXPORT size_t rfind(const StringPiece& self,
-                         char c,
-                         size_t pos);
+             char c,
+             size_t pos);
 BUTIL_EXPORT size_t rfind(const StringPiece16& self,
-                         char16 c,
-                         size_t pos);
+             char16 c,
+             size_t pos);
 
 BUTIL_EXPORT size_t find_first_of(const StringPiece& self,
-                                 const StringPiece& s,
-                                 size_t pos);
+                 const StringPiece& s,
+                 size_t pos);
 BUTIL_EXPORT size_t find_first_of(const StringPiece16& self,
-                                 const StringPiece16& s,
-                                 size_t pos);
+                 const StringPiece16& s,
+                 size_t pos);
 
 BUTIL_EXPORT size_t find_first_not_of(const StringPiece& self,
-                                     const StringPiece& s,
-                                     size_t pos);
+                   const StringPiece& s,
+                   size_t pos);
 BUTIL_EXPORT size_t find_first_not_of(const StringPiece16& self,
-                                     const StringPiece16& s,
-                                     size_t pos);
+                   const StringPiece16& s,
+                   size_t pos);
 BUTIL_EXPORT size_t find_first_not_of(const StringPiece& self,
-                                     char c,
-                                     size_t pos);
+                   char c,
+                   size_t pos);
 BUTIL_EXPORT size_t find_first_not_of(const StringPiece16& self,
-                                     char16 c,
-                                     size_t pos);
+                   char16 c,
+                   size_t pos);
 
 BUTIL_EXPORT size_t find_last_of(const StringPiece& self,
-                                const StringPiece& s,
-                                size_t pos);
+                const StringPiece& s,
+                size_t pos);
 BUTIL_EXPORT size_t find_last_of(const StringPiece16& self,
-                                const StringPiece16& s,
-                                size_t pos);
+                const StringPiece16& s,
+                size_t pos);
 BUTIL_EXPORT size_t find_last_of(const StringPiece& self,
-                                char c,
-                                size_t pos);
+                char c,
+                size_t pos);
 BUTIL_EXPORT size_t find_last_of(const StringPiece16& self,
-                                char16 c,
-                                size_t pos);
+                char16 c,
+                size_t pos);
 
 BUTIL_EXPORT size_t find_last_not_of(const StringPiece& self,
-                                    const StringPiece& s,
-                                    size_t pos);
+                  const StringPiece& s,
+                  size_t pos);
 BUTIL_EXPORT size_t find_last_not_of(const StringPiece16& self,
-                                    const StringPiece16& s,
-                                    size_t pos);
+                  const StringPiece16& s,
+                  size_t pos);
 BUTIL_EXPORT size_t find_last_not_of(const StringPiece16& self,
-                                    char16 c,
-                                    size_t pos);
+                  char16 c,
+                  size_t pos);
 BUTIL_EXPORT size_t find_last_not_of(const StringPiece& self,
-                                    char c,
-                                    size_t pos);
+                  char c,
+                  size_t pos);
 
 BUTIL_EXPORT StringPiece substr(const StringPiece& self,
-                               size_t pos,
-                               size_t n);
+                 size_t pos,
+                 size_t n);
 BUTIL_EXPORT StringPiece16 substr(const StringPiece16& self,
-                                 size_t pos,
-                                 size_t n);
+                 size_t pos,
+                 size_t n);
 
 }  // namespace internal
 
@@ -179,18 +179,18 @@ template <typename STRING_TYPE> class BasicStringPiece {
   // expected (likewise for char16, string16, StringPiece16).
   BasicStringPiece() : ptr_(NULL), length_(0) {}
   BasicStringPiece(const value_type* str)
-      : ptr_(str),
-        length_((str == NULL) ? 0 : STRING_TYPE::traits_type::length(str)) {}
+    : ptr_(str),
+    length_((str == NULL) ? 0 : STRING_TYPE::traits_type::length(str)) {}
   BasicStringPiece(const STRING_TYPE& str)
-      : ptr_(str.data()), length_(str.size()) {}
+    : ptr_(str.data()), length_(str.size()) {}
   BasicStringPiece(const value_type* offset, size_type len)
-      : ptr_(offset), length_(len) {}
+    : ptr_(offset), length_(len) {}
   BasicStringPiece(const BasicStringPiece& str, size_type pos, size_type len = npos)
-      : ptr_(str.data() + pos), length_(std::min(len, str.length() - pos)) {}
+    : ptr_(str.data() + pos), length_(std::min(len, str.length() - pos)) {}
   BasicStringPiece(const typename STRING_TYPE::const_iterator& begin,
-                    const typename STRING_TYPE::const_iterator& end)
-      : ptr_((end > begin) ? &(*begin) : NULL),
-        length_((end > begin) ? (size_type)(end - begin) : 0) {}
+          const typename STRING_TYPE::const_iterator& end)
+    : ptr_((end > begin) ? &(*begin) : NULL),
+    length_((end > begin) ? (size_type)(end - begin) : 0) {}
 
   // data() may return a pointer to a buffer with embedded NULs, and the
   // returned buffer may or may not be null terminated.  Therefore it is
@@ -202,57 +202,57 @@ template <typename STRING_TYPE> class BasicStringPiece {
   bool empty() const { return length_ == 0; }
 
   void clear() {
-    ptr_ = NULL;
-    length_ = 0;
+  ptr_ = NULL;
+  length_ = 0;
   }
   BasicStringPiece& assign(const BasicStringPiece& str, size_type pos, size_type len = npos) {
-    ptr_ = str.data() + pos;
-    length_ = std::min(len, str.length() - pos);
-    return *this;
+  ptr_ = str.data() + pos;
+  length_ = std::min(len, str.length() - pos);
+  return *this;
   }
   void set(const value_type* data, size_type len) {
-    ptr_ = data;
-    length_ = len;
+  ptr_ = data;
+  length_ = len;
   }
   void set(const value_type* str) {
-    ptr_ = str;
-    length_ = str ? STRING_TYPE::traits_type::length(str) : 0;
+  ptr_ = str;
+  length_ = str ? STRING_TYPE::traits_type::length(str) : 0;
   }
 
   value_type operator[](size_type i) const { return ptr_[i]; }
 
   void remove_prefix(size_type n) {
-    ptr_ += n;
-    length_ -= n;
+  ptr_ += n;
+  length_ -= n;
   }
 
   void remove_suffix(size_type n) {
-    length_ -= n;
+  length_ -= n;
   }
 
   // Remove heading and trailing spaces.
   void trim_spaces() {
-    size_t nsp = 0;
-    for (; nsp < size() && isspace(ptr_[nsp]); ++nsp) {}
-    remove_prefix(nsp);
-    nsp = 0;
-    for (; nsp < size() && isspace(ptr_[size()-1-nsp]); ++nsp) {}
-    remove_suffix(nsp);
-  }       
+  size_t nsp = 0;
+  for (; nsp < size() && isspace(ptr_[nsp]); ++nsp) {}
+  remove_prefix(nsp);
+  nsp = 0;
+  for (; nsp < size() && isspace(ptr_[size()-1-nsp]); ++nsp) {}
+  remove_suffix(nsp);
+  }     
 
   int compare(const BasicStringPiece<STRING_TYPE>& x) const {
-    int r = wordmemcmp(
-        ptr_, x.ptr_, (length_ < x.length_ ? length_ : x.length_));
-    if (r == 0) {
-      if (length_ < x.length_) r = -1;
-      else if (length_ > x.length_) r = +1;
-    }
-    return r;
+  int r = wordmemcmp(
+    ptr_, x.ptr_, (length_ < x.length_ ? length_ : x.length_));
+  if (r == 0) {
+    if (length_ < x.length_) r = -1;
+    else if (length_ > x.length_) r = +1;
+  }
+  return r;
   }
 
   STRING_TYPE as_string() const {
-    // std::string doesn't like to take a NULL pointer even with a 0 size.
-    return empty() ? STRING_TYPE() : STRING_TYPE(data(), size());
+  // std::string doesn't like to take a NULL pointer even with a 0 size.
+  return empty() ? STRING_TYPE() : STRING_TYPE(data(), size());
   }
 
   // Return the first/last character, UNDEFINED when StringPiece is empty.
@@ -265,119 +265,119 @@ template <typename STRING_TYPE> class BasicStringPiece {
   const_iterator begin() const { return ptr_; }
   const_iterator end() const { return ptr_ + length_; }
   const_reverse_iterator rbegin() const {
-    return const_reverse_iterator(ptr_ + length_);
+  return const_reverse_iterator(ptr_ + length_);
   }
   const_reverse_iterator rend() const {
-    return const_reverse_iterator(ptr_);
+  return const_reverse_iterator(ptr_);
   }
 
   size_type max_size() const { return length_; }
   size_type capacity() const { return length_; }
 
   static int wordmemcmp(const value_type* p,
-                        const value_type* p2,
-                        size_type N) {
-    return STRING_TYPE::traits_type::compare(p, p2, N);
+            const value_type* p2,
+            size_type N) {
+  return STRING_TYPE::traits_type::compare(p, p2, N);
   }
 
   // Sets the value of the given string target type to be the current string.
   // This saves a temporary over doing |a = b.as_string()|
   void CopyToString(STRING_TYPE* target) const {
-    internal::CopyToString(*this, target);
+  internal::CopyToString(*this, target);
   }
 
   void AppendToString(STRING_TYPE* target) const {
-    internal::AppendToString(*this, target);
+  internal::AppendToString(*this, target);
   }
 
   size_type copy(value_type* buf, size_type n, size_type pos = 0) const {
-    return internal::copy(*this, buf, n, pos);
+  return internal::copy(*this, buf, n, pos);
   }
 
   // Does "this" start with "x"
   bool starts_with(const BasicStringPiece& x) const {
-    return ((this->length_ >= x.length_) &&
-            (wordmemcmp(this->ptr_, x.ptr_, x.length_) == 0));
+  return ((this->length_ >= x.length_) &&
+      (wordmemcmp(this->ptr_, x.ptr_, x.length_) == 0));
   }
 
   // Does "this" end with "x"
   bool ends_with(const BasicStringPiece& x) const {
-    return ((this->length_ >= x.length_) &&
-            (wordmemcmp(this->ptr_ + (this->length_-x.length_),
-                        x.ptr_, x.length_) == 0));
+  return ((this->length_ >= x.length_) &&
+      (wordmemcmp(this->ptr_ + (this->length_-x.length_),
+            x.ptr_, x.length_) == 0));
   }
 
   // find: Search for a character or substring at a given offset.
   size_type find(const BasicStringPiece<STRING_TYPE>& s,
-                 size_type pos = 0) const {
-    return internal::find(*this, s, pos);
+         size_type pos = 0) const {
+  return internal::find(*this, s, pos);
   }
   size_type find(value_type c, size_type pos = 0) const {
-    return internal::find(*this, c, pos);
+  return internal::find(*this, c, pos);
   }
 
   // rfind: Reverse find.
   size_type rfind(const BasicStringPiece& s,
-                  size_type pos = BasicStringPiece::npos) const {
-    return internal::rfind(*this, s, pos);
+          size_type pos = BasicStringPiece::npos) const {
+  return internal::rfind(*this, s, pos);
   }
   size_type rfind(value_type c, size_type pos = BasicStringPiece::npos) const {
-    return internal::rfind(*this, c, pos);
+  return internal::rfind(*this, c, pos);
   }
 
   // find_first_of: Find the first occurence of one of a set of characters.
   size_type find_first_of(const BasicStringPiece& s,
-                          size_type pos = 0) const {
-    return internal::find_first_of(*this, s, pos);
+              size_type pos = 0) const {
+  return internal::find_first_of(*this, s, pos);
   }
   size_type find_first_of(value_type c, size_type pos = 0) const {
-    return find(c, pos);
+  return find(c, pos);
   }
 
   // find_first_not_of: Find the first occurence not of a set of characters.
   size_type find_first_not_of(const BasicStringPiece& s,
-                              size_type pos = 0) const {
-    return internal::find_first_not_of(*this, s, pos);
+                size_type pos = 0) const {
+  return internal::find_first_not_of(*this, s, pos);
   }
   size_type find_first_not_of(value_type c, size_type pos = 0) const {
-    return internal::find_first_not_of(*this, c, pos);
+  return internal::find_first_not_of(*this, c, pos);
   }
 
   // find_last_of: Find the last occurence of one of a set of characters.
   size_type find_last_of(const BasicStringPiece& s,
-                         size_type pos = BasicStringPiece::npos) const {
-    return internal::find_last_of(*this, s, pos);
+             size_type pos = BasicStringPiece::npos) const {
+  return internal::find_last_of(*this, s, pos);
   }
   size_type find_last_of(value_type c,
-                         size_type pos = BasicStringPiece::npos) const {
-    return rfind(c, pos);
+             size_type pos = BasicStringPiece::npos) const {
+  return rfind(c, pos);
   }
 
   // find_last_not_of: Find the last occurence not of a set of characters.
   size_type find_last_not_of(const BasicStringPiece& s,
-                             size_type pos = BasicStringPiece::npos) const {
-    return internal::find_last_not_of(*this, s, pos);
+               size_type pos = BasicStringPiece::npos) const {
+  return internal::find_last_not_of(*this, s, pos);
   }
   size_type find_last_not_of(value_type c,
-                             size_type pos = BasicStringPiece::npos) const {
-    return internal::find_last_not_of(*this, c, pos);
+               size_type pos = BasicStringPiece::npos) const {
+  return internal::find_last_not_of(*this, c, pos);
   }
 
   // substr.
   BasicStringPiece substr(size_type pos,
-                          size_type n = BasicStringPiece::npos) const {
-    return internal::substr(*this, pos, n);
+              size_type n = BasicStringPiece::npos) const {
+  return internal::substr(*this, pos, n);
   }
 
  protected:
   const value_type* ptr_;
-  size_type     length_;
+  size_type   length_;
 };
 
 template <typename STRING_TYPE>
 const typename BasicStringPiece<STRING_TYPE>::size_type
 BasicStringPiece<STRING_TYPE>::npos =
-    typename BasicStringPiece<STRING_TYPE>::size_type(-1);
+  typename BasicStringPiece<STRING_TYPE>::size_type(-1);
 
 // MSVC doesn't like complex extern templates and DLLs.
 #if !defined(COMPILER_MSVC)
@@ -395,7 +395,7 @@ inline bool operator!=(const StringPiece& x, const StringPiece& y) {
 
 inline bool operator<(const StringPiece& x, const StringPiece& y) {
   const int r = StringPiece::wordmemcmp(
-      x.data(), y.data(), (x.size() < y.size() ? x.size() : y.size()));
+    x.data(), y.data(), (x.size() < y.size() ? x.size() : y.size()));
   return ((r < 0) || ((r == 0) && (x.size() < y.size())));
 }
 
@@ -415,7 +415,7 @@ inline bool operator>=(const StringPiece& x, const StringPiece& y) {
 
 inline bool operator==(const StringPiece16& x, const StringPiece16& y) {
   if (x.size() != y.size())
-    return false;
+  return false;
 
   return StringPiece16::wordmemcmp(x.data(), y.data(), x.size()) == 0;
 }
@@ -426,7 +426,7 @@ inline bool operator!=(const StringPiece16& x, const StringPiece16& y) {
 
 inline bool operator<(const StringPiece16& x, const StringPiece16& y) {
   const int r = StringPiece16::wordmemcmp(
-      x.data(), y.data(), (x.size() < y.size() ? x.size() : y.size()));
+    x.data(), y.data(), (x.size() < y.size() ? x.size() : y.size()));
   return ((r < 0) || ((r == 0) && (x.size() < y.size())));
 }
 
@@ -443,7 +443,7 @@ inline bool operator>=(const StringPiece16& x, const StringPiece16& y) {
 }
 
 BUTIL_EXPORT std::ostream& operator<<(std::ostream& o,
-                                     const StringPiece& piece);
+                   const StringPiece& piece);
 
 // [ Ease getting first/last character of std::string before C++11 ]
 // return the first/last character, UNDEFINED when the string is empty.
@@ -463,12 +463,12 @@ inline char back_char_or_0(const std::string& s) { return s.empty() ? '\0' : s[s
 // This hash function is copied from butil/containers/hash_tables.h. We don't
 // use the ones already defined for string and string16 directly because it
 // would require the string constructors to be called, which we don't want.
-#define HASH_STRING_PIECE(StringPieceType, string_piece)                \
-  std::size_t result = 0;                                               \
-  for (StringPieceType::const_iterator i = string_piece.begin();        \
-       i != string_piece.end(); ++i)                                    \
-    result = (result * 131) + *i;                                       \
-  return result;                                                        \
+#define HASH_STRING_PIECE(StringPieceType, string_piece)        \
+  std::size_t result = 0;                         \
+  for (StringPieceType::const_iterator i = string_piece.begin();    \
+     i != string_piece.end(); ++i)                  \
+  result = (result * 131) + *i;                     \
+  return result;                            \
 
 namespace BUTIL_HASH_NAMESPACE {
 #if defined(COMPILER_GCC)
@@ -476,13 +476,13 @@ namespace BUTIL_HASH_NAMESPACE {
 template<>
 struct hash<butil::StringPiece> {
   std::size_t operator()(const butil::StringPiece& sp) const {
-    HASH_STRING_PIECE(butil::StringPiece, sp);
+  HASH_STRING_PIECE(butil::StringPiece, sp);
   }
 };
 template<>
 struct hash<butil::StringPiece16> {
   std::size_t operator()(const butil::StringPiece16& sp16) const {
-    HASH_STRING_PIECE(butil::StringPiece16, sp16);
+  HASH_STRING_PIECE(butil::StringPiece16, sp16);
   }
 };
 

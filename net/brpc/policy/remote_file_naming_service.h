@@ -30,19 +30,19 @@ namespace policy {
 
 class RemoteFileNamingService : public PeriodicNamingService {
 private:
-    int GetServers(const char* service_name,
-                   std::vector<ServerNode>* servers) override;
+  int GetServers(const char* service_name,
+           std::vector<ServerNode>* servers) override;
 
-    void Describe(std::ostream& os, const DescribeOptions&) const override;
+  void Describe(std::ostream& os, const DescribeOptions&) const override;
 
-    NamingService* New() const override;
-    
-    void Destroy() override;
-    
+  NamingService* New() const override;
+  
+  void Destroy() override;
+  
 private:
-    std::unique_ptr<Channel> _channel;
-    std::string _server_addr;
-    std::string _path;
+  std::unique_ptr<Channel> _channel;
+  std::string _server_addr;
+  std::string _path;
 };
 
 }  // namespace policy

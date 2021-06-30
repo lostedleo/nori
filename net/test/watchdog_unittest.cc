@@ -20,17 +20,17 @@ namespace {
 class WatchdogCounter : public Watchdog {
  public:
   WatchdogCounter(const TimeDelta& duration,
-                  const std::string& thread_watched_name,
-                  bool enabled)
-      : Watchdog(duration, thread_watched_name, enabled),
-        alarm_counter_(0) {
+          const std::string& thread_watched_name,
+          bool enabled)
+    : Watchdog(duration, thread_watched_name, enabled),
+    alarm_counter_(0) {
   }
 
   virtual ~WatchdogCounter() {}
 
   virtual void Alarm() OVERRIDE {
-    alarm_counter_++;
-    Watchdog::Alarm();
+  alarm_counter_++;
+  Watchdog::Alarm();
   }
 
   int alarm_counter() { return alarm_counter_; }
@@ -44,7 +44,7 @@ class WatchdogCounter : public Watchdog {
 class WatchdogTest : public testing::Test {
  public:
   virtual void SetUp() OVERRIDE {
-    Watchdog::ResetStaticData();
+  Watchdog::ResetStaticData();
   }
 };
 
@@ -79,7 +79,7 @@ TEST_F(WatchdogTest, AlarmTest) {
   WatchdogCounter watchdog(TimeDelta::FromMilliseconds(10), "Enabled", true);
   watchdog.Arm();
   SPIN_FOR_TIMEDELTA_OR_UNTIL_TRUE(TimeDelta::FromMinutes(5),
-                                   watchdog.alarm_counter() > 0);
+                   watchdog.alarm_counter() > 0);
   EXPECT_EQ(1, watchdog.alarm_counter());
 }
 
@@ -90,7 +90,7 @@ TEST_F(WatchdogTest, AlarmPriorTimeTest) {
   watchdog.ArmSomeTimeDeltaAgo(TimeDelta::FromSeconds(2));
   // It should instantly go off, but certainly in less than 5 minutes.
   SPIN_FOR_TIMEDELTA_OR_UNTIL_TRUE(TimeDelta::FromMinutes(5),
-                                   watchdog.alarm_counter() > 0);
+                   watchdog.alarm_counter() > 0);
 
   EXPECT_EQ(1, watchdog.alarm_counter());
 }
@@ -116,9 +116,9 @@ TEST_F(WatchdogTest, DisarmTest) {
   TimeTicks end = TimeTicks::Now();
 
   if (end - start > TimeDelta::FromMilliseconds(500)) {
-    LOG(WARNING) << "100ms sleep took over 500ms, making the results of this "
-                 << "timing-sensitive test suspicious.  Aborting now.";
-    return;
+  LOG(WARNING) << "100ms sleep took over 500ms, making the results of this "
+         << "timing-sensitive test suspicious.  Aborting now.";
+  return;
   }
 
   // Alarm should not have fired before it was disarmed.
@@ -134,7 +134,7 @@ TEST_F(WatchdogTest, DisarmTest) {
   watchdog.ArmSomeTimeDeltaAgo(TimeDelta::FromSeconds(10));
   // It should almost instantly go off, but certainly in less than 5 minutes.
   SPIN_FOR_TIMEDELTA_OR_UNTIL_TRUE(TimeDelta::FromMinutes(5),
-                                   watchdog.alarm_counter() > 0);
+                   watchdog.alarm_counter() > 0);
 
   EXPECT_EQ(1, watchdog.alarm_counter());
 }

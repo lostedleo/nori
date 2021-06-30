@@ -39,9 +39,9 @@ class BUTIL_EXPORT ThreadIdNameManager {
   friend struct DefaultSingletonTraits<ThreadIdNameManager>;
 
   typedef std::map<PlatformThreadId, PlatformThreadHandle::Handle>
-      ThreadIdToHandleMap;
+    ThreadIdToHandleMap;
   typedef std::map<PlatformThreadHandle::Handle, std::string*>
-      ThreadHandleToInternedNameMap;
+    ThreadHandleToInternedNameMap;
   typedef std::map<std::string, std::string*> NameToInternedNameMap;
 
   ThreadIdNameManager();

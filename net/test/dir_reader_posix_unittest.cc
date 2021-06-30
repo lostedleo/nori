@@ -23,7 +23,7 @@ TEST(DirReaderPosixUnittest, Read) {
   static const unsigned kNumFiles = 100;
 
   if (DirReaderPosix::IsFallback())
-    return;
+  return;
 
   char kDirTemplate[] = "/tmp/org.chromium.dir-reader-posix-XXXXXX";
   const char* dir = mkdtemp(kDirTemplate);
@@ -35,11 +35,11 @@ TEST(DirReaderPosixUnittest, Read) {
   PCHECK(chdir(dir) == 0);
 
   for (unsigned i = 0; i < kNumFiles; i++) {
-    char buf[16];
-    snprintf(buf, sizeof(buf), "%d", i);
-    const int fd = open(buf, O_CREAT | O_RDONLY | O_EXCL, 0600);
-    PCHECK(fd >= 0);
-    PCHECK(close(fd) == 0);
+  char buf[16];
+  snprintf(buf, sizeof(buf), "%d", i);
+  const int fd = open(buf, O_CREAT | O_RDONLY | O_EXCL, 0600);
+  PCHECK(fd >= 0);
+  PCHECK(close(fd) == 0);
   }
 
   std::set<unsigned> seen;
@@ -48,35 +48,35 @@ TEST(DirReaderPosixUnittest, Read) {
   EXPECT_TRUE(reader.IsValid());
 
   if (!reader.IsValid())
-    return;
+  return;
 
   bool seen_dot = false, seen_dotdot = false;
 
   for (; reader.Next(); ) {
-    if (strcmp(reader.name(), ".") == 0) {
-      seen_dot = true;
-      continue;
-    }
-    if (strcmp(reader.name(), "..") == 0) {
-      seen_dotdot = true;
-      continue;
-    }
+  if (strcmp(reader.name(), ".") == 0) {
+    seen_dot = true;
+    continue;
+  }
+  if (strcmp(reader.name(), "..") == 0) {
+    seen_dotdot = true;
+    continue;
+  }
 
-    SCOPED_TRACE(testing::Message() << "reader.name(): " << reader.name());
+  SCOPED_TRACE(testing::Message() << "reader.name(): " << reader.name());
 
-    char *endptr;
-    const unsigned long value = strtoul(reader.name(), &endptr, 10);
+  char *endptr;
+  const unsigned long value = strtoul(reader.name(), &endptr, 10);
 
-    EXPECT_FALSE(*endptr);
-    EXPECT_LT(value, kNumFiles);
-    EXPECT_EQ(0u, seen.count(value));
-    seen.insert(value);
+  EXPECT_FALSE(*endptr);
+  EXPECT_LT(value, kNumFiles);
+  EXPECT_EQ(0u, seen.count(value));
+  seen.insert(value);
   }
 
   for (unsigned i = 0; i < kNumFiles; i++) {
-    char buf[16];
-    snprintf(buf, sizeof(buf), "%d", i);
-    PCHECK(unlink(buf) == 0);
+  char buf[16];
+  snprintf(buf, sizeof(buf), "%d", i);
+  PCHECK(unlink(buf) == 0);
   }
 
   PCHECK(rmdir(dir) == 0);

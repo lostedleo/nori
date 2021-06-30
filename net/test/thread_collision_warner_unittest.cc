@@ -39,10 +39,10 @@ namespace {
 class AssertReporter : public butil::AsserterBase {
  public:
   AssertReporter()
-      : failed_(false) {}
+    : failed_(false) {}
 
   virtual void warn() OVERRIDE {
-    failed_ = true;
+  failed_ = true;
   }
 
   virtual ~AssertReporter() {}
@@ -63,12 +63,12 @@ TEST(ThreadCollisionTest, BookCriticalSection) {
   EXPECT_FALSE(local_reporter->fail_state());
 
   {  // Pin section.
+  DFAKE_SCOPED_LOCK_THREAD_LOCKED(warner);
+  EXPECT_FALSE(local_reporter->fail_state());
+  {  // Pin section.
     DFAKE_SCOPED_LOCK_THREAD_LOCKED(warner);
     EXPECT_FALSE(local_reporter->fail_state());
-    {  // Pin section.
-      DFAKE_SCOPED_LOCK_THREAD_LOCKED(warner);
-      EXPECT_FALSE(local_reporter->fail_state());
-    }
+  }
   }
 }
 
@@ -79,18 +79,18 @@ TEST(ThreadCollisionTest, ScopedRecursiveBookCriticalSection) {
   EXPECT_FALSE(local_reporter->fail_state());
 
   {  // Pin section.
+  DFAKE_SCOPED_RECURSIVE_LOCK(warner);
+  EXPECT_FALSE(local_reporter->fail_state());
+  {  // Pin section again (allowed by DFAKE_SCOPED_RECURSIVE_LOCK)
     DFAKE_SCOPED_RECURSIVE_LOCK(warner);
     EXPECT_FALSE(local_reporter->fail_state());
-    {  // Pin section again (allowed by DFAKE_SCOPED_RECURSIVE_LOCK)
-      DFAKE_SCOPED_RECURSIVE_LOCK(warner);
-      EXPECT_FALSE(local_reporter->fail_state());
-    }  // Unpin section.
+  }  // Unpin section.
   }  // Unpin section.
 
   // Check that section is not pinned
   {  // Pin section.
-    DFAKE_SCOPED_LOCK(warner);
-    EXPECT_FALSE(local_reporter->fail_state());
+  DFAKE_SCOPED_LOCK(warner);
+  EXPECT_FALSE(local_reporter->fail_state());
   }  // Unpin section.
 }
 
@@ -101,63 +101,63 @@ TEST(ThreadCollisionTest, ScopedBookCriticalSection) {
   EXPECT_FALSE(local_reporter->fail_state());
 
   {  // Pin section.
-    DFAKE_SCOPED_LOCK(warner);
-    EXPECT_FALSE(local_reporter->fail_state());
+  DFAKE_SCOPED_LOCK(warner);
+  EXPECT_FALSE(local_reporter->fail_state());
   }  // Unpin section.
 
   {  // Pin section.
+  DFAKE_SCOPED_LOCK(warner);
+  EXPECT_FALSE(local_reporter->fail_state());
+  {
+    // Pin section again (not allowed by DFAKE_SCOPED_LOCK)
     DFAKE_SCOPED_LOCK(warner);
-    EXPECT_FALSE(local_reporter->fail_state());
-    {
-      // Pin section again (not allowed by DFAKE_SCOPED_LOCK)
-      DFAKE_SCOPED_LOCK(warner);
-      EXPECT_NDEBUG_FALSE_DEBUG_TRUE(local_reporter->fail_state());
-      // Reset the status of warner for further tests.
-      local_reporter->reset();
-    }  // Unpin section.
+    EXPECT_NDEBUG_FALSE_DEBUG_TRUE(local_reporter->fail_state());
+    // Reset the status of warner for further tests.
+    local_reporter->reset();
+  }  // Unpin section.
   }  // Unpin section.
 
   {
-    // Pin section.
-    DFAKE_SCOPED_LOCK(warner);
-    EXPECT_FALSE(local_reporter->fail_state());
+  // Pin section.
+  DFAKE_SCOPED_LOCK(warner);
+  EXPECT_FALSE(local_reporter->fail_state());
   }  // Unpin section.
 }
 
 TEST(ThreadCollisionTest, MTBookCriticalSectionTest) {
   class NonThreadSafeQueue {
    public:
-    explicit NonThreadSafeQueue(butil::AsserterBase* asserter)
-        : push_pop_(asserter) {
-    }
+  explicit NonThreadSafeQueue(butil::AsserterBase* asserter)
+    : push_pop_(asserter) {
+  }
 
-    void push(int value) {
-      DFAKE_SCOPED_LOCK_THREAD_LOCKED(push_pop_);
-    }
+  void push(int value) {
+    DFAKE_SCOPED_LOCK_THREAD_LOCKED(push_pop_);
+  }
 
-    int pop() {
-      DFAKE_SCOPED_LOCK_THREAD_LOCKED(push_pop_);
-      return 0;
-    }
+  int pop() {
+    DFAKE_SCOPED_LOCK_THREAD_LOCKED(push_pop_);
+    return 0;
+  }
 
    private:
-    DFAKE_MUTEX(push_pop_);
+  DFAKE_MUTEX(push_pop_);
 
-    DISALLOW_COPY_AND_ASSIGN(NonThreadSafeQueue);
+  DISALLOW_COPY_AND_ASSIGN(NonThreadSafeQueue);
   };
 
   class QueueUser : public butil::DelegateSimpleThread::Delegate {
    public:
-    explicit QueueUser(NonThreadSafeQueue& queue)
-        : queue_(queue) {}
+  explicit QueueUser(NonThreadSafeQueue& queue)
+    : queue_(queue) {}
 
-    virtual void Run() OVERRIDE {
-      queue_.push(0);
-      queue_.pop();
-    }
+  virtual void Run() OVERRIDE {
+    queue_.push(0);
+    queue_.pop();
+  }
 
    private:
-    NonThreadSafeQueue& queue_;
+  NonThreadSafeQueue& queue_;
   };
 
   AssertReporter* local_reporter = new AssertReporter();
@@ -184,38 +184,38 @@ TEST(ThreadCollisionTest, MTScopedBookCriticalSectionTest) {
   // in the test will enter the push at same time.
   class NonThreadSafeQueue {
    public:
-    explicit NonThreadSafeQueue(butil::AsserterBase* asserter)
-        : push_pop_(asserter) {
-    }
+  explicit NonThreadSafeQueue(butil::AsserterBase* asserter)
+    : push_pop_(asserter) {
+  }
 
-    void push(int value) {
-      DFAKE_SCOPED_LOCK(push_pop_);
-      butil::PlatformThread::Sleep(butil::TimeDelta::FromSeconds(5));
-    }
+  void push(int value) {
+    DFAKE_SCOPED_LOCK(push_pop_);
+    butil::PlatformThread::Sleep(butil::TimeDelta::FromSeconds(5));
+  }
 
-    int pop() {
-      DFAKE_SCOPED_LOCK(push_pop_);
-      return 0;
-    }
+  int pop() {
+    DFAKE_SCOPED_LOCK(push_pop_);
+    return 0;
+  }
 
    private:
-    DFAKE_MUTEX(push_pop_);
+  DFAKE_MUTEX(push_pop_);
 
-    DISALLOW_COPY_AND_ASSIGN(NonThreadSafeQueue);
+  DISALLOW_COPY_AND_ASSIGN(NonThreadSafeQueue);
   };
 
   class QueueUser : public butil::DelegateSimpleThread::Delegate {
    public:
-    explicit QueueUser(NonThreadSafeQueue& queue)
-        : queue_(queue) {}
+  explicit QueueUser(NonThreadSafeQueue& queue)
+    : queue_(queue) {}
 
-    virtual void Run() OVERRIDE {
-      queue_.push(0);
-      queue_.pop();
-    }
+  virtual void Run() OVERRIDE {
+    queue_.push(0);
+    queue_.pop();
+  }
 
    private:
-    NonThreadSafeQueue& queue_;
+  NonThreadSafeQueue& queue_;
   };
 
   AssertReporter* local_reporter = new AssertReporter();
@@ -242,47 +242,47 @@ TEST(ThreadCollisionTest, MTSynchedScopedBookCriticalSectionTest) {
   // in the test will enter the push at same time.
   class NonThreadSafeQueue {
    public:
-    explicit NonThreadSafeQueue(butil::AsserterBase* asserter)
-        : push_pop_(asserter) {
-    }
+  explicit NonThreadSafeQueue(butil::AsserterBase* asserter)
+    : push_pop_(asserter) {
+  }
 
-    void push(int value) {
-      DFAKE_SCOPED_LOCK(push_pop_);
-      butil::PlatformThread::Sleep(butil::TimeDelta::FromSeconds(2));
-    }
+  void push(int value) {
+    DFAKE_SCOPED_LOCK(push_pop_);
+    butil::PlatformThread::Sleep(butil::TimeDelta::FromSeconds(2));
+  }
 
-    int pop() {
-      DFAKE_SCOPED_LOCK(push_pop_);
-      return 0;
-    }
+  int pop() {
+    DFAKE_SCOPED_LOCK(push_pop_);
+    return 0;
+  }
 
    private:
-    DFAKE_MUTEX(push_pop_);
+  DFAKE_MUTEX(push_pop_);
 
-    DISALLOW_COPY_AND_ASSIGN(NonThreadSafeQueue);
+  DISALLOW_COPY_AND_ASSIGN(NonThreadSafeQueue);
   };
 
   // This time the QueueUser class protects the non thread safe queue with
   // a lock.
   class QueueUser : public butil::DelegateSimpleThread::Delegate {
    public:
-    QueueUser(NonThreadSafeQueue& queue, butil::Lock& lock)
-        : queue_(queue),
-          lock_(lock) {}
+  QueueUser(NonThreadSafeQueue& queue, butil::Lock& lock)
+    : queue_(queue),
+      lock_(lock) {}
 
-    virtual void Run() OVERRIDE {
-      {
-        butil::AutoLock auto_lock(lock_);
-        queue_.push(0);
-      }
-      {
-        butil::AutoLock auto_lock(lock_);
-        queue_.pop();
-      }
+  virtual void Run() OVERRIDE {
+    {
+    butil::AutoLock auto_lock(lock_);
+    queue_.push(0);
     }
+    {
+    butil::AutoLock auto_lock(lock_);
+    queue_.pop();
+    }
+  }
    private:
-    NonThreadSafeQueue& queue_;
-    butil::Lock& lock_;
+  NonThreadSafeQueue& queue_;
+  butil::Lock& lock_;
   };
 
   AssertReporter* local_reporter = new AssertReporter();
@@ -311,56 +311,56 @@ TEST(ThreadCollisionTest, MTSynchedScopedRecursiveBookCriticalSectionTest) {
   // in the test will enter the push at same time.
   class NonThreadSafeQueue {
    public:
-    explicit NonThreadSafeQueue(butil::AsserterBase* asserter)
-        : push_pop_(asserter) {
-    }
+  explicit NonThreadSafeQueue(butil::AsserterBase* asserter)
+    : push_pop_(asserter) {
+  }
 
-    void push(int) {
-      DFAKE_SCOPED_RECURSIVE_LOCK(push_pop_);
-      bar();
-      butil::PlatformThread::Sleep(butil::TimeDelta::FromSeconds(2));
-    }
+  void push(int) {
+    DFAKE_SCOPED_RECURSIVE_LOCK(push_pop_);
+    bar();
+    butil::PlatformThread::Sleep(butil::TimeDelta::FromSeconds(2));
+  }
 
-    int pop() {
-      DFAKE_SCOPED_RECURSIVE_LOCK(push_pop_);
-      return 0;
-    }
+  int pop() {
+    DFAKE_SCOPED_RECURSIVE_LOCK(push_pop_);
+    return 0;
+  }
 
-    void bar() {
-      DFAKE_SCOPED_RECURSIVE_LOCK(push_pop_);
-    }
+  void bar() {
+    DFAKE_SCOPED_RECURSIVE_LOCK(push_pop_);
+  }
 
    private:
-    DFAKE_MUTEX(push_pop_);
+  DFAKE_MUTEX(push_pop_);
 
-    DISALLOW_COPY_AND_ASSIGN(NonThreadSafeQueue);
+  DISALLOW_COPY_AND_ASSIGN(NonThreadSafeQueue);
   };
 
   // This time the QueueUser class protects the non thread safe queue with
   // a lock.
   class QueueUser : public butil::DelegateSimpleThread::Delegate {
    public:
-    QueueUser(NonThreadSafeQueue& queue, butil::Lock& lock)
-        : queue_(queue),
-          lock_(lock) {}
+  QueueUser(NonThreadSafeQueue& queue, butil::Lock& lock)
+    : queue_(queue),
+      lock_(lock) {}
 
-    virtual void Run() OVERRIDE {
-      {
-        butil::AutoLock auto_lock(lock_);
-        queue_.push(0);
-      }
-      {
-        butil::AutoLock auto_lock(lock_);
-        queue_.bar();
-      }
-      {
-        butil::AutoLock auto_lock(lock_);
-        queue_.pop();
-      }
+  virtual void Run() OVERRIDE {
+    {
+    butil::AutoLock auto_lock(lock_);
+    queue_.push(0);
     }
+    {
+    butil::AutoLock auto_lock(lock_);
+    queue_.bar();
+    }
+    {
+    butil::AutoLock auto_lock(lock_);
+    queue_.pop();
+    }
+  }
    private:
-    NonThreadSafeQueue& queue_;
-    butil::Lock& lock_;
+  NonThreadSafeQueue& queue_;
+  butil::Lock& lock_;
   };
 
   AssertReporter* local_reporter = new AssertReporter();

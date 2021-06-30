@@ -9,28 +9,28 @@
 //
 // Example usage (scoped_ptr<T>):
 //   {
-//     scoped_ptr<Foo> foo(new Foo("wee"));
+//   scoped_ptr<Foo> foo(new Foo("wee"));
 //   }  // foo goes out of scope, releasing the pointer with it.
 //
 //   {
-//     scoped_ptr<Foo> foo;          // No pointer managed.
-//     foo.reset(new Foo("wee"));    // Now a pointer is managed.
-//     foo.reset(new Foo("wee2"));   // Foo("wee") was destroyed.
-//     foo.reset(new Foo("wee3"));   // Foo("wee2") was destroyed.
-//     foo->Method();                // Foo::Method() called.
-//     foo.get()->Method();          // Foo::Method() called.
-//     SomeFunc(foo.release());      // SomeFunc takes ownership, foo no longer
-//                                   // manages a pointer.
-//     foo.reset(new Foo("wee4"));   // foo manages a pointer again.
-//     foo.reset();                  // Foo("wee4") destroyed, foo no longer
-//                                   // manages a pointer.
+//   scoped_ptr<Foo> foo;      // No pointer managed.
+//   foo.reset(new Foo("wee"));  // Now a pointer is managed.
+//   foo.reset(new Foo("wee2"));   // Foo("wee") was destroyed.
+//   foo.reset(new Foo("wee3"));   // Foo("wee2") was destroyed.
+//   foo->Method();        // Foo::Method() called.
+//   foo.get()->Method();      // Foo::Method() called.
+//   SomeFunc(foo.release());    // SomeFunc takes ownership, foo no longer
+//                   // manages a pointer.
+//   foo.reset(new Foo("wee4"));   // foo manages a pointer again.
+//   foo.reset();          // Foo("wee4") destroyed, foo no longer
+//                   // manages a pointer.
 //   }  // foo wasn't managing a pointer, so nothing was destroyed.
 //
 // Example usage (scoped_ptr<T[]>):
 //   {
-//     scoped_ptr<Foo[]> foo(new Foo[100]);
-//     foo.get()->Method();  // Foo::Method on the 0th element.
-//     foo[10].Method();     // Foo::Method on the 10th element.
+//   scoped_ptr<Foo[]> foo(new Foo[100]);
+//   foo.get()->Method();  // Foo::Method on the 0th element.
+//   foo[10].Method();   // Foo::Method on the 10th element.
 //   }
 //
 // These scopers also implement part of the functionality of C++11 unique_ptr
@@ -42,23 +42,23 @@
 // passing by copy will NOT work.  Here is an example using scoped_ptr:
 //
 //   void TakesOwnership(scoped_ptr<Foo> arg) {
-//     // Do something with arg
+//   // Do something with arg
 //   }
 //   scoped_ptr<Foo> CreateFoo() {
-//     // No need for calling Pass() because we are constructing a temporary
-//     // for the return value.
-//     return scoped_ptr<Foo>(new Foo("new"));
+//   // No need for calling Pass() because we are constructing a temporary
+//   // for the return value.
+//   return scoped_ptr<Foo>(new Foo("new"));
 //   }
 //   scoped_ptr<Foo> PassThru(scoped_ptr<Foo> arg) {
-//     return arg.Pass();
+//   return arg.Pass();
 //   }
 //
 //   {
-//     scoped_ptr<Foo> ptr(new Foo("yay"));  // ptr manages Foo("yay").
-//     TakesOwnership(ptr.Pass());           // ptr no longer owns Foo("yay").
-//     scoped_ptr<Foo> ptr2 = CreateFoo();   // ptr2 owns the return Foo.
-//     scoped_ptr<Foo> ptr3 =                // ptr3 now owns what was in ptr2.
-//         PassThru(ptr2.Pass());            // ptr2 is correspondingly NULL.
+//   scoped_ptr<Foo> ptr(new Foo("yay"));  // ptr manages Foo("yay").
+//   TakesOwnership(ptr.Pass());       // ptr no longer owns Foo("yay").
+//   scoped_ptr<Foo> ptr2 = CreateFoo();   // ptr2 owns the return Foo.
+//   scoped_ptr<Foo> ptr3 =        // ptr3 now owns what was in ptr2.
+//     PassThru(ptr2.Pass());      // ptr2 is correspondingly NULL.
 //   }
 //
 // Notice that if you do not call Pass() when returning from PassThru(), or
@@ -77,8 +77,8 @@
 // PassAs<>() should be used to upcast return value in return statement:
 //
 //   scoped_ptr<Foo> CreateFoo() {
-//     scoped_ptr<FooChild> result(new FooChild());
-//     return result.PassAs<Foo>();
+//   scoped_ptr<FooChild> result(new FooChild());
+//   return result.PassAs<Foo>();
 //   }
 //
 // Note that PassAs<>() is implemented only for scoped_ptr<T>, but not for
@@ -115,26 +115,26 @@ template <class T>
 struct DefaultDeleter {
   DefaultDeleter() {}
   template <typename U> DefaultDeleter(const DefaultDeleter<U>&) {
-    // IMPLEMENTATION NOTE: C++11 20.7.1.1.2p2 only provides this constructor
-    // if U* is implicitly convertible to T* and U is not an array type.
-    //
-    // Correct implementation should use SFINAE to disable this
-    // constructor. However, since there are no other 1-argument constructors,
-    // using a COMPILE_ASSERT() based on is_convertible<> and requiring
-    // complete types is simpler and will cause compile failures for equivalent
-    // misuses.
-    //
-    // Note, the is_convertible<U*, T*> check also ensures that U is not an
-    // array. T is guaranteed to be a non-array, so any U* where U is an array
-    // cannot convert to T*.
-    enum { T_must_be_complete = sizeof(T) };
-    enum { U_must_be_complete = sizeof(U) };
-    COMPILE_ASSERT((butil::is_convertible<U*, T*>::value),
-                   U_ptr_must_implicitly_convert_to_T_ptr);
+  // IMPLEMENTATION NOTE: C++11 20.7.1.1.2p2 only provides this constructor
+  // if U* is implicitly convertible to T* and U is not an array type.
+  //
+  // Correct implementation should use SFINAE to disable this
+  // constructor. However, since there are no other 1-argument constructors,
+  // using a COMPILE_ASSERT() based on is_convertible<> and requiring
+  // complete types is simpler and will cause compile failures for equivalent
+  // misuses.
+  //
+  // Note, the is_convertible<U*, T*> check also ensures that U is not an
+  // array. T is guaranteed to be a non-array, so any U* where U is an array
+  // cannot convert to T*.
+  enum { T_must_be_complete = sizeof(T) };
+  enum { U_must_be_complete = sizeof(U) };
+  COMPILE_ASSERT((butil::is_convertible<U*, T*>::value),
+           U_ptr_must_implicitly_convert_to_T_ptr);
   }
   inline void operator()(T* ptr) const {
-    enum { type_must_be_complete = sizeof(T) };
-    delete ptr;
+  enum { type_must_be_complete = sizeof(T) };
+  delete ptr;
   }
 };
 
@@ -142,8 +142,8 @@ struct DefaultDeleter {
 template <class T>
 struct DefaultDeleter<T[]> {
   inline void operator()(T* ptr) const {
-    enum { type_must_be_complete = sizeof(T) };
-    delete[] ptr;
+  enum { type_must_be_complete = sizeof(T) };
+  delete[] ptr;
   }
 
  private:
@@ -167,10 +167,10 @@ struct DefaultDeleter<T[n]> {
 // a pointer. Can be used to store malloc-allocated pointers in scoped_ptr:
 //
 // scoped_ptr<int, butil::FreeDeleter> foo_ptr(
-//     static_cast<int*>(malloc(sizeof(int))));
+//   static_cast<int*>(malloc(sizeof(int))));
 struct FreeDeleter {
   inline void operator()(void* ptr) const {
-    free(ptr);
+  free(ptr);
   }
 };
 
@@ -178,9 +178,9 @@ namespace internal {
 
 template <typename T> struct IsNotRefCounted {
   enum {
-    value = !butil::is_convertible<T*, butil::subtle::RefCountedBase*>::value &&
-        !butil::is_convertible<T*, butil::subtle::RefCountedThreadSafeBase*>::
-            value
+  value = !butil::is_convertible<T*, butil::subtle::RefCountedBase*>::value &&
+    !butil::is_convertible<T*, butil::subtle::RefCountedThreadSafeBase*>::
+      value
   };
 };
 
@@ -198,53 +198,53 @@ class scoped_ptr_impl {
   // scoped_ptr_impl.
   template <typename U, typename V>
   scoped_ptr_impl(scoped_ptr_impl<U, V>* other)
-      : data_(other->release(), other->get_deleter()) {
-    // We do not support move-only deleters.  We could modify our move
-    // emulation to have butil::subtle::move() and butil::subtle::forward()
-    // functions that are imperfect emulations of their C++11 equivalents,
-    // but until there's a requirement, just assume deleters are copyable.
+    : data_(other->release(), other->get_deleter()) {
+  // We do not support move-only deleters.  We could modify our move
+  // emulation to have butil::subtle::move() and butil::subtle::forward()
+  // functions that are imperfect emulations of their C++11 equivalents,
+  // but until there's a requirement, just assume deleters are copyable.
   }
 
   template <typename U, typename V>
   void TakeState(scoped_ptr_impl<U, V>* other) {
-    // See comment in templated constructor above regarding lack of support
-    // for move-only deleters.
-    reset(other->release());
-    get_deleter() = other->get_deleter();
+  // See comment in templated constructor above regarding lack of support
+  // for move-only deleters.
+  reset(other->release());
+  get_deleter() = other->get_deleter();
   }
 
   ~scoped_ptr_impl() {
-    if (data_.ptr != NULL) {
-      // Not using get_deleter() saves one function call in non-optimized
-      // builds.
-      static_cast<D&>(data_)(data_.ptr);
-    }
+  if (data_.ptr != NULL) {
+    // Not using get_deleter() saves one function call in non-optimized
+    // builds.
+    static_cast<D&>(data_)(data_.ptr);
+  }
   }
 
   void reset(T* p) {
-    // This is a self-reset, which is no longer allowed: http://crbug.com/162971
-    if (p != NULL && p == data_.ptr)
-      abort();
+  // This is a self-reset, which is no longer allowed: http://crbug.com/162971
+  if (p != NULL && p == data_.ptr)
+    abort();
 
-    // Note that running data_.ptr = p can lead to undefined behavior if
-    // get_deleter()(get()) deletes this. In order to prevent this, reset()
-    // should update the stored pointer before deleting its old value.
-    //
-    // However, changing reset() to use that behavior may cause current code to
-    // break in unexpected ways. If the destruction of the owned object
-    // dereferences the scoped_ptr when it is destroyed by a call to reset(),
-    // then it will incorrectly dispatch calls to |p| rather than the original
-    // value of |data_.ptr|.
-    //
-    // During the transition period, set the stored pointer to NULL while
-    // deleting the object. Eventually, this safety check will be removed to
-    // prevent the scenario initially described from occuring and
-    // http://crbug.com/176091 can be closed.
-    T* old = data_.ptr;
-    data_.ptr = NULL;
-    if (old != NULL)
-      static_cast<D&>(data_)(old);
-    data_.ptr = p;
+  // Note that running data_.ptr = p can lead to undefined behavior if
+  // get_deleter()(get()) deletes this. In order to prevent this, reset()
+  // should update the stored pointer before deleting its old value.
+  //
+  // However, changing reset() to use that behavior may cause current code to
+  // break in unexpected ways. If the destruction of the owned object
+  // dereferences the scoped_ptr when it is destroyed by a call to reset(),
+  // then it will incorrectly dispatch calls to |p| rather than the original
+  // value of |data_.ptr|.
+  //
+  // During the transition period, set the stored pointer to NULL while
+  // deleting the object. Eventually, this safety check will be removed to
+  // prevent the scenario initially described from occuring and
+  // http://crbug.com/176091 can be closed.
+  T* old = data_.ptr;
+  data_.ptr = NULL;
+  if (old != NULL)
+    static_cast<D&>(data_)(old);
+  data_.ptr = p;
   }
 
   T* get() const { return data_.ptr; }
@@ -253,18 +253,18 @@ class scoped_ptr_impl {
   const D& get_deleter() const { return data_; }
 
   void swap(scoped_ptr_impl& p2) {
-    // Standard swap idiom: 'using std::swap' ensures that std::swap is
-    // present in the overload set, but we call swap unqualified so that
-    // any more-specific overloads can be used, if available.
-    using std::swap;
-    swap(static_cast<D&>(data_), static_cast<D&>(p2.data_));
-    swap(data_.ptr, p2.data_.ptr);
+  // Standard swap idiom: 'using std::swap' ensures that std::swap is
+  // present in the overload set, but we call swap unqualified so that
+  // any more-specific overloads can be used, if available.
+  using std::swap;
+  swap(static_cast<D&>(data_), static_cast<D&>(p2.data_));
+  swap(data_.ptr, p2.data_.ptr);
   }
 
   T* release() {
-    T* old_ptr = data_.ptr;
-    data_.ptr = NULL;
-    return old_ptr;
+  T* old_ptr = data_.ptr;
+  data_.ptr = NULL;
+  return old_ptr;
   }
 
  private:
@@ -276,9 +276,9 @@ class scoped_ptr_impl {
   // empty class.  See e.g. http://www.cantrip.org/emptyopt.html for a good
   // discussion of this technique.
   struct Data : public D {
-    explicit Data(T* ptr_in) : ptr(ptr_in) {}
-    Data(T* ptr_in, const D& other) : D(other), ptr(ptr_in) {}
-    T* ptr;
+  explicit Data(T* ptr_in) : ptr(ptr_in) {}
+  Data(T* ptr_in, const D& other) : D(other), ptr(ptr_in) {}
+  T* ptr;
   };
 
   Data data_;
@@ -311,7 +311,7 @@ class scoped_ptr {
   MOVE_ONLY_TYPE_FOR_CPP_03(scoped_ptr, RValue)
 
   COMPILE_ASSERT(butil::internal::IsNotRefCounted<T>::value,
-                 T_is_refcounted_type_and_needs_scoped_refptr);
+         T_is_refcounted_type_and_needs_scoped_refptr);
 
  public:
   // The element and deleter types.
@@ -339,7 +339,7 @@ class scoped_ptr {
   // implementation of scoped_ptr.
   template <typename U, typename V>
   scoped_ptr(scoped_ptr<U, V> other) : impl_(&other.impl_) {
-    COMPILE_ASSERT(!butil::is_array<U>::value, U_cannot_be_an_array);
+  COMPILE_ASSERT(!butil::is_array<U>::value, U_cannot_be_an_array);
   }
 
   // Constructor.  Move constructor for C++03 move emulation of this type.
@@ -357,9 +357,9 @@ class scoped_ptr {
   // scoped_ptr.
   template <typename U, typename V>
   scoped_ptr& operator=(scoped_ptr<U, V> rhs) {
-    COMPILE_ASSERT(!butil::is_array<U>::value, U_cannot_be_an_array);
-    impl_.TakeState(&rhs.impl_);
-    return *this;
+  COMPILE_ASSERT(!butil::is_array<U>::value, U_cannot_be_an_array);
+  impl_.TakeState(&rhs.impl_);
+  return *this;
   }
 
   // Reset.  Deletes the currently owned object, if any.
@@ -369,12 +369,12 @@ class scoped_ptr {
   // Accessors to get the owned object.
   // operator* and operator-> will assert() if there is no current object.
   element_type& operator*() const {
-    assert(impl_.get() != NULL);
-    return *impl_.get();
+  assert(impl_.get() != NULL);
+  return *impl_.get();
   }
   element_type* operator->() const  {
-    assert(impl_.get() != NULL);
-    return impl_.get();
+  assert(impl_.get() != NULL);
+  return impl_.get();
   }
   element_type* get() const { return impl_.get(); }
 
@@ -391,7 +391,7 @@ class scoped_ptr {
   // to Testable and then do the comparison).
  private:
   typedef butil::internal::scoped_ptr_impl<element_type, deleter_type>
-      scoped_ptr::*Testable;
+    scoped_ptr::*Testable;
 
  public:
   operator Testable() const { return impl_.get() ? &scoped_ptr::impl_ : NULL; }
@@ -404,7 +404,7 @@ class scoped_ptr {
 
   // Swap two scoped pointers.
   void swap(scoped_ptr& p2) {
-    impl_.swap(p2.impl_);
+  impl_.swap(p2.impl_);
   }
 
   // Release a pointer.
@@ -413,7 +413,7 @@ class scoped_ptr {
   // After this operation, this object will hold a NULL pointer,
   // and will not own the object any more.
   element_type* release() WARN_UNUSED_RESULT {
-    return impl_.release();
+  return impl_.release();
   }
 
   // C++98 doesn't support functions templates with default parameters which
@@ -424,7 +424,7 @@ class scoped_ptr {
   // the custom deleter.
   template <typename PassAsType>
   scoped_ptr<PassAsType> PassAs() {
-    return scoped_ptr<PassAsType>(Pass());
+  return scoped_ptr<PassAsType>(Pass());
   }
 
  private:
@@ -478,8 +478,8 @@ class scoped_ptr<T[], D> {
 
   // operator=.  Move operator= for C++03 move emulation of this type.
   scoped_ptr& operator=(RValue rhs) {
-    impl_.TakeState(&rhs.object->impl_);
-    return *this;
+  impl_.TakeState(&rhs.object->impl_);
+  return *this;
   }
 
   // Reset.  Deletes the currently owned array, if any.
@@ -488,8 +488,8 @@ class scoped_ptr<T[], D> {
 
   // Accessors to get the owned array.
   element_type& operator[](size_t i) const {
-    assert(impl_.get() != NULL);
-    return impl_.get()[i];
+  assert(impl_.get() != NULL);
+  return impl_.get()[i];
   }
   element_type* get() const { return impl_.get(); }
 
@@ -501,7 +501,7 @@ class scoped_ptr<T[], D> {
   // implicitly convertible to a real bool (which is dangerous).
  private:
   typedef butil::internal::scoped_ptr_impl<element_type, deleter_type>
-      scoped_ptr::*Testable;
+    scoped_ptr::*Testable;
 
  public:
   operator Testable() const { return impl_.get() ? &scoped_ptr::impl_ : NULL; }
@@ -514,7 +514,7 @@ class scoped_ptr<T[], D> {
 
   // Swap two scoped pointers.
   void swap(scoped_ptr& p2) {
-    impl_.swap(p2.impl_);
+  impl_.swap(p2.impl_);
   }
 
   // Release a pointer.
@@ -523,7 +523,7 @@ class scoped_ptr<T[], D> {
   // After this operation, this object will hold a NULL pointer,
   // and will not own the object any more.
   element_type* release() WARN_UNUSED_RESULT {
-    return impl_.release();
+  return impl_.release();
   }
 
  private:

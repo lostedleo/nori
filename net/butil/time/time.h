@@ -94,7 +94,7 @@ class BUTIL_EXPORT TimeDelta {
   // compatible. It is not provided as a constructor because the integer type
   // may be unclear from the perspective of a caller.
   static TimeDelta FromInternalValue(int64_t delta) {
-    return TimeDelta(delta);
+  return TimeDelta(delta);
   }
 
   // Returns the maximum time delta, which should be greater than any reasonable
@@ -107,12 +107,12 @@ class BUTIL_EXPORT TimeDelta {
   // provided operators.
   // For serializing, use FromInternalValue to reconstitute.
   int64_t ToInternalValue() const {
-    return delta_;
+  return delta_;
   }
 
   // Returns true if the time delta is the maximum time delta.
   bool is_max() const {
-    return delta_ == std::numeric_limits<int64_t>::max();
+  return delta_ == std::numeric_limits<int64_t>::max();
   }
 
 #if defined(OS_POSIX)
@@ -135,48 +135,48 @@ class BUTIL_EXPORT TimeDelta {
   int64_t InMicroseconds() const;
 
   TimeDelta& operator=(TimeDelta other) {
-    delta_ = other.delta_;
-    return *this;
+  delta_ = other.delta_;
+  return *this;
   }
 
   // Computations with other deltas.
   TimeDelta operator+(TimeDelta other) const {
-    return TimeDelta(delta_ + other.delta_);
+  return TimeDelta(delta_ + other.delta_);
   }
   TimeDelta operator-(TimeDelta other) const {
-    return TimeDelta(delta_ - other.delta_);
+  return TimeDelta(delta_ - other.delta_);
   }
 
   TimeDelta& operator+=(TimeDelta other) {
-    delta_ += other.delta_;
-    return *this;
+  delta_ += other.delta_;
+  return *this;
   }
   TimeDelta& operator-=(TimeDelta other) {
-    delta_ -= other.delta_;
-    return *this;
+  delta_ -= other.delta_;
+  return *this;
   }
   TimeDelta operator-() const {
-    return TimeDelta(-delta_);
+  return TimeDelta(-delta_);
   }
 
   // Computations with ints, note that we only allow multiplicative operations
   // with ints, and additive operations with other deltas.
   TimeDelta operator*(int64_t a) const {
-    return TimeDelta(delta_ * a);
+  return TimeDelta(delta_ * a);
   }
   TimeDelta operator/(int64_t a) const {
-    return TimeDelta(delta_ / a);
+  return TimeDelta(delta_ / a);
   }
   TimeDelta& operator*=(int64_t a) {
-    delta_ *= a;
-    return *this;
+  delta_ *= a;
+  return *this;
   }
   TimeDelta& operator/=(int64_t a) {
-    delta_ /= a;
-    return *this;
+  delta_ /= a;
+  return *this;
   }
   int64_t operator/(TimeDelta a) const {
-    return delta_ / a.delta_;
+  return delta_ / a.delta_;
   }
 
   // Defined below because it depends on the definition of the other classes.
@@ -185,22 +185,22 @@ class BUTIL_EXPORT TimeDelta {
 
   // Comparison operators.
   bool operator==(TimeDelta other) const {
-    return delta_ == other.delta_;
+  return delta_ == other.delta_;
   }
   bool operator!=(TimeDelta other) const {
-    return delta_ != other.delta_;
+  return delta_ != other.delta_;
   }
   bool operator<(TimeDelta other) const {
-    return delta_ < other.delta_;
+  return delta_ < other.delta_;
   }
   bool operator<=(TimeDelta other) const {
-    return delta_ <= other.delta_;
+  return delta_ <= other.delta_;
   }
   bool operator>(TimeDelta other) const {
-    return delta_ > other.delta_;
+  return delta_ > other.delta_;
   }
   bool operator>=(TimeDelta other) const {
-    return delta_ >= other.delta_;
+  return delta_ >= other.delta_;
   }
 
  private:
@@ -230,14 +230,14 @@ class BUTIL_EXPORT Time {
   static const int64_t kMillisecondsPerSecond = 1000;
   static const int64_t kMicrosecondsPerMillisecond = 1000;
   static const int64_t kMicrosecondsPerSecond = kMicrosecondsPerMillisecond *
-                                              kMillisecondsPerSecond;
+                        kMillisecondsPerSecond;
   static const int64_t kMicrosecondsPerMinute = kMicrosecondsPerSecond * 60;
   static const int64_t kMicrosecondsPerHour = kMicrosecondsPerMinute * 60;
   static const int64_t kMicrosecondsPerDay = kMicrosecondsPerHour * 24;
   static const int64_t kMicrosecondsPerWeek = kMicrosecondsPerDay * 7;
   static const int64_t kNanosecondsPerMicrosecond = 1000;
   static const int64_t kNanosecondsPerSecond = kNanosecondsPerMicrosecond *
-                                             kMicrosecondsPerSecond;
+                       kMicrosecondsPerSecond;
 
 #if !defined(OS_WIN)
   // On Mac & Linux, this value is the delta from the Windows epoch of 1601 to
@@ -252,20 +252,20 @@ class BUTIL_EXPORT Time {
   // like the Win32 SYSTEMTIME structure or the Unix "struct tm" with a few
   // additions and changes to prevent errors.
   struct BUTIL_EXPORT Exploded {
-    int year;          // Four digit year "2007"
-    int month;         // 1-based month (values 1 = January, etc.)
-    int day_of_week;   // 0-based day of week (0 = Sunday, etc.)
-    int day_of_month;  // 1-based day of month (1-31)
-    int hour;          // Hour within the current day (0-23)
-    int minute;        // Minute within the current hour (0-59)
-    int second;        // Second within the current minute (0-59 plus leap
-                       //   seconds which may take it up to 60).
-    int millisecond;   // Milliseconds within the current second (0-999)
+  int year;      // Four digit year "2007"
+  int month;     // 1-based month (values 1 = January, etc.)
+  int day_of_week;   // 0-based day of week (0 = Sunday, etc.)
+  int day_of_month;  // 1-based day of month (1-31)
+  int hour;      // Hour within the current day (0-23)
+  int minute;    // Minute within the current hour (0-59)
+  int second;    // Second within the current minute (0-59 plus leap
+             //   seconds which may take it up to 60).
+  int millisecond;   // Milliseconds within the current second (0-999)
 
-    // A cursory test for whether the data members are within their
-    // respective ranges. A 'true' return value does not guarantee the
-    // Exploded value can be successfully converted to a Time value.
-    bool HasValidValues() const;
+  // A cursory test for whether the data members are within their
+  // respective ranges. A 'true' return value does not guarantee the
+  // Exploded value can be successfully converted to a Time value.
+  bool HasValidValues() const;
   };
 
   // Contains the NULL time. Use Time::Now() to get the current time.
@@ -277,12 +277,12 @@ class BUTIL_EXPORT Time {
 
   // Returns true if the time object has not been initialized.
   bool is_null() const {
-    return us_ == 0;
+  return us_ == 0;
   }
 
   // Returns true if the time object is the maximum time.
   bool is_max() const {
-    return us_ == std::numeric_limits<int64_t>::max();
+  return us_ == std::numeric_limits<int64_t>::max();
   }
 
   // Returns the time for epoch in Unix-like system (Jan 1, 1970).
@@ -381,10 +381,10 @@ class BUTIL_EXPORT Time {
   // Converts an exploded structure representing either the local time or UTC
   // into a Time class.
   static Time FromUTCExploded(const Exploded& exploded) {
-    return FromExploded(false, exploded);
+  return FromExploded(false, exploded);
   }
   static Time FromLocalExploded(const Exploded& exploded) {
-    return FromExploded(true, exploded);
+  return FromExploded(true, exploded);
   }
 
   // Converts an integer value representing Time to a class. This is used
@@ -392,7 +392,7 @@ class BUTIL_EXPORT Time {
   // compatible. It is not provided as a constructor because the integer type
   // may be unclear from the perspective of a caller.
   static Time FromInternalValue(int64_t us) {
-    return Time(us);
+  return Time(us);
   }
 
   // Converts a string representation of time to a Time object.
@@ -404,26 +404,26 @@ class BUTIL_EXPORT Time {
   // TODO(iyengar) Move the FromString/FromTimeT/ToTimeT/FromFileTime to
   // a new time converter class.
   static bool FromString(const char* time_string, Time* parsed_time) {
-    return FromStringInternal(time_string, true, parsed_time);
+  return FromStringInternal(time_string, true, parsed_time);
   }
   static bool FromUTCString(const char* time_string, Time* parsed_time) {
-    return FromStringInternal(time_string, false, parsed_time);
+  return FromStringInternal(time_string, false, parsed_time);
   }
 
   // For serializing, use FromInternalValue to reconstitute. Please don't use
   // this and do arithmetic on it, as it is more error prone than using the
   // provided operators.
   int64_t ToInternalValue() const {
-    return us_;
+  return us_;
   }
 
   // Fills the given exploded structure with either the local time or UTC from
   // this time structure (containing UTC).
   void UTCExplode(Exploded* exploded) const {
-    return Explode(false, exploded);
+  return Explode(false, exploded);
   }
   void LocalExplode(Exploded* exploded) const {
-    return Explode(true, exploded);
+  return Explode(true, exploded);
   }
 
   // Rounds this time down to the nearest day in local time. It will represent
@@ -431,51 +431,51 @@ class BUTIL_EXPORT Time {
   Time LocalMidnight() const;
 
   Time& operator=(Time other) {
-    us_ = other.us_;
-    return *this;
+  us_ = other.us_;
+  return *this;
   }
 
   // Compute the difference between two times.
   TimeDelta operator-(Time other) const {
-    return TimeDelta(us_ - other.us_);
+  return TimeDelta(us_ - other.us_);
   }
 
   // Modify by some time delta.
   Time& operator+=(TimeDelta delta) {
-    us_ += delta.delta_;
-    return *this;
+  us_ += delta.delta_;
+  return *this;
   }
   Time& operator-=(TimeDelta delta) {
-    us_ -= delta.delta_;
-    return *this;
+  us_ -= delta.delta_;
+  return *this;
   }
 
   // Return a new time modified by some delta.
   Time operator+(TimeDelta delta) const {
-    return Time(us_ + delta.delta_);
+  return Time(us_ + delta.delta_);
   }
   Time operator-(TimeDelta delta) const {
-    return Time(us_ - delta.delta_);
+  return Time(us_ - delta.delta_);
   }
 
   // Comparison operators
   bool operator==(Time other) const {
-    return us_ == other.us_;
+  return us_ == other.us_;
   }
   bool operator!=(Time other) const {
-    return us_ != other.us_;
+  return us_ != other.us_;
   }
   bool operator<(Time other) const {
-    return us_ < other.us_;
+  return us_ < other.us_;
   }
   bool operator<=(Time other) const {
-    return us_ <= other.us_;
+  return us_ <= other.us_;
   }
   bool operator>(Time other) const {
-    return us_ > other.us_;
+  return us_ > other.us_;
   }
   bool operator>=(Time other) const {
-    return us_ >= other.us_;
+  return us_ >= other.us_;
   }
 
  private:
@@ -500,8 +500,8 @@ class BUTIL_EXPORT Time {
   // (e.g. "UTC" which is not specified in RFC822) is treated as if the
   // timezone is not specified.
   static bool FromStringInternal(const char* time_string,
-                                 bool is_local,
-                                 Time* parsed_time);
+                 bool is_local,
+                 Time* parsed_time);
 
   // The representation of Jan 1, 1970 UTC in microseconds since the
   // platform-dependent epoch.
@@ -527,7 +527,7 @@ class BUTIL_EXPORT Time {
 inline TimeDelta TimeDelta::FromDays(int days) {
   // Preserve max to prevent overflow.
   if (days == std::numeric_limits<int>::max())
-    return Max();
+  return Max();
   return TimeDelta(days * Time::kMicrosecondsPerDay);
 }
 
@@ -535,7 +535,7 @@ inline TimeDelta TimeDelta::FromDays(int days) {
 inline TimeDelta TimeDelta::FromHours(int hours) {
   // Preserve max to prevent overflow.
   if (hours == std::numeric_limits<int>::max())
-    return Max();
+  return Max();
   return TimeDelta(hours * Time::kMicrosecondsPerHour);
 }
 
@@ -543,7 +543,7 @@ inline TimeDelta TimeDelta::FromHours(int hours) {
 inline TimeDelta TimeDelta::FromMinutes(int minutes) {
   // Preserve max to prevent overflow.
   if (minutes == std::numeric_limits<int>::max())
-    return Max();
+  return Max();
   return TimeDelta(minutes * Time::kMicrosecondsPerMinute);
 }
 
@@ -551,7 +551,7 @@ inline TimeDelta TimeDelta::FromMinutes(int minutes) {
 inline TimeDelta TimeDelta::FromSeconds(int64_t secs) {
   // Preserve max to prevent overflow.
   if (secs == std::numeric_limits<int64_t>::max())
-    return Max();
+  return Max();
   return TimeDelta(secs * Time::kMicrosecondsPerSecond);
 }
 
@@ -559,7 +559,7 @@ inline TimeDelta TimeDelta::FromSeconds(int64_t secs) {
 inline TimeDelta TimeDelta::FromMilliseconds(int64_t ms) {
   // Preserve max to prevent overflow.
   if (ms == std::numeric_limits<int64_t>::max())
-    return Max();
+  return Max();
   return TimeDelta(ms * Time::kMicrosecondsPerMillisecond);
 }
 
@@ -567,7 +567,7 @@ inline TimeDelta TimeDelta::FromMilliseconds(int64_t ms) {
 inline TimeDelta TimeDelta::FromSecondsD(double secs) {
   // Preserve max to prevent overflow.
   if (secs == std::numeric_limits<double>::infinity())
-    return Max();
+  return Max();
   return TimeDelta((int64_t)(secs * Time::kMicrosecondsPerSecond));
 }
 
@@ -575,7 +575,7 @@ inline TimeDelta TimeDelta::FromSecondsD(double secs) {
 inline TimeDelta TimeDelta::FromMillisecondsD(double ms) {
   // Preserve max to prevent overflow.
   if (ms == std::numeric_limits<double>::infinity())
-    return Max();
+  return Max();
   return TimeDelta((int64_t)(ms * Time::kMicrosecondsPerMillisecond));
 }
 
@@ -583,7 +583,7 @@ inline TimeDelta TimeDelta::FromMillisecondsD(double ms) {
 inline TimeDelta TimeDelta::FromMicroseconds(int64_t us) {
   // Preserve max to prevent overflow.
   if (us == std::numeric_limits<int64_t>::max())
-    return Max();
+  return Max();
   return TimeDelta(us);
 }
 
@@ -591,7 +591,7 @@ inline TimeDelta TimeDelta::FromMicroseconds(int64_t us) {
 inline TimeDelta TimeDelta::FromMicrosecondsD(double us) {
   // Preserve max to prevent overflow.
   if (us == std::numeric_limits<double>::infinity())
-    return Max();
+  return Max();
   return TimeDelta((int64_t)us);
 }
 
@@ -634,7 +634,7 @@ class BUTIL_EXPORT TimeTicks {
   // glibc. To avoid potential bug, disable ThreadNow() always.
   // Returns true if ThreadNow() is supported on this system.
   static bool IsThreadNowSupported() {
-      return false;
+    return false;
   }
 
   // Returns thread-specific CPU-time on systems that support this feature.
@@ -675,7 +675,7 @@ class BUTIL_EXPORT TimeTicks {
 
   // Returns true if this object has not been initialized.
   bool is_null() const {
-    return ticks_ == 0;
+  return ticks_ == 0;
   }
 
   // Converts an integer value representing TimeTicks to a class. This is used
@@ -683,7 +683,7 @@ class BUTIL_EXPORT TimeTicks {
   // compatible. It is not provided as a constructor because the integer type
   // may be unclear from the perspective of a caller.
   static TimeTicks FromInternalValue(int64_t ticks) {
-    return TimeTicks(ticks);
+  return TimeTicks(ticks);
   }
 
   // Get the TimeTick value at the time of the UnixEpoch. This is useful when
@@ -697,55 +697,55 @@ class BUTIL_EXPORT TimeTicks {
   // Returns the internal numeric value of the TimeTicks object.
   // For serializing, use FromInternalValue to reconstitute.
   int64_t ToInternalValue() const {
-    return ticks_;
+  return ticks_;
   }
 
   TimeTicks& operator=(TimeTicks other) {
-    ticks_ = other.ticks_;
-    return *this;
+  ticks_ = other.ticks_;
+  return *this;
   }
 
   // Compute the difference between two times.
   TimeDelta operator-(TimeTicks other) const {
-    return TimeDelta(ticks_ - other.ticks_);
+  return TimeDelta(ticks_ - other.ticks_);
   }
 
   // Modify by some time delta.
   TimeTicks& operator+=(TimeDelta delta) {
-    ticks_ += delta.delta_;
-    return *this;
+  ticks_ += delta.delta_;
+  return *this;
   }
   TimeTicks& operator-=(TimeDelta delta) {
-    ticks_ -= delta.delta_;
-    return *this;
+  ticks_ -= delta.delta_;
+  return *this;
   }
 
   // Return a new TimeTicks modified by some delta.
   TimeTicks operator+(TimeDelta delta) const {
-    return TimeTicks(ticks_ + delta.delta_);
+  return TimeTicks(ticks_ + delta.delta_);
   }
   TimeTicks operator-(TimeDelta delta) const {
-    return TimeTicks(ticks_ - delta.delta_);
+  return TimeTicks(ticks_ - delta.delta_);
   }
 
   // Comparison operators
   bool operator==(TimeTicks other) const {
-    return ticks_ == other.ticks_;
+  return ticks_ == other.ticks_;
   }
   bool operator!=(TimeTicks other) const {
-    return ticks_ != other.ticks_;
+  return ticks_ != other.ticks_;
   }
   bool operator<(TimeTicks other) const {
-    return ticks_ < other.ticks_;
+  return ticks_ < other.ticks_;
   }
   bool operator<=(TimeTicks other) const {
-    return ticks_ <= other.ticks_;
+  return ticks_ <= other.ticks_;
   }
   bool operator>(TimeTicks other) const {
-    return ticks_ > other.ticks_;
+  return ticks_ > other.ticks_;
   }
   bool operator>=(TimeTicks other) const {
-    return ticks_ >= other.ticks_;
+  return ticks_ >= other.ticks_;
   }
 
  protected:

@@ -43,14 +43,14 @@ int strncmp16(const char16* s1, const char16* s2, size_t count);
 // number of characters that would be in an untruncated formatted
 // string, even when truncation occurs.
 int vsnprintf(char* buffer, size_t size, const char* format, va_list arguments)
-    PRINTF_FORMAT(3, 0);
+  PRINTF_FORMAT(3, 0);
 
 // Some of these implementations need to be inlined.
 
 // We separate the declaration from the implementation of this inline
 // function just so the PRINTF_FORMAT works.
 inline int snprintf(char* buffer, size_t size, const char* format, ...)
-    PRINTF_FORMAT(3, 4);
+  PRINTF_FORMAT(3, 4);
 inline int snprintf(char* buffer, size_t size, const char* format, ...) {
   va_list arguments;
   va_start(arguments, format);
@@ -76,14 +76,14 @@ BUTIL_EXPORT size_t wcslcpy(wchar_t* dst, const wchar_t* src, size_t dst_size);
 //
 // Nonportable conversion specifiers for wprintf are:
 //  - 's' and 'c' without an 'l' length modifier.  %s and %c operate on char
-//     data on all systems except Windows, which treat them as wchar_t data.
-//     Use %ls and %lc for wchar_t data instead.
+//   data on all systems except Windows, which treat them as wchar_t data.
+//   Use %ls and %lc for wchar_t data instead.
 //  - 'S' and 'C', which operate on wchar_t data on all systems except Windows,
-//     which treat them as char data.  Use %ls and %lc for wchar_t data
-//     instead.
+//   which treat them as char data.  Use %ls and %lc for wchar_t data
+//   instead.
 //  - 'F', which is not identified by Windows wprintf documentation.
 //  - 'D', 'O', and 'U', which are deprecated and not available on all systems.
-//     Use %ld, %lo, and %lu instead.
+//   Use %ld, %lo, and %lu instead.
 //
 // Note that there is no portable conversion specifier for char data when
 // working with wprintf.
@@ -108,16 +108,16 @@ template <class Char> inline Char ToUpperASCII(Char c) {
 template<typename Char> struct CaseInsensitiveCompare {
  public:
   bool operator()(Char x, Char y) const {
-    // TODO(darin): Do we really want to do locale sensitive comparisons here?
-    // See http://crbug.com/24917
-    return tolower(x) == tolower(y);
+  // TODO(darin): Do we really want to do locale sensitive comparisons here?
+  // See http://crbug.com/24917
+  return tolower(x) == tolower(y);
   }
 };
 
 template<typename Char> struct CaseInsensitiveCompareASCII {
  public:
   bool operator()(Char x, Char y) const {
-    return ToLowerASCII(x) == ToLowerASCII(y);
+  return ToLowerASCII(x) == ToLowerASCII(y);
   }
 };
 
@@ -150,11 +150,11 @@ BUTIL_EXPORT extern const char kUtf8ByteOrderMark[];
 // if any characters were removed.  |remove_chars| must be null-terminated.
 // NOTE: Safe to use the same variable for both |input| and |output|.
 BUTIL_EXPORT bool RemoveChars(const string16& input,
-                             const butil::StringPiece16& remove_chars,
-                             string16* output);
+               const butil::StringPiece16& remove_chars,
+               string16* output);
 BUTIL_EXPORT bool RemoveChars(const std::string& input,
-                             const butil::StringPiece& remove_chars,
-                             std::string* output);
+               const butil::StringPiece& remove_chars,
+               std::string* output);
 
 // Replaces characters in |replace_chars| from anywhere in |input| with
 // |replace_with|.  Each character in |replace_chars| will be replaced with
@@ -162,29 +162,29 @@ BUTIL_EXPORT bool RemoveChars(const std::string& input,
 // |replace_chars| must be null-terminated.
 // NOTE: Safe to use the same variable for both |input| and |output|.
 BUTIL_EXPORT bool ReplaceChars(const string16& input,
-                              const butil::StringPiece16& replace_chars,
-                              const string16& replace_with,
-                              string16* output);
+                const butil::StringPiece16& replace_chars,
+                const string16& replace_with,
+                string16* output);
 BUTIL_EXPORT bool ReplaceChars(const std::string& input,
-                              const butil::StringPiece& replace_chars,
-                              const std::string& replace_with,
-                              std::string* output);
+                const butil::StringPiece& replace_chars,
+                const std::string& replace_with,
+                std::string* output);
 
 // Removes characters in |trim_chars| from the beginning and end of |input|.
 // |trim_chars| must be null-terminated.
 // NOTE: Safe to use the same variable for both |input| and |output|.
 BUTIL_EXPORT bool TrimString(const string16& input,
-                            const butil::StringPiece16& trim_chars,
-                            string16* output);
+              const butil::StringPiece16& trim_chars,
+              string16* output);
 BUTIL_EXPORT bool TrimString(const std::string& input,
-                            const butil::StringPiece& trim_chars,
-                            std::string* output);
+              const butil::StringPiece& trim_chars,
+              std::string* output);
 
 // Truncates a string to the nearest UTF-8 character that will leave
 // the string less than or equal to the specified byte size.
 BUTIL_EXPORT void TruncateUTF8ToByteSize(const std::string& input,
-                                        const size_t byte_size,
-                                        std::string* output);
+                    const size_t byte_size,
+                    std::string* output);
 
 // Trims any whitespace from either end of the input string.  Returns where
 // whitespace was found.
@@ -194,32 +194,32 @@ BUTIL_EXPORT void TruncateUTF8ToByteSize(const std::string& input,
 // Please choose the best one according to your usage.
 // NOTE: Safe to use the same variable for both input and output.
 enum TrimPositions {
-  TRIM_NONE     = 0,
+  TRIM_NONE   = 0,
   TRIM_LEADING  = 1 << 0,
   TRIM_TRAILING = 1 << 1,
-  TRIM_ALL      = TRIM_LEADING | TRIM_TRAILING,
+  TRIM_ALL    = TRIM_LEADING | TRIM_TRAILING,
 };
 BUTIL_EXPORT TrimPositions TrimWhitespace(const string16& input,
-                                         TrimPositions positions,
-                                         butil::string16* output);
+                     TrimPositions positions,
+                     butil::string16* output);
 BUTIL_EXPORT TrimPositions TrimWhitespace(const butil::StringPiece16& input,
-                                         TrimPositions positions,
-                                         butil::StringPiece16* output);
+                     TrimPositions positions,
+                     butil::StringPiece16* output);
 BUTIL_EXPORT TrimPositions TrimWhitespaceASCII(const std::string& input,
-                                              TrimPositions positions,
-                                              std::string* output);
+                        TrimPositions positions,
+                        std::string* output);
 BUTIL_EXPORT TrimPositions TrimWhitespaceASCII(const butil::StringPiece& input,
-                                              TrimPositions positions,
-                                              butil::StringPiece* output);
+                        TrimPositions positions,
+                        butil::StringPiece* output);
 
 // Deprecated. This function is only for backward compatibility and calls
 // TrimWhitespaceASCII().
 BUTIL_EXPORT TrimPositions TrimWhitespace(const std::string& input,
-                                         TrimPositions positions,
-                                         std::string* output);
+                     TrimPositions positions,
+                     std::string* output);
 BUTIL_EXPORT TrimPositions TrimWhitespace(const butil::StringPiece& input,
-                                         TrimPositions positions,
-                                         butil::StringPiece* output);
+                     TrimPositions positions,
+                     butil::StringPiece* output);
 
 // Searches  for CR or LF characters.  Removes all contiguous whitespace
 // strings that contain them.  This is useful when trying to deal with text
@@ -227,21 +227,21 @@ BUTIL_EXPORT TrimPositions TrimWhitespace(const butil::StringPiece& input,
 // Returns |text|, with the following three transformations:
 // (1) Leading and trailing whitespace is trimmed.
 // (2) If |trim_sequences_with_line_breaks| is true, any other whitespace
-//     sequences containing a CR or LF are trimmed.
+//   sequences containing a CR or LF are trimmed.
 // (3) All other whitespace sequences are converted to single spaces.
 BUTIL_EXPORT string16 CollapseWhitespace(
-    const string16& text,
-    bool trim_sequences_with_line_breaks);
+  const string16& text,
+  bool trim_sequences_with_line_breaks);
 BUTIL_EXPORT std::string CollapseWhitespaceASCII(
-    const std::string& text,
-    bool trim_sequences_with_line_breaks);
+  const std::string& text,
+  bool trim_sequences_with_line_breaks);
 
 // Returns true if |input| is empty or contains only characters found in
 // |characters|.
 BUTIL_EXPORT bool ContainsOnlyChars(const StringPiece& input,
-                                   const StringPiece& characters);
+                   const StringPiece& characters);
 BUTIL_EXPORT bool ContainsOnlyChars(const StringPiece16& input,
-                                   const StringPiece16& characters);
+                   const StringPiece16& characters);
 
 // Returns true if the specified string matches the criteria. How can a wide
 // string be 8-bit or UTF8? It contains only characters that are < 256 (in the
@@ -272,7 +272,7 @@ BUTIL_EXPORT bool IsStringASCII(const string16& str);
 // clearly differentiate it from the non-pointer variant.
 template <class str> inline void StringToLowerASCII(str* s) {
   for (typename str::iterator i = s->begin(); i != s->end(); ++i)
-    *i = butil::ToLowerASCII(*i);
+  *i = butil::ToLowerASCII(*i);
 }
 
 template <class str> inline str StringToLowerASCII(const str& s) {
@@ -286,7 +286,7 @@ template <class str> inline str StringToLowerASCII(const str& s) {
 // clearly differentiate it from the non-pointer variant.
 template <class str> inline void StringToUpperASCII(str* s) {
   for (typename str::iterator i = s->begin(); i != s->end(); ++i)
-    *i = butil::ToUpperASCII(*i);
+  *i = butil::ToUpperASCII(*i);
 }
 
 template <class str> inline str StringToUpperASCII(const str& s) {
@@ -305,17 +305,17 @@ BUTIL_EXPORT bool LowerCaseEqualsASCII(const butil::string16& a, const char* b);
 
 // Same thing, but with string iterators instead.
 BUTIL_EXPORT bool LowerCaseEqualsASCII(std::string::const_iterator a_begin,
-                                      std::string::const_iterator a_end,
-                                      const char* b);
+                    std::string::const_iterator a_end,
+                    const char* b);
 BUTIL_EXPORT bool LowerCaseEqualsASCII(butil::string16::const_iterator a_begin,
-                                      butil::string16::const_iterator a_end,
-                                      const char* b);
+                    butil::string16::const_iterator a_end,
+                    const char* b);
 BUTIL_EXPORT bool LowerCaseEqualsASCII(const char* a_begin,
-                                      const char* a_end,
-                                      const char* b);
+                    const char* a_end,
+                    const char* b);
 BUTIL_EXPORT bool LowerCaseEqualsASCII(const butil::char16* a_begin,
-                                      const butil::char16* a_end,
-                                      const char* b);
+                    const butil::char16* a_end,
+                    const char* b);
 
 // Performs a case-sensitive string compare. The behavior is undefined if both
 // strings are not ASCII.
@@ -323,19 +323,19 @@ BUTIL_EXPORT bool EqualsASCII(const butil::string16& a, const butil::StringPiece
 
 // Returns true if str starts with search, or false otherwise.
 BUTIL_EXPORT bool StartsWithASCII(const std::string& str,
-                                 const std::string& search,
-                                 bool case_sensitive);
+                 const std::string& search,
+                 bool case_sensitive);
 BUTIL_EXPORT bool StartsWith(const butil::string16& str,
-                            const butil::string16& search,
-                            bool case_sensitive);
+              const butil::string16& search,
+              bool case_sensitive);
 
 // Returns true if str ends with search, or false otherwise.
 BUTIL_EXPORT bool EndsWith(const std::string& str,
-                          const std::string& search,
-                          bool case_sensitive);
+              const std::string& search,
+              bool case_sensitive);
 BUTIL_EXPORT bool EndsWith(const butil::string16& str,
-                          const butil::string16& search,
-                          bool case_sensitive);
+              const butil::string16& search,
+              bool case_sensitive);
 
 
 // Determines the type of ASCII character, independent of locale (the C
@@ -356,19 +356,19 @@ inline bool IsAsciiDigit(Char c) {
 template <typename Char>
 inline bool IsHexDigit(Char c) {
   return (c >= '0' && c <= '9') ||
-         (c >= 'A' && c <= 'F') ||
-         (c >= 'a' && c <= 'f');
+     (c >= 'A' && c <= 'F') ||
+     (c >= 'a' && c <= 'f');
 }
 
 template <typename Char>
 inline Char HexDigitToInt(Char c) {
   DCHECK(IsHexDigit(c));
   if (c >= '0' && c <= '9')
-    return c - '0';
+  return c - '0';
   if (c >= 'A' && c <= 'F')
-    return c - 'A' + 10;
+  return c - 'A' + 10;
   if (c >= 'a' && c <= 'f')
-    return c - 'a' + 10;
+  return c - 'a' + 10;
   return 0;
 }
 
@@ -386,15 +386,15 @@ BUTIL_EXPORT butil::string16 FormatBytesUnlocalized(int64_t bytes);
 // Starting at |start_offset| (usually 0), replace the first instance of
 // |find_this| with |replace_with|.
 BUTIL_EXPORT void ReplaceFirstSubstringAfterOffset(
-    butil::string16* str,
-    size_t start_offset,
-    const butil::string16& find_this,
-    const butil::string16& replace_with);
+  butil::string16* str,
+  size_t start_offset,
+  const butil::string16& find_this,
+  const butil::string16& replace_with);
 BUTIL_EXPORT void ReplaceFirstSubstringAfterOffset(
-    std::string* str,
-    size_t start_offset,
-    const std::string& find_this,
-    const std::string& replace_with);
+  std::string* str,
+  size_t start_offset,
+  const std::string& find_this,
+  const std::string& replace_with);
 
 // Starting at |start_offset| (usually 0), look through |str| and replace all
 // instances of |find_this| with |replace_with|.
@@ -403,14 +403,14 @@ BUTIL_EXPORT void ReplaceFirstSubstringAfterOffset(
 // characters, for example:
 //   std::replace(str.begin(), str.end(), 'a', 'b');
 BUTIL_EXPORT void ReplaceSubstringsAfterOffset(
-    butil::string16* str,
-    size_t start_offset,
-    const butil::string16& find_this,
-    const butil::string16& replace_with);
+  butil::string16* str,
+  size_t start_offset,
+  const butil::string16& find_this,
+  const butil::string16& replace_with);
 BUTIL_EXPORT void ReplaceSubstringsAfterOffset(std::string* str,
-                                              size_t start_offset,
-                                              const std::string& find_this,
-                                              const std::string& replace_with);
+                        size_t start_offset,
+                        const std::string& find_this,
+                        const std::string& replace_with);
 
 // Reserves enough memory in |str| to accommodate |length_with_null| characters,
 // sets the size of |str| to |length_with_null - 1| characters, and returns a
@@ -434,7 +434,7 @@ BUTIL_EXPORT void ReplaceSubstringsAfterOffset(std::string* str,
 // to this function (probably 0).
 template <class string_type>
 inline typename string_type::value_type* WriteInto(string_type* str,
-                                                   size_t length_with_null) {
+                           size_t length_with_null) {
   DCHECK_GT(length_with_null, 1u);
   str->reserve(length_with_null);
   str->resize(length_with_null - 1);
@@ -447,48 +447,48 @@ inline typename string_type::value_type* WriteInto(string_type* str,
 // |delimiters|.  Each field is added to the |tokens| vector.  Returns the
 // number of tokens found.
 BUTIL_EXPORT size_t Tokenize(const butil::string16& str,
-                            const butil::string16& delimiters,
-                            std::vector<butil::string16>* tokens);
+              const butil::string16& delimiters,
+              std::vector<butil::string16>* tokens);
 BUTIL_EXPORT size_t Tokenize(const std::string& str,
-                            const std::string& delimiters,
-                            std::vector<std::string>* tokens);
+              const std::string& delimiters,
+              std::vector<std::string>* tokens);
 BUTIL_EXPORT size_t Tokenize(const butil::StringPiece& str,
-                            const butil::StringPiece& delimiters,
-                            std::vector<butil::StringPiece>* tokens);
+              const butil::StringPiece& delimiters,
+              std::vector<butil::StringPiece>* tokens);
 
 // Does the opposite of SplitString().
 BUTIL_EXPORT butil::string16 JoinString(const std::vector<butil::string16>& parts,
-                                      butil::char16 s);
+                    butil::char16 s);
 BUTIL_EXPORT std::string JoinString(
-    const std::vector<std::string>& parts, char s);
+  const std::vector<std::string>& parts, char s);
 
 // Join |parts| using |separator|.
 BUTIL_EXPORT std::string JoinString(
-    const std::vector<std::string>& parts,
-    const std::string& separator);
+  const std::vector<std::string>& parts,
+  const std::string& separator);
 BUTIL_EXPORT butil::string16 JoinString(
-    const std::vector<butil::string16>& parts,
-    const butil::string16& separator);
+  const std::vector<butil::string16>& parts,
+  const butil::string16& separator);
 
 // Replace $1-$2-$3..$9 in the format string with |a|-|b|-|c|..|i| respectively.
 // Additionally, any number of consecutive '$' characters is replaced by that
 // number less one. Eg $$->$, $$$->$$, etc. The offsets parameter here can be
 // NULL. This only allows you to use up to nine replacements.
 BUTIL_EXPORT butil::string16 ReplaceStringPlaceholders(
-    const butil::string16& format_string,
-    const std::vector<butil::string16>& subst,
-    std::vector<size_t>* offsets);
+  const butil::string16& format_string,
+  const std::vector<butil::string16>& subst,
+  std::vector<size_t>* offsets);
 
 BUTIL_EXPORT std::string ReplaceStringPlaceholders(
-    const butil::StringPiece& format_string,
-    const std::vector<std::string>& subst,
-    std::vector<size_t>* offsets);
+  const butil::StringPiece& format_string,
+  const std::vector<std::string>& subst,
+  std::vector<size_t>* offsets);
 
 // Single-string shortcut for ReplaceStringHolders. |offset| may be NULL.
 BUTIL_EXPORT butil::string16 ReplaceStringPlaceholders(
-    const butil::string16& format_string,
-    const butil::string16& a,
-    size_t* offset);
+  const butil::string16& format_string,
+  const butil::string16& a,
+  size_t* offset);
 
 // Returns true if the string passed in matches the pattern. The pattern
 // string can contain wildcards like * and ?
@@ -496,9 +496,9 @@ BUTIL_EXPORT butil::string16 ReplaceStringPlaceholders(
 // We limit the patterns to having a max of 16 * or ? characters.
 // ? matches 0 or 1 character, while * matches 0 or more characters.
 BUTIL_EXPORT bool MatchPattern(const butil::StringPiece& string,
-                              const butil::StringPiece& pattern);
+                const butil::StringPiece& pattern);
 BUTIL_EXPORT bool MatchPattern(const butil::string16& string,
-                              const butil::string16& pattern);
+                const butil::string16& pattern);
 
 // Hack to convert any char-like type to its unsigned counterpart.
 // For example, it will convert char, signed char and unsigned char to unsigned

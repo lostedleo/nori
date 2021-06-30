@@ -35,8 +35,8 @@ class UIFont;
 // Adapted from NSObjCRuntime.h NS_ENUM definition (used in Foundation starting
 // with the OS X 10.8 SDK and the iOS 6.0 SDK).
 #if __has_extension(cxx_strong_enums) && \
-    (defined(OS_IOS) || (defined(MAC_OS_X_VERSION_10_8) && \
-                         MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_8))
+  (defined(OS_IOS) || (defined(MAC_OS_X_VERSION_10_8) && \
+             MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_8))
 #define CR_FORWARD_ENUM(_type, _name) enum _name : _type
 #else
 #define CR_FORWARD_ENUM(_type, _name) typedef _type _name
@@ -82,20 +82,20 @@ BUTIL_EXPORT OSType CreatorCodeForApplication();
 // If found, fills result (which must always be non-NULL) with the
 // first found directory and returns true.  Otherwise, returns false.
 BUTIL_EXPORT bool GetSearchPathDirectory(NSSearchPathDirectory directory,
-                                        NSSearchPathDomainMask domain_mask,
-                                        FilePath* result);
+                    NSSearchPathDomainMask domain_mask,
+                    FilePath* result);
 
 // Searches for directories for the given key in only the local domain.
 // If found, fills result (which must always be non-NULL) with the
 // first found directory and returns true.  Otherwise, returns false.
 BUTIL_EXPORT bool GetLocalDirectory(NSSearchPathDirectory directory,
-                                   FilePath* result);
+                   FilePath* result);
 
 // Searches for directories for the given key in only the user domain.
 // If found, fills result (which must always be non-NULL) with the
 // first found directory and returns true.  Otherwise, returns false.
 BUTIL_EXPORT bool GetUserDirectory(NSSearchPathDirectory directory,
-                                  FilePath* result);
+                  FilePath* result);
 
 // Returns the ~/Library directory.
 BUTIL_EXPORT FilePath GetUserLibraryPath();
@@ -250,7 +250,7 @@ namespace mac {
 //
 // Example usage:
 // CFNumberRef some_number = butil::mac::CFCast<CFNumberRef>(
-//     CFArrayGetValueAtIndex(array, index));
+//   CFArrayGetValueAtIndex(array, index));
 //
 // CFTypeRef hello = CFSTR("hello world");
 // CFStringRef some_string = butil::mac::CFCastStrict<CFStringRef>(hello);
@@ -311,14 +311,14 @@ CF_CAST_DECL(SecTrustedApplication);
 //
 // Example usage:
 // NSString* version = butil::mac::ObjCCast<NSString>(
-//     [bundle objectForInfoDictionaryKey:@"CFBundleShortVersionString"]);
+//   [bundle objectForInfoDictionaryKey:@"CFBundleShortVersionString"]);
 //
 // NSString* str = butil::mac::ObjCCastStrict<NSString>(
-//     [ns_arr_of_ns_strs objectAtIndex:0]);
+//   [ns_arr_of_ns_strs objectAtIndex:0]);
 template<typename T>
 T* ObjCCast(id objc_val) {
   if ([objc_val isKindOfClass:[T class]]) {
-    return reinterpret_cast<T*>(objc_val);
+  return reinterpret_cast<T*>(objc_val);
   }
   return nil;
 }
@@ -335,7 +335,7 @@ T* ObjCCastStrict(id objc_val) {
 // Helper function for GetValueFromDictionary to create the error message
 // that appears when a type mismatch is encountered.
 BUTIL_EXPORT std::string GetValueFromDictionaryErrorMessage(
-    CFStringRef key, const std::string& expected_type, CFTypeRef value);
+  CFStringRef key, const std::string& expected_type, CFTypeRef value);
 
 // Utility function to pull out a value from a dictionary, check its type, and
 // return it. Returns NULL if the key is not present or of the wrong type.
@@ -345,10 +345,10 @@ T GetValueFromDictionary(CFDictionaryRef dict, CFStringRef key) {
   T value_specific = CFCast<T>(value);
 
   if (value && !value_specific) {
-    std::string expected_type = TypeNameForCFType(value_specific);
-    DLOG(WARNING) << GetValueFromDictionaryErrorMessage(key,
-                                                        expected_type,
-                                                        value);
+  std::string expected_type = TypeNameForCFType(value_specific);
+  DLOG(WARNING) << GetValueFromDictionaryErrorMessage(key,
+                            expected_type,
+                            value);
   }
 
   return value_specific;
@@ -369,8 +369,8 @@ BUTIL_EXPORT FilePath NSStringToFilePath(NSString* str);
 // Operator << can not be overloaded for ObjectiveC types as the compiler
 // can not distinguish between overloads for id with overloads for void*.
 BUTIL_EXPORT extern std::ostream& operator<<(std::ostream& o,
-                                            const CFErrorRef err);
+                      const CFErrorRef err);
 BUTIL_EXPORT extern std::ostream& operator<<(std::ostream& o,
-                                            const CFStringRef str);
+                      const CFStringRef str);
 
 #endif  // BUTIL_MAC_FOUNDATION_UTIL_H_

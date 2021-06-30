@@ -29,7 +29,7 @@ namespace butil {
 class NonThreadSafeDoNothing {
  public:
   bool CalledOnValidThread() const {
-    return true;
+  return true;
   }
 
  protected:
@@ -48,8 +48,8 @@ class NonThreadSafeDoNothing {
 // class MyClass : public butil::NonThreadSafe {
 //  public:
 //   void Foo() {
-//     DCHECK(CalledOnValidThread());
-//     ... (do stuff) ...
+//   DCHECK(CalledOnValidThread());
+//   ... (do stuff) ...
 //   }
 // }
 //

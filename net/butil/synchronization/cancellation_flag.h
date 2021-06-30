@@ -20,7 +20,7 @@ class BUTIL_EXPORT CancellationFlag {
  public:
   CancellationFlag() : flag_(false) {
 #if !defined(NDEBUG)
-    set_on_ = PlatformThread::CurrentId();
+  set_on_ = PlatformThread::CurrentId();
 #endif
   }
   ~CancellationFlag() {}

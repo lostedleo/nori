@@ -22,9 +22,9 @@ template<typename T>
 class AutoReset {
  public:
   AutoReset(T* scoped_variable, T new_value)
-      : scoped_variable_(scoped_variable),
-        original_value_(*scoped_variable) {
-    *scoped_variable_ = new_value;
+    : scoped_variable_(scoped_variable),
+    original_value_(*scoped_variable) {
+  *scoped_variable_ = new_value;
   }
 
   ~AutoReset() { *scoped_variable_ = original_value_; }

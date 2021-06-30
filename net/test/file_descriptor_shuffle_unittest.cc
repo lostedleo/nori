@@ -16,21 +16,21 @@ namespace butil {
 
 struct Action {
   enum Type {
-    CLOSE,
-    MOVE,
-    DUPLICATE,
+  CLOSE,
+  MOVE,
+  DUPLICATE,
   };
 
   Action(Type in_type, int in_fd1, int in_fd2 = -1)
-      : type(in_type),
-        fd1(in_fd1),
-        fd2(in_fd2) {
+    : type(in_type),
+    fd1(in_fd1),
+    fd2(in_fd2) {
   }
 
   bool operator==(const Action& other) const {
-    return other.type == type &&
-           other.fd1 == fd1 &&
-           other.fd2 == fd2;
+  return other.type == type &&
+       other.fd1 == fd1 &&
+       other.fd2 == fd2;
   }
 
   Type type;
@@ -41,22 +41,22 @@ struct Action {
 class InjectionTracer : public InjectionDelegate {
  public:
   InjectionTracer()
-      : next_duplicate_(kDuplicateBase) {
+    : next_duplicate_(kDuplicateBase) {
   }
 
   virtual bool Duplicate(int* result, int fd) OVERRIDE {
-    *result = next_duplicate_++;
-    actions_.push_back(Action(Action::DUPLICATE, *result, fd));
-    return true;
+  *result = next_duplicate_++;
+  actions_.push_back(Action(Action::DUPLICATE, *result, fd));
+  return true;
   }
 
   virtual bool Move(int src, int dest) OVERRIDE {
-    actions_.push_back(Action(Action::MOVE, src, dest));
-    return true;
+  actions_.push_back(Action(Action::MOVE, src, dest));
+  return true;
   }
 
   virtual void Close(int fd) OVERRIDE {
-    actions_.push_back(Action(Action::CLOSE, fd));
+  actions_.push_back(Action(Action::CLOSE, fd));
   }
 
   const std::vector<Action>& actions() const { return actions_; }
@@ -146,7 +146,7 @@ TEST(FileDescriptorShuffleTest, Cycle) {
   EXPECT_TRUE(PerformInjectiveMultimap(map, &tracer));
   ASSERT_EQ(4u, tracer.actions().size());
   EXPECT_TRUE(tracer.actions()[0] ==
-              Action(Action::DUPLICATE, kDuplicateBase, 1));
+        Action(Action::DUPLICATE, kDuplicateBase, 1));
   EXPECT_TRUE(tracer.actions()[1] == Action(Action::MOVE, 0, 1));
   EXPECT_TRUE(tracer.actions()[2] == Action(Action::MOVE, kDuplicateBase, 0));
   EXPECT_TRUE(tracer.actions()[3] == Action(Action::CLOSE, kDuplicateBase));
@@ -161,7 +161,7 @@ TEST(FileDescriptorShuffleTest, CycleAndClose1) {
   EXPECT_TRUE(PerformInjectiveMultimap(map, &tracer));
   ASSERT_EQ(4u, tracer.actions().size());
   EXPECT_TRUE(tracer.actions()[0] ==
-              Action(Action::DUPLICATE, kDuplicateBase, 1));
+        Action(Action::DUPLICATE, kDuplicateBase, 1));
   EXPECT_TRUE(tracer.actions()[1] == Action(Action::MOVE, 0, 1));
   EXPECT_TRUE(tracer.actions()[2] == Action(Action::MOVE, kDuplicateBase, 0));
   EXPECT_TRUE(tracer.actions()[3] == Action(Action::CLOSE, kDuplicateBase));
@@ -176,7 +176,7 @@ TEST(FileDescriptorShuffleTest, CycleAndClose2) {
   EXPECT_TRUE(PerformInjectiveMultimap(map, &tracer));
   ASSERT_EQ(4u, tracer.actions().size());
   EXPECT_TRUE(tracer.actions()[0] ==
-              Action(Action::DUPLICATE, kDuplicateBase, 1));
+        Action(Action::DUPLICATE, kDuplicateBase, 1));
   EXPECT_TRUE(tracer.actions()[1] == Action(Action::MOVE, 0, 1));
   EXPECT_TRUE(tracer.actions()[2] == Action(Action::MOVE, kDuplicateBase, 0));
   EXPECT_TRUE(tracer.actions()[3] == Action(Action::CLOSE, kDuplicateBase));
@@ -191,7 +191,7 @@ TEST(FileDescriptorShuffleTest, CycleAndClose3) {
   EXPECT_TRUE(PerformInjectiveMultimap(map, &tracer));
   ASSERT_EQ(4u, tracer.actions().size());
   EXPECT_TRUE(tracer.actions()[0] ==
-              Action(Action::DUPLICATE, kDuplicateBase, 1));
+        Action(Action::DUPLICATE, kDuplicateBase, 1));
   EXPECT_TRUE(tracer.actions()[1] == Action(Action::MOVE, 0, 1));
   EXPECT_TRUE(tracer.actions()[2] == Action(Action::MOVE, kDuplicateBase, 0));
   EXPECT_TRUE(tracer.actions()[3] == Action(Action::CLOSE, kDuplicateBase));
@@ -251,11 +251,11 @@ TEST(FileDescriptorShuffleTest, FanoutAndClose3) {
 class FailingDelegate : public InjectionDelegate {
  public:
   virtual bool Duplicate(int* result, int fd) OVERRIDE {
-    return false;
+  return false;
   }
 
   virtual bool Move(int src, int dest) OVERRIDE {
-    return false;
+  return false;
   }
 
   virtual void Close(int fd) OVERRIDE {}

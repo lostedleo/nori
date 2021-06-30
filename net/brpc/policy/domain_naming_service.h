@@ -28,23 +28,23 @@ namespace policy {
 
 class DomainNamingService : public PeriodicNamingService {
 public:
-    DomainNamingService(int default_port);
-    DomainNamingService() : DomainNamingService(80) {}
+  DomainNamingService(int default_port);
+  DomainNamingService() : DomainNamingService(80) {}
 
 private:
-    int GetServers(const char *service_name,
-                   std::vector<ServerNode>* servers) override;
+  int GetServers(const char *service_name,
+           std::vector<ServerNode>* servers) override;
 
-    void Describe(std::ostream& os, const DescribeOptions&) const override;
+  void Describe(std::ostream& os, const DescribeOptions&) const override;
 
-    NamingService* New() const override;
-    
-    void Destroy() override;
+  NamingService* New() const override;
+  
+  void Destroy() override;
 
 private:
-    std::unique_ptr<char[]> _aux_buf;
-    size_t _aux_buf_len;
-    int _default_port;
+  std::unique_ptr<char[]> _aux_buf;
+  size_t _aux_buf_len;
+  int _default_port;
 };
 
 }  // namespace policy

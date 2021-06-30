@@ -7,7 +7,7 @@
 namespace butil {
 
 ThreadCheckerImpl::ThreadCheckerImpl()
-    : valid_thread_id_() {
+  : valid_thread_id_() {
   EnsureThreadIdAssigned();
 }
 
@@ -27,7 +27,7 @@ void ThreadCheckerImpl::DetachFromThread() {
 void ThreadCheckerImpl::EnsureThreadIdAssigned() const {
   AutoLock auto_lock(lock_);
   if (valid_thread_id_.is_null()) {
-    valid_thread_id_ = PlatformThread::CurrentRef();
+  valid_thread_id_ = PlatformThread::CurrentRef();
   }
 }
 

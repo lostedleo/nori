@@ -26,10 +26,10 @@ namespace brpc {
 
 class BadMethodService : public badmethod {
 public:
-    void no_method(::google::protobuf::RpcController* cntl_base,
-                   const ::brpc::BadMethodRequest* request,
-                   ::brpc::BadMethodResponse* response,
-                   ::google::protobuf::Closure* done);
+  void no_method(::google::protobuf::RpcController* cntl_base,
+           const ::brpc::BadMethodRequest* request,
+           ::brpc::BadMethodResponse* response,
+           ::google::protobuf::Closure* done);
 };
 
 } // namespace brpc

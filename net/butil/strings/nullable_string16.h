@@ -19,7 +19,7 @@ class NullableString16 {
  public:
   NullableString16() : is_null_(true) { }
   NullableString16(const string16& string, bool is_null)
-      : string_(string), is_null_(is_null) {
+    : string_(string), is_null_(is_null) {
   }
 
   const string16& string() const { return string_; }
@@ -39,7 +39,7 @@ inline bool operator!=(const NullableString16& a, const NullableString16& b) {
 }
 
 BUTIL_EXPORT std::ostream& operator<<(std::ostream& out,
-                                     const NullableString16& value);
+                   const NullableString16& value);
 
 }  // namespace
 

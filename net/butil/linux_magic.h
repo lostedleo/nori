@@ -3,12 +3,12 @@
 
 #define ADFS_SUPER_MAGIC	0xadf5
 #define AFFS_SUPER_MAGIC	0xadff
-#define AFS_SUPER_MAGIC                0x5346414F
+#define AFS_SUPER_MAGIC        0x5346414F
 #define AUTOFS_SUPER_MAGIC	0x0187
 #define CODA_SUPER_MAGIC	0x73757245
 #define CRAMFS_MAGIC		0x28cd3d45	/* some random number */
 #define CRAMFS_MAGIC_WEND	0x453dcd28	/* magic number with the wrong endianess */
-#define DEBUGFS_MAGIC          0x64626720
+#define DEBUGFS_MAGIC      0x64626720
 #define SYSFS_MAGIC		0x62656572
 #define SECURITYFS_MAGIC	0x73636673
 #define SELINUX_MAGIC		0xf97cff8c
@@ -42,7 +42,7 @@
 
 #define REISERFS_SUPER_MAGIC	0x52654973	/* used by gcc */
 					/* used by file system utilities that
-	                                   look at the superblock, etc.  */
+	                   look at the superblock, etc.  */
 #define REISERFS_SUPER_MAGIC_STRING	"ReIsErFs"
 #define REISER2FS_SUPER_MAGIC_STRING	"ReIsEr2Fs"
 #define REISER2FS_JR_SUPER_MAGIC_STRING	"ReIsEr3Fs"

@@ -78,23 +78,23 @@ TEST(StringPrintfTest, StringPrintfBounds) {
   const int kSrcLen = 1026;
   char src[kSrcLen];
   for (size_t i = 0; i < arraysize(src); i++)
-    src[i] = 'A';
+  src[i] = 'A';
 
   wchar_t srcw[kSrcLen];
   for (size_t i = 0; i < arraysize(srcw); i++)
-    srcw[i] = 'A';
+  srcw[i] = 'A';
 
   for (int i = 1; i < 3; i++) {
-    src[kSrcLen - i] = 0;
-    std::string out;
-    SStringPrintf(&out, "%s", src);
-    EXPECT_STREQ(src, out.c_str());
+  src[kSrcLen - i] = 0;
+  std::string out;
+  SStringPrintf(&out, "%s", src);
+  EXPECT_STREQ(src, out.c_str());
 
 #if !defined(OS_ANDROID)
-    srcw[kSrcLen - i] = 0;
-    std::wstring outw;
-    SStringPrintf(&outw, L"%ls", srcw);
-    EXPECT_STREQ(srcw, outw.c_str());
+  srcw[kSrcLen - i] = 0;
+  std::wstring outw;
+  SStringPrintf(&outw, L"%ls", srcw);
+  EXPECT_STREQ(srcw, outw.c_str());
 #endif
   }
 }
@@ -103,7 +103,7 @@ TEST(StringPrintfTest, StringPrintfBounds) {
 TEST(StringPrintfTest, Grow) {
   char src[1026];
   for (size_t i = 0; i < arraysize(src); i++)
-    src[i] = 'A';
+  src[i] = 'A';
   src[1025] = 0;
 
   const char* fmt = "%sB%sB%sB%sB%sB%sB%s";
@@ -138,7 +138,7 @@ TEST(StringPrintfTest, GrowBoundary) {
   const int buf_len = string_util_buf_len + 1;
   char src[buf_len + 1];  // Need extra one for NULL-terminator.
   for (int i = 0; i < buf_len; ++i)
-    src[i] = 'a';
+  src[i] = 'a';
   src[buf_len] = 0;
 
   std::string out;

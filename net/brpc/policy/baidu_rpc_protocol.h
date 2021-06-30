@@ -26,7 +26,7 @@ namespace policy {
 
 // Parse binary format of baidu_std
 ParseResult ParseRpcMessage(butil::IOBuf* source, Socket *socket, bool read_eof,
-                            const void *arg);
+              const void *arg);
 
 // Actions to a (client) request in baidu_std format
 void ProcessRpcRequest(InputMessageBase* msg);
@@ -39,12 +39,12 @@ bool VerifyRpcRequest(const InputMessageBase* msg);
 
 // Pack `request' to `method' into `buf'.
 void PackRpcRequest(butil::IOBuf* buf,
-                    SocketMessage**,
-                    uint64_t correlation_id,
-                    const google::protobuf::MethodDescriptor* method,
-                    Controller* controller,
-                    const butil::IOBuf& request,
-                    const Authenticator* auth);
+          SocketMessage**,
+          uint64_t correlation_id,
+          const google::protobuf::MethodDescriptor* method,
+          Controller* controller,
+          const butil::IOBuf& request,
+          const Authenticator* auth);
 
 }  // namespace policy
 } // namespace brpc

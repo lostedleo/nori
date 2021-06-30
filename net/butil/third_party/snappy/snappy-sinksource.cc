@@ -4,13 +4,13 @@
 // modification, are permitted provided that the following conditions are
 // met:
 //
-//     * Redistributions of source code must retain the above copyright
+//   * Redistributions of source code must retain the above copyright
 // notice, this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above
+//   * Redistributions in binary form must reproduce the above
 // copyright notice, this list of conditions and the following disclaimer
 // in the documentation and/or other materials provided with the
 // distribution.
-//     * Neither the name of Google Inc. nor the names of its
+//   * Neither the name of Google Inc. nor the names of its
 // contributors may be used to endorse or promote products derived from
 // this software without specific prior written permission.
 //
@@ -42,16 +42,16 @@ char* Sink::GetAppendBuffer(size_t length, char* scratch) {
 }
 
 char* Sink::GetAppendBufferVariable(
-      size_t min_size, size_t desired_size_hint, char* scratch,
-      size_t scratch_size, size_t* allocated_size) {
+    size_t min_size, size_t desired_size_hint, char* scratch,
+    size_t scratch_size, size_t* allocated_size) {
   *allocated_size = scratch_size;
   return scratch;
 }
 
 void Sink::AppendAndTakeOwnership(
-    char* bytes, size_t n,
-    void (*deleter)(void*, const char*, size_t),
-    void *deleter_arg) {
+  char* bytes, size_t n,
+  void (*deleter)(void*, const char*, size_t),
+  void *deleter_arg) {
   Append(bytes, n);
   (*deleter)(deleter_arg, bytes, n);
 }
@@ -75,7 +75,7 @@ UncheckedByteArraySink::~UncheckedByteArraySink() { }
 void UncheckedByteArraySink::Append(const char* data, size_t n) {
   // Do no copying if the caller filled in the result of GetAppendBuffer()
   if (data != dest_) {
-    memcpy(dest_, data, n);
+  memcpy(dest_, data, n);
   }
   dest_ += n;
 }
@@ -85,19 +85,19 @@ char* UncheckedByteArraySink::GetAppendBuffer(size_t len, char* scratch) {
 }
 
 void UncheckedByteArraySink::AppendAndTakeOwnership(
-    char* data, size_t n,
-    void (*deleter)(void*, const char*, size_t),
-    void *deleter_arg) {
+  char* data, size_t n,
+  void (*deleter)(void*, const char*, size_t),
+  void *deleter_arg) {
   if (data != dest_) {
-    memcpy(dest_, data, n);
-    (*deleter)(deleter_arg, data, n);
+  memcpy(dest_, data, n);
+  (*deleter)(deleter_arg, data, n);
   }
   dest_ += n;
 }
 
 char* UncheckedByteArraySink::GetAppendBufferVariable(
-      size_t min_size, size_t desired_size_hint, char* scratch,
-      size_t scratch_size, size_t* allocated_size) {
+    size_t min_size, size_t desired_size_hint, char* scratch,
+    size_t scratch_size, size_t* allocated_size) {
   *allocated_size = desired_size_hint;
   return dest_;
 }

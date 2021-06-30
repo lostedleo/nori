@@ -30,11 +30,11 @@ class NonThreadSafeClass : public NonThreadSafe {
 
   // Verifies that it was called on the same thread as the constructor.
   void DoStuff() {
-    DCHECK(CalledOnValidThread());
+  DCHECK(CalledOnValidThread());
   }
 
   void DetachFromThread() {
-    NonThreadSafe::DetachFromThread();
+  NonThreadSafe::DetachFromThread();
   }
 
   static void MethodOnDifferentThreadImpl();
@@ -48,12 +48,12 @@ class NonThreadSafeClass : public NonThreadSafe {
 class CallDoStuffOnThread : public SimpleThread {
  public:
   explicit CallDoStuffOnThread(NonThreadSafeClass* non_thread_safe_class)
-      : SimpleThread("call_do_stuff_on_thread"),
-        non_thread_safe_class_(non_thread_safe_class) {
+    : SimpleThread("call_do_stuff_on_thread"),
+    non_thread_safe_class_(non_thread_safe_class) {
   }
 
   virtual void Run() OVERRIDE {
-    non_thread_safe_class_->DoStuff();
+  non_thread_safe_class_->DoStuff();
   }
 
  private:
@@ -66,13 +66,13 @@ class CallDoStuffOnThread : public SimpleThread {
 class DeleteNonThreadSafeClassOnThread : public SimpleThread {
  public:
   explicit DeleteNonThreadSafeClassOnThread(
-      NonThreadSafeClass* non_thread_safe_class)
-      : SimpleThread("delete_non_thread_safe_class_on_thread"),
-        non_thread_safe_class_(non_thread_safe_class) {
+    NonThreadSafeClass* non_thread_safe_class)
+    : SimpleThread("delete_non_thread_safe_class_on_thread"),
+    non_thread_safe_class_(non_thread_safe_class) {
   }
 
   virtual void Run() OVERRIDE {
-    non_thread_safe_class_.reset();
+  non_thread_safe_class_.reset();
   }
 
  private:
@@ -85,7 +85,7 @@ class DeleteNonThreadSafeClassOnThread : public SimpleThread {
 
 TEST(NonThreadSafeTest, CallsAllowedOnSameThread) {
   scoped_ptr<NonThreadSafeClass> non_thread_safe_class(
-      new NonThreadSafeClass);
+    new NonThreadSafeClass);
 
   // Verify that DoStuff doesn't assert.
   non_thread_safe_class->DoStuff();
@@ -96,13 +96,13 @@ TEST(NonThreadSafeTest, CallsAllowedOnSameThread) {
 
 TEST(NonThreadSafeTest, DetachThenDestructOnDifferentThread) {
   scoped_ptr<NonThreadSafeClass> non_thread_safe_class(
-      new NonThreadSafeClass);
+    new NonThreadSafeClass);
 
   // Verify that the destructor doesn't assert when called on a different thread
   // after a detach.
   non_thread_safe_class->DetachFromThread();
   DeleteNonThreadSafeClassOnThread delete_on_thread(
-      non_thread_safe_class.release());
+    non_thread_safe_class.release());
 
   delete_on_thread.Start();
   delete_on_thread.Join();
@@ -112,7 +112,7 @@ TEST(NonThreadSafeTest, DetachThenDestructOnDifferentThread) {
 
 void NonThreadSafeClass::MethodOnDifferentThreadImpl() {
   scoped_ptr<NonThreadSafeClass> non_thread_safe_class(
-      new NonThreadSafeClass);
+    new NonThreadSafeClass);
 
   // Verify that DoStuff asserts in debug builds only when called
   // on a different thread.
@@ -125,8 +125,8 @@ void NonThreadSafeClass::MethodOnDifferentThreadImpl() {
 #if ENABLE_NON_THREAD_SAFE
 TEST(NonThreadSafeDeathTest, MethodNotAllowedOnDifferentThreadInDebug) {
   ASSERT_DEATH({
-      NonThreadSafeClass::MethodOnDifferentThreadImpl();
-    }, "");
+    NonThreadSafeClass::MethodOnDifferentThreadImpl();
+  }, "");
 }
 #else
 TEST(NonThreadSafeTest, MethodAllowedOnDifferentThreadInRelease) {
@@ -136,12 +136,12 @@ TEST(NonThreadSafeTest, MethodAllowedOnDifferentThreadInRelease) {
 
 void NonThreadSafeClass::DestructorOnDifferentThreadImpl() {
   scoped_ptr<NonThreadSafeClass> non_thread_safe_class(
-      new NonThreadSafeClass);
+    new NonThreadSafeClass);
 
   // Verify that the destructor asserts in debug builds only
   // when called on a different thread.
   DeleteNonThreadSafeClassOnThread delete_on_thread(
-      non_thread_safe_class.release());
+    non_thread_safe_class.release());
 
   delete_on_thread.Start();
   delete_on_thread.Join();
@@ -150,8 +150,8 @@ void NonThreadSafeClass::DestructorOnDifferentThreadImpl() {
 #if ENABLE_NON_THREAD_SAFE
 TEST(NonThreadSafeDeathTest, DestructorNotAllowedOnDifferentThreadInDebug) {
   ASSERT_DEATH({
-      NonThreadSafeClass::DestructorOnDifferentThreadImpl();
-    }, "");
+    NonThreadSafeClass::DestructorOnDifferentThreadImpl();
+  }, "");
 }
 #else
 TEST(NonThreadSafeTest, DestructorAllowedOnDifferentThreadInRelease) {

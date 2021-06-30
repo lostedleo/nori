@@ -29,7 +29,7 @@
 
 #if defined(__cplusplus)
 #  include <iostream>
-#  include "bthread/mutex.h"        // use bthread_mutex_t in the RAII way
+#  include "bthread/mutex.h"    // use bthread_mutex_t in the RAII way
 #endif
 
 #include "bthread/id.h"
@@ -41,9 +41,9 @@ __BEGIN_DECLS
 // function when the new thread is more urgent.
 // Returns 0 on success, errno otherwise.
 extern int bthread_start_urgent(bthread_t* __restrict tid,
-                                const bthread_attr_t* __restrict attr,
-                                void * (*fn)(void*),
-                                void* __restrict args);
+                const bthread_attr_t* __restrict attr,
+                void * (*fn)(void*),
+                void* __restrict args);
 
 // Create bthread `fn(args)' with attributes `attr' and put the identifier into
 // `tid'. This function behaves closer to pthread_create: after scheduling the
@@ -51,25 +51,25 @@ extern int bthread_start_urgent(bthread_t* __restrict tid,
 // longer time than bthread_start_urgent() to run.
 // Return 0 on success, errno otherwise.
 extern int bthread_start_background(bthread_t* __restrict tid,
-                                    const bthread_attr_t* __restrict attr,
-                                    void * (*fn)(void*),
-                                    void* __restrict args);
+                  const bthread_attr_t* __restrict attr,
+                  void * (*fn)(void*),
+                  void* __restrict args);
 
 // Wake up operations blocking the thread. Different functions may behave
 // differently:
 //   bthread_usleep(): returns -1 and sets errno to ESTOP if bthread_stop()
-//                     is called, or to EINTR otherwise.
+//           is called, or to EINTR otherwise.
 //   butex_wait(): returns -1 and sets errno to EINTR
 //   bthread_mutex_*lock: unaffected (still blocking)
 //   bthread_cond_*wait: wakes up and returns 0.
 //   bthread_*join: unaffected.
 // Common usage of interruption is to make a thread to quit ASAP.
-//    [Thread1]                  [Thread2]
+//  [Thread1]          [Thread2]
 //   set stopping flag
 //   bthread_interrupt(Thread2)
-//                               wake up
-//                               see the flag and quit
-//                               may block again if the flag is unchanged
+//                 wake up
+//                 see the flag and quit
+//                 may block again if the flag is unchanged
 // bthread_interrupt() guarantees that Thread2 is woken up reliably no matter
 // how the 2 threads are interleaved.
 // Returns 0 on success, errno otherwise.
@@ -104,7 +104,7 @@ extern void bthread_exit(void* retval) __attribute__((__noreturn__));
 // Notes:
 //  - All bthreads are "detached" but still joinable.
 //  - *bthread_return is always set to null. If you need to return value
-//    from a bthread, pass the value via the `args' created the bthread.
+//  from a bthread, pass the value via the `args' created the bthread.
 //  - bthread_join() is not affected by bthread_interrupt.
 // Returns 0 on success, errno otherwise.
 extern int bthread_join(bthread_t bt, void** bthread_return);
@@ -112,7 +112,7 @@ extern int bthread_join(bthread_t bt, void** bthread_return);
 // Track and join many bthreads.
 // Notice that all bthread_list* functions are NOT thread-safe.
 extern int  bthread_list_init(bthread_list_t* list,
-                              unsigned size, unsigned conflict_size);
+                unsigned size, unsigned conflict_size);
 extern void bthread_list_destroy(bthread_list_t* list);
 extern int  bthread_list_add(bthread_list_t* list, bthread_t tid);
 extern int bthread_list_stop(bthread_list_t* list);
@@ -162,9 +162,9 @@ extern int bthread_usleep(uint64_t microseconds);
 // Initialize `mutex' using attributes in `mutex_attr', or use the
 // default values if later is NULL.
 // NOTE: mutexattr is not used in current mutex implementation. User shall
-//       always pass a NULL attribute.
+//     always pass a NULL attribute.
 extern int bthread_mutex_init(bthread_mutex_t* __restrict mutex,
-                              const bthread_mutexattr_t* __restrict mutex_attr);
+                const bthread_mutexattr_t* __restrict mutex_attr);
 
 // Destroy `mutex'.
 extern int bthread_mutex_destroy(bthread_mutex_t* mutex);
@@ -177,7 +177,7 @@ extern int bthread_mutex_lock(bthread_mutex_t* mutex);
 
 // Wait until lock becomes available and lock it or time exceeds `abstime'
 extern int bthread_mutex_timedlock(bthread_mutex_t* __restrict mutex,
-                                   const struct timespec* __restrict abstime);
+                   const struct timespec* __restrict abstime);
 
 // Unlock `mutex'.
 extern int bthread_mutex_unlock(bthread_mutex_t* mutex);
@@ -189,9 +189,9 @@ extern int bthread_mutex_unlock(bthread_mutex_t* mutex);
 // Initialize condition variable `cond' using attributes `cond_attr', or use
 // the default values if later is NULL.
 // NOTE: cond_attr is not used in current condition implementation. User shall
-//       always pass a NULL attribute.
+//     always pass a NULL attribute.
 extern int bthread_cond_init(bthread_cond_t* __restrict cond,
-                             const bthread_condattr_t* __restrict cond_attr);
+               const bthread_condattr_t* __restrict cond_attr);
 
 // Destroy condition variable `cond'.
 extern int bthread_cond_destroy(bthread_cond_t* cond);
@@ -205,16 +205,16 @@ extern int bthread_cond_broadcast(bthread_cond_t* cond);
 // Wait for condition variable `cond' to be signaled or broadcast.
 // `mutex' is assumed to be locked before.
 extern int bthread_cond_wait(bthread_cond_t* __restrict cond,
-                             bthread_mutex_t* __restrict mutex);
+               bthread_mutex_t* __restrict mutex);
 
 // Wait for condition variable `cond' to be signaled or broadcast until
 // `abstime'. `mutex' is assumed to be locked before.  `abstime' is an
 // absolute time specification; zero is the beginning of the epoch
 // (00:00:00 GMT, January 1, 1970).
 extern int bthread_cond_timedwait(
-    bthread_cond_t* __restrict cond,
-    bthread_mutex_t* __restrict mutex,
-    const struct timespec* __restrict abstime);
+  bthread_cond_t* __restrict cond,
+  bthread_mutex_t* __restrict mutex,
+  const struct timespec* __restrict abstime);
 
 // -------------------------------------------
 // Functions for handling read-write locks.
@@ -223,7 +223,7 @@ extern int bthread_cond_timedwait(
 // Initialize read-write lock `rwlock' using attributes `attr', or use
 // the default values if later is NULL.
 extern int bthread_rwlock_init(bthread_rwlock_t* __restrict rwlock,
-                               const bthread_rwlockattr_t* __restrict attr);
+                 const bthread_rwlockattr_t* __restrict attr);
 
 // Destroy read-write lock `rwlock'.
 extern int bthread_rwlock_destroy(bthread_rwlock_t* rwlock);
@@ -236,8 +236,8 @@ extern int bthread_rwlock_tryrdlock(bthread_rwlock_t* rwlock);
 
 // Try to acquire read lock for `rwlock' or return after specfied time.
 extern int bthread_rwlock_timedrdlock(
-    bthread_rwlock_t* __restrict rwlock,
-    const struct timespec* __restrict abstime);
+  bthread_rwlock_t* __restrict rwlock,
+  const struct timespec* __restrict abstime);
 
 // Acquire write lock for `rwlock'.
 extern int bthread_rwlock_wrlock(bthread_rwlock_t* rwlock);
@@ -247,8 +247,8 @@ extern int bthread_rwlock_trywrlock(bthread_rwlock_t* rwlock);
 
 // Try to acquire write lock for `rwlock' or return after specfied time.
 extern int bthread_rwlock_timedwrlock(
-    bthread_rwlock_t* __restrict rwlock,
-    const struct timespec* __restrict abstime);
+  bthread_rwlock_t* __restrict rwlock,
+  const struct timespec* __restrict abstime);
 
 // Unlock `rwlock'.
 extern int bthread_rwlock_unlock(bthread_rwlock_t* rwlock);
@@ -265,11 +265,11 @@ extern int bthread_rwlockattr_destroy(bthread_rwlockattr_t* attr);
 
 // Return current setting of reader/writer preference.
 extern int bthread_rwlockattr_getkind_np(const bthread_rwlockattr_t* attr,
-                                         int* pref);
+                     int* pref);
 
 // Set reader/write preference.
 extern int bthread_rwlockattr_setkind_np(bthread_rwlockattr_t* attr,
-                                         int pref);
+                     int pref);
 
 
 // ----------------------------------------------------------------------
@@ -277,8 +277,8 @@ extern int bthread_rwlockattr_setkind_np(bthread_rwlockattr_t* attr,
 // ----------------------------------------------------------------------
 
 extern int bthread_barrier_init(bthread_barrier_t* __restrict barrier,
-                                const bthread_barrierattr_t* __restrict attr,
-                                unsigned count);
+                const bthread_barrierattr_t* __restrict attr,
+                unsigned count);
 
 extern int bthread_barrier_destroy(bthread_barrier_t* barrier);
 
@@ -297,7 +297,7 @@ extern int bthread_barrier_wait(bthread_barrier_t* barrier);
 // associated is NULL when the key is destroyed.
 // Returns 0 on success, error code otherwise.
 extern int bthread_key_create(bthread_key_t* key,
-                              void (*destructor)(void* data));
+                void (*destructor)(void* data));
 
 // Delete a key previously returned by bthread_key_create().
 // It is the responsibility of the application to free the data related to

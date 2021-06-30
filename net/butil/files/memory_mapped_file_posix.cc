@@ -21,15 +21,15 @@ bool MemoryMappedFile::MapFileToMemory() {
 
   struct stat file_stat;
   if (fstat(file_.GetPlatformFile(), &file_stat) == -1 ) {
-    DPLOG(ERROR) << "fstat " << file_.GetPlatformFile();
-    return false;
+  DPLOG(ERROR) << "fstat " << file_.GetPlatformFile();
+  return false;
   }
   length_ = file_stat.st_size;
 
   data_ = static_cast<uint8_t*>(
-      mmap(NULL, length_, PROT_READ, MAP_SHARED, file_.GetPlatformFile(), 0));
+    mmap(NULL, length_, PROT_READ, MAP_SHARED, file_.GetPlatformFile(), 0));
   if (data_ == MAP_FAILED)
-    DPLOG(ERROR) << "mmap " << file_.GetPlatformFile();
+  DPLOG(ERROR) << "mmap " << file_.GetPlatformFile();
 
   return data_ != MAP_FAILED;
 }
@@ -38,7 +38,7 @@ void MemoryMappedFile::CloseHandles() {
   ThreadRestrictions::AssertIOAllowed();
 
   if (data_ != NULL)
-    munmap(data_, length_);
+  munmap(data_, length_);
   file_.Close();
 
   data_ = NULL;

@@ -20,13 +20,13 @@
 
 class ErrnoTest : public ::testing::Test{
 protected:
-    ErrnoTest(){
-    };
-    virtual ~ErrnoTest(){};
-    virtual void SetUp() {
-    };
-    virtual void TearDown() {
-    };
+  ErrnoTest(){
+  };
+  virtual ~ErrnoTest(){};
+  virtual void SetUp() {
+  };
+  virtual void TearDown() {
+  };
 };
 
 #define ESTOP -114
@@ -42,19 +42,19 @@ BAIDU_REGISTER_ERRNO(EOK, "OK!")
 BAIDU_REGISTER_ERRNO(EMYERROR, "my error");
 
 TEST_F(ErrnoTest, system_errno) {
-    errno = EPIPE;
-    ASSERT_STREQ("Broken pipe", berror());
-    ASSERT_STREQ("Interrupted system call", berror(EINTR));
+  errno = EPIPE;
+  ASSERT_STREQ("Broken pipe", berror());
+  ASSERT_STREQ("Interrupted system call", berror(EINTR));
 }
 
 TEST_F(ErrnoTest, customized_errno) {
-    ASSERT_STREQ("the thread is stopping", berror(ESTOP));
-    ASSERT_STREQ("the thread is interrupted", berror(EBREAK));
-    ASSERT_STREQ("something happened", berror(ESTH));
-    ASSERT_STREQ("OK!", berror(EOK));
-    ASSERT_STREQ("Unknown error 1000", berror(1000));
-    
-    errno = ESTOP;
-    printf("Something got wrong, %m\n");
-    printf("Something got wrong, %s\n", berror());
+  ASSERT_STREQ("the thread is stopping", berror(ESTOP));
+  ASSERT_STREQ("the thread is interrupted", berror(EBREAK));
+  ASSERT_STREQ("something happened", berror(ESTH));
+  ASSERT_STREQ("OK!", berror(EOK));
+  ASSERT_STREQ("Unknown error 1000", berror(1000));
+  
+  errno = ESTOP;
+  printf("Something got wrong, %m\n");
+  printf("Something got wrong, %s\n", berror());
 }

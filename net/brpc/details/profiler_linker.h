@@ -32,21 +32,21 @@ extern bool cpu_profiler_enabled;
 extern int PROFILER_LINKER_DUMMY;
 
 struct ProfilerLinker {
-    // [ Must be inlined ]
-    // This function is included by user's compilation unit to force
-    // linking of ProfilerStart()/ProfilerStop()
-    // etc when corresponding macros are defined.
-    inline ProfilerLinker() {
-        
+  // [ Must be inlined ]
+  // This function is included by user's compilation unit to force
+  // linking of ProfilerStart()/ProfilerStop()
+  // etc when corresponding macros are defined.
+  inline ProfilerLinker() {
+    
 #if defined(BRPC_ENABLE_CPU_PROFILER) || defined(BAIDU_RPC_ENABLE_CPU_PROFILER)
-        cpu_profiler_enabled = true;
-        // compiler has no way to tell if PROFILER_LINKER_DUMMY is 0 or not,
-        // so it has to link the function inside the branch.
-        if (PROFILER_LINKER_DUMMY != 0/*must be false*/) {
-            ProfilerStart("this_function_should_never_run");
-        }
-#endif
+    cpu_profiler_enabled = true;
+    // compiler has no way to tell if PROFILER_LINKER_DUMMY is 0 or not,
+    // so it has to link the function inside the branch.
+    if (PROFILER_LINKER_DUMMY != 0/*must be false*/) {
+      ProfilerStart("this_function_should_never_run");
     }
+#endif
+  }
 };
 
 } // namespace brpc

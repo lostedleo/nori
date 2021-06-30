@@ -15,7 +15,7 @@
 namespace butil {
 
 ConditionVariable::ConditionVariable(Mutex* user_lock)
-    : user_mutex_(user_lock->native_handle()) {
+  : user_mutex_(user_lock->native_handle()) {
   // NOTE(gejun): Disable monotonic clock always due to difficulty of adapting
   // all versions of gcc
   int rv = pthread_cond_init(&condition_, NULL);
@@ -39,11 +39,11 @@ void ConditionVariable::TimedWait(const TimeDelta& max_time) {
   struct timespec relative_time;
   relative_time.tv_sec = usecs / Time::kMicrosecondsPerSecond;
   relative_time.tv_nsec =
-      (usecs % Time::kMicrosecondsPerSecond) * Time::kNanosecondsPerMicrosecond;
+    (usecs % Time::kMicrosecondsPerSecond) * Time::kNanosecondsPerMicrosecond;
 
 #if defined(OS_MACOSX)
   int rv = pthread_cond_timedwait_relative_np(
-      &condition_, user_mutex_, &relative_time);
+    &condition_, user_mutex_, &relative_time);
 #else
   struct timeval now;
   gettimeofday(&now, NULL);

@@ -27,8 +27,8 @@ namespace butil {
 // files. It does however detect the attribute changes that the FSEvents impl
 // would miss.
 class FilePathWatcherKQueue : public FilePathWatcher::PlatformDelegate,
-                              public MessageLoopForIO::Watcher,
-                              public MessageLoop::DestructionObserver {
+                public MessageLoopForIO::Watcher,
+                public MessageLoop::DestructionObserver {
  public:
   FilePathWatcherKQueue();
 
@@ -41,8 +41,8 @@ class FilePathWatcherKQueue : public FilePathWatcher::PlatformDelegate,
 
   // FilePathWatcher::PlatformDelegate overrides.
   virtual bool Watch(const FilePath& path,
-                     bool recursive,
-                     const FilePathWatcher::Callback& callback) OVERRIDE;
+           bool recursive,
+           const FilePathWatcher::Callback& callback) OVERRIDE;
   virtual void Cancel() OVERRIDE;
 
  protected:
@@ -51,10 +51,10 @@ class FilePathWatcherKQueue : public FilePathWatcher::PlatformDelegate,
  private:
   class EventData {
    public:
-    EventData(const FilePath& path, const FilePath::StringType& subdir)
-        : path_(path), subdir_(subdir) { }
-    FilePath path_;  // Full path to this item.
-    FilePath::StringType subdir_;  // Path to any sub item.
+  EventData(const FilePath& path, const FilePath::StringType& subdir)
+    : path_(path), subdir_(subdir) { }
+  FilePath path_;  // Full path to this item.
+  FilePath::StringType subdir_;  // Path to any sub item.
   };
 
   typedef std::vector<struct kevent> EventVector;
@@ -69,22 +69,22 @@ class FilePathWatcherKQueue : public FilePathWatcher::PlatformDelegate,
   // |event|. Sets |target_file_affected| to true if |target_| is affected.
   // Sets |update_watches| to true if |events_| need to be updated.
   void HandleAttributesChange(const EventVector::iterator& event,
-                              bool* target_file_affected,
-                              bool* update_watches);
+                bool* target_file_affected,
+                bool* update_watches);
 
   // Respond to a move or deletion of the path component represented by
   // |event|. Sets |target_file_affected| to true if |target_| is affected.
   // Sets |update_watches| to true if |events_| need to be updated.
   void HandleDeleteOrMoveChange(const EventVector::iterator& event,
-                                bool* target_file_affected,
-                                bool* update_watches);
+                bool* target_file_affected,
+                bool* update_watches);
 
   // Respond to a creation of an item in the path component represented by
   // |event|. Sets |target_file_affected| to true if |target_| is affected.
   // Sets |update_watches| to true if |events_| need to be updated.
   void HandleCreateItemChange(const EventVector::iterator& event,
-                              bool* target_file_affected,
-                              bool* update_watches);
+                bool* target_file_affected,
+                bool* update_watches);
 
   // Update |events_| with the current status of the system.
   // Sets |target_file_affected| to true if |target_| is affected.
@@ -110,11 +110,11 @@ class FilePathWatcherKQueue : public FilePathWatcher::PlatformDelegate,
 
   // Returns true if kevent has open file descriptor.
   static bool IsKeventFileDescriptorOpen(const struct kevent& event) {
-    return event.ident != kNoFileDescriptor;
+  return event.ident != kNoFileDescriptor;
   }
 
   static EventData* EventDataForKevent(const struct kevent& event) {
-    return reinterpret_cast<EventData*>(event.udata);
+  return reinterpret_cast<EventData*>(event.udata);
   }
 
   EventVector events_;

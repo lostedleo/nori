@@ -292,28 +292,28 @@ static const uint32_t table3_[256] = {
 
 static inline uint32_t DecodeFixed32(const char* ptr) {
 #if defined(ARCH_CPU_LITTLE_ENDIAN) && ARCH_CPU_LITTLE_ENDIAN
-    // Load the raw bytes
-    uint32_t result;
-    memcpy(&result, ptr, sizeof(result));  // gcc optimizes this to a plain load
-    return result;
+  // Load the raw bytes
+  uint32_t result;
+  memcpy(&result, ptr, sizeof(result));  // gcc optimizes this to a plain load
+  return result;
 #else
-    return ((static_cast<uint32_t>(static_cast<unsigned char>(ptr[0])))
-        | (static_cast<uint32_t>(static_cast<unsigned char>(ptr[1])) << 8)
-        | (static_cast<uint32_t>(static_cast<unsigned char>(ptr[2])) << 16)
-        | (static_cast<uint32_t>(static_cast<unsigned char>(ptr[3])) << 24));
+  return ((static_cast<uint32_t>(static_cast<unsigned char>(ptr[0])))
+    | (static_cast<uint32_t>(static_cast<unsigned char>(ptr[1])) << 8)
+    | (static_cast<uint32_t>(static_cast<unsigned char>(ptr[2])) << 16)
+    | (static_cast<uint32_t>(static_cast<unsigned char>(ptr[3])) << 24));
 #endif
 }
 
 inline uint64_t DecodeFixed64(const char* ptr) {
 #if defined(ARCH_CPU_LITTLE_ENDIAN) && ARCH_CPU_LITTLE_ENDIAN
-    // Load the raw bytes
-    uint64_t result;
-    memcpy(&result, ptr, sizeof(result));  // gcc optimizes this to a plain load
-    return result;
+  // Load the raw bytes
+  uint64_t result;
+  memcpy(&result, ptr, sizeof(result));  // gcc optimizes this to a plain load
+  return result;
 #else
-    uint64_t lo = DecodeFixed32(ptr);
-    uint64_t hi = DecodeFixed32(ptr + 4);
-    return (hi << 32) | lo;
+  uint64_t lo = DecodeFixed32(ptr);
+  uint64_t hi = DecodeFixed32(ptr + 4);
+  return (hi << 32) | lo;
 #endif
 }
 
@@ -365,14 +365,14 @@ static inline void Fast_CRC32(uint64_t* l, uint8_t const **p) {
 class FastCRC32Functor {
 public:
   inline void operator()(uint64_t* l, uint8_t const **p) const {
-    return Fast_CRC32(l , p);
+  return Fast_CRC32(l , p);
   }
 };
 
 class SlowCRC32Functor {
 public:
   inline void operator()(uint64_t* l, uint8_t const **p) const {
-    return Slow_CRC32(l , p);
+  return Slow_CRC32(l , p);
   }
 };
 
@@ -385,11 +385,11 @@ uint32_t ExtendImpl(uint32_t crc, const char* buf, size_t size) {
   uint64_t l = crc ^ 0xffffffffu;
 
 // Align n to (1 << m) byte boundary
-#define ALIGN(n, m)     ((n + ((1 << m) - 1)) & ~((1 << m) - 1))
+#define ALIGN(n, m)   ((n + ((1 << m) - 1)) & ~((1 << m) - 1))
 
-#define STEP1 do {                              \
-    int c = (l & 0xff) ^ *p++;                  \
-    l = table0_[c] ^ (l >> 8);                  \
+#define STEP1 do {                \
+  int c = (l & 0xff) ^ *p++;          \
+  l = table0_[c] ^ (l >> 8);          \
 } while (0)
 
 
@@ -398,23 +398,23 @@ uint32_t ExtendImpl(uint32_t crc, const char* buf, size_t size) {
   const uintptr_t pval = reinterpret_cast<uintptr_t>(p);
   const uint8_t* x = reinterpret_cast<const uint8_t*>(ALIGN(pval, 4));
   if (x <= e) {
-    // Process bytes until finished or p is 16-byte aligned
-    while (p != x) {
-      STEP1;
-    }
+  // Process bytes until finished or p is 16-byte aligned
+  while (p != x) {
+    STEP1;
+  }
   }
   // Process bytes 16 at a time
   while ((e-p) >= 16) {
-    CRC32(&l, &p);
-    CRC32(&l, &p);
+  CRC32(&l, &p);
+  CRC32(&l, &p);
   }
   // Process bytes 8 at a time
   while ((e-p) >= 8) {
-    CRC32(&l, &p);
+  CRC32(&l, &p);
   }
   // Process the last few bytes
   while (p != e) {
-    STEP1;
+  STEP1;
   }
 #undef STEP1
 #undef ALIGN
@@ -437,7 +437,7 @@ typedef uint32_t (*Function)(uint32_t, const char*, size_t);
 
 static inline Function Choose_Extend() {
   return isSSE42() ? (Function)ExtendImpl<FastCRC32Functor> : 
-                    (Function)ExtendImpl<SlowCRC32Functor>;
+          (Function)ExtendImpl<SlowCRC32Functor>;
 }
 
 bool IsFastCrc32Supported() {

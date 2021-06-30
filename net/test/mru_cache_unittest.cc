@@ -12,19 +12,19 @@ int cached_item_live_count = 0;
 
 struct CachedItem {
   CachedItem() : value(0) {
-    cached_item_live_count++;
+  cached_item_live_count++;
   }
 
   explicit CachedItem(int new_value) : value(new_value) {
-    cached_item_live_count++;
+  cached_item_live_count++;
   }
 
   explicit CachedItem(const CachedItem& other) : value(other.value) {
-    cached_item_live_count++;
+  cached_item_live_count++;
   }
 
   ~CachedItem() {
-    cached_item_live_count--;
+  cached_item_live_count--;
   }
 
   int value;
@@ -38,9 +38,9 @@ TEST(MRUCacheTest, Basic) {
 
   // Check failure conditions
   {
-    CachedItem test_item;
-    EXPECT_TRUE(cache.Get(0) == cache.end());
-    EXPECT_TRUE(cache.Peek(0) == cache.end());
+  CachedItem test_item;
+  EXPECT_TRUE(cache.Get(0) == cache.end());
+  EXPECT_TRUE(cache.Peek(0) == cache.end());
   }
 
   static const int kItem1Key = 5;
@@ -50,15 +50,15 @@ TEST(MRUCacheTest, Basic) {
 
   // Check that item1 was properly inserted.
   {
-    Cache::iterator found = cache.Get(kItem1Key);
-    EXPECT_TRUE(inserted_item == cache.begin());
-    EXPECT_TRUE(found != cache.end());
+  Cache::iterator found = cache.Get(kItem1Key);
+  EXPECT_TRUE(inserted_item == cache.begin());
+  EXPECT_TRUE(found != cache.end());
 
-    found = cache.Peek(kItem1Key);
-    EXPECT_TRUE(found != cache.end());
+  found = cache.Peek(kItem1Key);
+  EXPECT_TRUE(found != cache.end());
 
-    EXPECT_EQ(kItem1Key, found->first);
-    EXPECT_EQ(item1.value, found->second.value);
+  EXPECT_EQ(kItem1Key, found->first);
+  EXPECT_EQ(item1.value, found->second.value);
   }
 
   static const int kItem2Key = 7;
@@ -68,40 +68,40 @@ TEST(MRUCacheTest, Basic) {
 
   // Check that item1 is the oldest since item2 was added afterwards.
   {
-    Cache::reverse_iterator oldest = cache.rbegin();
-    ASSERT_TRUE(oldest != cache.rend());
-    EXPECT_EQ(kItem1Key, oldest->first);
-    EXPECT_EQ(item1.value, oldest->second.value);
+  Cache::reverse_iterator oldest = cache.rbegin();
+  ASSERT_TRUE(oldest != cache.rend());
+  EXPECT_EQ(kItem1Key, oldest->first);
+  EXPECT_EQ(item1.value, oldest->second.value);
   }
 
   // Check that item1 is still accessible by key.
   {
-    Cache::iterator test_item = cache.Get(kItem1Key);
-    ASSERT_TRUE(test_item != cache.end());
-    EXPECT_EQ(kItem1Key, test_item->first);
-    EXPECT_EQ(item1.value, test_item->second.value);
+  Cache::iterator test_item = cache.Get(kItem1Key);
+  ASSERT_TRUE(test_item != cache.end());
+  EXPECT_EQ(kItem1Key, test_item->first);
+  EXPECT_EQ(item1.value, test_item->second.value);
   }
 
   // Check that retrieving item1 pushed item2 to oldest.
   {
-    Cache::reverse_iterator oldest = cache.rbegin();
-    ASSERT_TRUE(oldest != cache.rend());
-    EXPECT_EQ(kItem2Key, oldest->first);
-    EXPECT_EQ(item2.value, oldest->second.value);
+  Cache::reverse_iterator oldest = cache.rbegin();
+  ASSERT_TRUE(oldest != cache.rend());
+  EXPECT_EQ(kItem2Key, oldest->first);
+  EXPECT_EQ(item2.value, oldest->second.value);
   }
 
   // Remove the oldest item and check that item1 is now the only member.
   {
-    Cache::reverse_iterator next = cache.Erase(cache.rbegin());
+  Cache::reverse_iterator next = cache.Erase(cache.rbegin());
 
-    EXPECT_EQ(1U, cache.size());
+  EXPECT_EQ(1U, cache.size());
 
-    EXPECT_TRUE(next == cache.rbegin());
-    EXPECT_EQ(kItem1Key, next->first);
-    EXPECT_EQ(item1.value, next->second.value);
+  EXPECT_TRUE(next == cache.rbegin());
+  EXPECT_EQ(kItem1Key, next->first);
+  EXPECT_EQ(item1.value, next->second.value);
 
-    cache.Erase(cache.begin());
-    EXPECT_EQ(0U, cache.size());
+  cache.Erase(cache.begin());
+  EXPECT_EQ(0U, cache.size());
   }
 
   // Check that Clear() works properly.
@@ -129,21 +129,21 @@ TEST(MRUCacheTest, GetVsPeek) {
 
   // Check that item1 starts out as oldest
   {
-    Cache::reverse_iterator iter = cache.rbegin();
-    ASSERT_TRUE(iter != cache.rend());
-    EXPECT_EQ(kItem1Key, iter->first);
-    EXPECT_EQ(item1.value, iter->second.value);
+  Cache::reverse_iterator iter = cache.rbegin();
+  ASSERT_TRUE(iter != cache.rend());
+  EXPECT_EQ(kItem1Key, iter->first);
+  EXPECT_EQ(item1.value, iter->second.value);
   }
 
   // Check that Peek doesn't change ordering
   {
-    Cache::iterator peekiter = cache.Peek(kItem1Key);
-    ASSERT_TRUE(peekiter != cache.end());
+  Cache::iterator peekiter = cache.Peek(kItem1Key);
+  ASSERT_TRUE(peekiter != cache.end());
 
-    Cache::reverse_iterator iter = cache.rbegin();
-    ASSERT_TRUE(iter != cache.rend());
-    EXPECT_EQ(kItem1Key, iter->first);
-    EXPECT_EQ(item1.value, iter->second.value);
+  Cache::reverse_iterator iter = cache.rbegin();
+  ASSERT_TRUE(iter != cache.rend());
+  EXPECT_EQ(kItem1Key, iter->first);
+  EXPECT_EQ(item1.value, iter->second.value);
   }
 }
 
@@ -172,8 +172,8 @@ TEST(MRUCacheTest, KeyReplacement) {
 
   EXPECT_EQ(4U, cache.size());
   for (int i = 0; i < 3; ++i) {
-    Cache::reverse_iterator iter = cache.rbegin();
-    ASSERT_TRUE(iter != cache.rend());
+  Cache::reverse_iterator iter = cache.rbegin();
+  ASSERT_TRUE(iter != cache.rend());
   }
 
   // Make it so only the most important element is there.
@@ -209,9 +209,9 @@ TEST(MRUCacheTest, Owning) {
   // Now try another cache that goes out of scope to make sure its pointers
   // go away.
   {
-    Cache cache2(Cache::NO_AUTO_EVICT);
-    cache2.Put(1, new CachedItem(20));
-    cache2.Put(2, new CachedItem(20));
+  Cache cache2(Cache::NO_AUTO_EVICT);
+  cache2.Put(1, new CachedItem(20));
+  cache2.Put(2, new CachedItem(20));
   }
 
   // There should be no objects leaked.
@@ -219,12 +219,12 @@ TEST(MRUCacheTest, Owning) {
 
   // Check that Clear() also frees things correctly.
   {
-    Cache cache2(Cache::NO_AUTO_EVICT);
-    cache2.Put(1, new CachedItem(20));
-    cache2.Put(2, new CachedItem(20));
-    EXPECT_EQ(initial_count + 2, cached_item_live_count);
-    cache2.Clear();
-    EXPECT_EQ(initial_count, cached_item_live_count);
+  Cache cache2(Cache::NO_AUTO_EVICT);
+  cache2.Put(1, new CachedItem(20));
+  cache2.Put(2, new CachedItem(20));
+  EXPECT_EQ(initial_count + 2, cached_item_live_count);
+  cache2.Clear();
+  EXPECT_EQ(initial_count, cached_item_live_count);
   }
 }
 
@@ -235,17 +235,17 @@ TEST(MRUCacheTest, AutoEvict) {
   int initial_count = cached_item_live_count;
 
   {
-    Cache cache(kMaxSize);
+  Cache cache(kMaxSize);
 
-    static const int kItem1Key = 1, kItem2Key = 2, kItem3Key = 3, kItem4Key = 4;
-    cache.Put(kItem1Key, new CachedItem(20));
-    cache.Put(kItem2Key, new CachedItem(21));
-    cache.Put(kItem3Key, new CachedItem(22));
-    cache.Put(kItem4Key, new CachedItem(23));
+  static const int kItem1Key = 1, kItem2Key = 2, kItem3Key = 3, kItem4Key = 4;
+  cache.Put(kItem1Key, new CachedItem(20));
+  cache.Put(kItem2Key, new CachedItem(21));
+  cache.Put(kItem3Key, new CachedItem(22));
+  cache.Put(kItem4Key, new CachedItem(23));
 
-    // The cache should only have kMaxSize items in it even though we inserted
-    // more.
-    EXPECT_EQ(kMaxSize, cache.size());
+  // The cache should only have kMaxSize items in it even though we inserted
+  // more.
+  EXPECT_EQ(kMaxSize, cache.size());
   }
 
   // There should be no objects leaked.

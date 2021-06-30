@@ -3,9 +3,9 @@
 // found in the LICENSE file.
 
 // WARNING: You should probably be using Thread (thread.h) instead.  Thread is
-//          Chrome's message-loop based Thread abstraction, and if you are a
-//          thread running in the browser, there will likely be assumptions
-//          that your thread will have an associated message loop.
+//      Chrome's message-loop based Thread abstraction, and if you are a
+//      thread running in the browser, there will likely be assumptions
+//      that your thread will have an associated message loop.
 //
 // This is a simple thread interface that backs to a native operating system
 // thread.  You should use this only when you want a thread that does not have
@@ -59,16 +59,16 @@ class BUTIL_EXPORT SimpleThread : public PlatformThread::Delegate {
  public:
   class BUTIL_EXPORT Options {
    public:
-    Options() : stack_size_(0) { }
-    ~Options() { }
+  Options() : stack_size_(0) { }
+  ~Options() { }
 
-    // We use the standard compiler-supplied copy constructor.
+  // We use the standard compiler-supplied copy constructor.
 
-    // A custom stack size, or 0 for the system default.
-    void set_stack_size(size_t size) { stack_size_ = size; }
-    size_t stack_size() const { return stack_size_; }
+  // A custom stack size, or 0 for the system default.
+  void set_stack_size(size_t size) { stack_size_ = size; }
+  size_t stack_size() const { return stack_size_; }
    private:
-    size_t stack_size_;
+  size_t stack_size_;
   };
 
   // Create a SimpleThread.  |options| should be used to manage any specific
@@ -107,7 +107,7 @@ class BUTIL_EXPORT SimpleThread : public PlatformThread::Delegate {
   // Only set priorities with a careful understanding of the consequences.
   // This is meant for very limited use cases.
   void SetThreadPriority(ThreadPriority priority) {
-    PlatformThread::SetThreadPriority(thread_, priority);
+  PlatformThread::SetThreadPriority(thread_, priority);
   }
 
  private:
@@ -115,25 +115,25 @@ class BUTIL_EXPORT SimpleThread : public PlatformThread::Delegate {
   std::string name_;
   const Options options_;
   PlatformThreadHandle thread_;  // PlatformThread handle, invalid after Join!
-  WaitableEvent event_;          // Signaled if Start() was ever called.
-  PlatformThreadId tid_;         // The backing thread's id.
-  bool joined_;                  // True if Join has been called.
+  WaitableEvent event_;      // Signaled if Start() was ever called.
+  PlatformThreadId tid_;     // The backing thread's id.
+  bool joined_;          // True if Join has been called.
 };
 
 class BUTIL_EXPORT DelegateSimpleThread : public SimpleThread {
  public:
   class BUTIL_EXPORT Delegate {
    public:
-    Delegate() { }
-    virtual ~Delegate() { }
-    virtual void Run() = 0;
+  Delegate() { }
+  virtual ~Delegate() { }
+  virtual void Run() = 0;
   };
 
   DelegateSimpleThread(Delegate* delegate,
-                       const std::string& name_prefix);
+             const std::string& name_prefix);
   DelegateSimpleThread(Delegate* delegate,
-                       const std::string& name_prefix,
-                       const Options& options);
+             const std::string& name_prefix,
+             const Options& options);
 
   virtual ~DelegateSimpleThread();
   virtual void Run() OVERRIDE;
@@ -151,7 +151,7 @@ class BUTIL_EXPORT DelegateSimpleThread : public SimpleThread {
 // for everything to finish.  You can reuse a pool, so you can call Start()
 // again after you've called JoinAll().
 class BUTIL_EXPORT DelegateSimpleThreadPool
-    : public DelegateSimpleThread::Delegate {
+  : public DelegateSimpleThread::Delegate {
  public:
   typedef DelegateSimpleThread::Delegate Delegate;
 
@@ -170,7 +170,7 @@ class BUTIL_EXPORT DelegateSimpleThreadPool
   // Delegate* should always be a valid pointer, NULL is reserved internally.
   void AddWork(Delegate* work, int repeat_count);
   void AddWork(Delegate* work) {
-    AddWork(work, 1);
+  AddWork(work, 1);
   }
 
   // We implement the Delegate interface, for running our internal threads.
@@ -181,8 +181,8 @@ class BUTIL_EXPORT DelegateSimpleThreadPool
   int num_threads_;
   std::vector<DelegateSimpleThread*> threads_;
   std::queue<Delegate*> delegates_;
-  butil::Lock lock_;            // Locks delegates_
-  WaitableEvent dry_;    // Not signaled when there is no work to do.
+  butil::Lock lock_;      // Locks delegates_
+  WaitableEvent dry_;  // Not signaled when there is no work to do.
 };
 
 }  // namespace butil

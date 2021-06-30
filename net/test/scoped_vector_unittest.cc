@@ -14,23 +14,23 @@ class LifeCycleObject {
  public:
   class Observer {
    public:
-    virtual void OnLifeCycleConstruct(LifeCycleObject* o) = 0;
-    virtual void OnLifeCycleDestroy(LifeCycleObject* o) = 0;
+  virtual void OnLifeCycleConstruct(LifeCycleObject* o) = 0;
+  virtual void OnLifeCycleDestroy(LifeCycleObject* o) = 0;
 
    protected:
-    virtual ~Observer() {}
+  virtual ~Observer() {}
   };
 
   ~LifeCycleObject() {
-    observer_->OnLifeCycleDestroy(this);
+  observer_->OnLifeCycleDestroy(this);
   }
 
  private:
   friend class LifeCycleWatcher;
 
   explicit LifeCycleObject(Observer* observer)
-      : observer_(observer) {
-    observer_->OnLifeCycleConstruct(this);
+    : observer_(observer) {
+  observer_->OnLifeCycleConstruct(this);
   }
 
   Observer* observer_;
@@ -65,20 +65,20 @@ class LifeCycleWatcher : public LifeCycleObject::Observer {
   // Assert INITIAL -> CONSTRUCTED and no LifeCycleObject associated with this
   // LifeCycleWatcher.
   virtual void OnLifeCycleConstruct(LifeCycleObject* object) OVERRIDE {
-    ASSERT_EQ(LC_INITIAL, life_cycle_state_);
-    ASSERT_EQ(NULL, constructed_life_cycle_object_.get());
-    life_cycle_state_ = LC_CONSTRUCTED;
-    constructed_life_cycle_object_.reset(object);
+  ASSERT_EQ(LC_INITIAL, life_cycle_state_);
+  ASSERT_EQ(NULL, constructed_life_cycle_object_.get());
+  life_cycle_state_ = LC_CONSTRUCTED;
+  constructed_life_cycle_object_.reset(object);
   }
 
   // Assert CONSTRUCTED -> DESTROYED and the |object| being destroyed is the
   // same one we saw constructed.
   virtual void OnLifeCycleDestroy(LifeCycleObject* object) OVERRIDE {
-    ASSERT_EQ(LC_CONSTRUCTED, life_cycle_state_);
-    LifeCycleObject* constructed_life_cycle_object =
-        constructed_life_cycle_object_.release();
-    ASSERT_EQ(constructed_life_cycle_object, object);
-    life_cycle_state_ = LC_DESTROYED;
+  ASSERT_EQ(LC_CONSTRUCTED, life_cycle_state_);
+  LifeCycleObject* constructed_life_cycle_object =
+    constructed_life_cycle_object_.release();
+  ASSERT_EQ(constructed_life_cycle_object, object);
+  life_cycle_state_ = LC_DESTROYED;
   }
 
   LifeCycleState life_cycle_state() const { return life_cycle_state_; }
@@ -86,12 +86,12 @@ class LifeCycleWatcher : public LifeCycleObject::Observer {
   // Factory method for creating a new LifeCycleObject tied to this
   // LifeCycleWatcher.
   LifeCycleObject* NewLifeCycleObject() {
-    return new LifeCycleObject(this);
+  return new LifeCycleObject(this);
   }
 
   // Returns true iff |object| is the same object that this watcher is tracking.
   bool IsWatching(LifeCycleObject* object) const {
-    return object == constructed_life_cycle_object_.get();
+  return object == constructed_life_cycle_object_.get();
   }
 
  private:
@@ -195,10 +195,10 @@ TEST(ScopedVectorTest, Scope) {
   LifeCycleWatcher watcher;
   EXPECT_EQ(LC_INITIAL, watcher.life_cycle_state());
   {
-    butil::ScopedVector<LifeCycleObject> scoped_vector;
-    scoped_vector.push_back(watcher.NewLifeCycleObject());
-    EXPECT_EQ(LC_CONSTRUCTED, watcher.life_cycle_state());
-    EXPECT_TRUE(watcher.IsWatching(scoped_vector.back()));
+  butil::ScopedVector<LifeCycleObject> scoped_vector;
+  scoped_vector.push_back(watcher.NewLifeCycleObject());
+  EXPECT_EQ(LC_CONSTRUCTED, watcher.life_cycle_state());
+  EXPECT_TRUE(watcher.IsWatching(scoped_vector.back()));
   }
   EXPECT_EQ(LC_DESTROYED, watcher.life_cycle_state());
 }
@@ -207,9 +207,9 @@ TEST(ScopedVectorTest, Scope2) {
   LifeCycleWatcher watcher;
   EXPECT_EQ(LC_INITIAL, watcher.life_cycle_state());
   {
-    butil::ScopedVector<LifeCycleObject> scoped_vector{ watcher.NewLifeCycleObject() };
-    EXPECT_EQ(LC_CONSTRUCTED, watcher.life_cycle_state());
-    EXPECT_TRUE(watcher.IsWatching(scoped_vector.back()));
+  butil::ScopedVector<LifeCycleObject> scoped_vector{ watcher.NewLifeCycleObject() };
+  EXPECT_EQ(LC_CONSTRUCTED, watcher.life_cycle_state());
+  EXPECT_TRUE(watcher.IsWatching(scoped_vector.back()));
   }
   EXPECT_EQ(LC_DESTROYED, watcher.life_cycle_state());
 }
@@ -218,17 +218,17 @@ TEST(ScopedVectorTest, MoveConstruct) {
   LifeCycleWatcher watcher;
   EXPECT_EQ(LC_INITIAL, watcher.life_cycle_state());
   {
-    butil::ScopedVector<LifeCycleObject> scoped_vector;
-    scoped_vector.push_back(watcher.NewLifeCycleObject());
-    EXPECT_FALSE(scoped_vector.empty());
-    EXPECT_TRUE(watcher.IsWatching(scoped_vector.back()));
+  butil::ScopedVector<LifeCycleObject> scoped_vector;
+  scoped_vector.push_back(watcher.NewLifeCycleObject());
+  EXPECT_FALSE(scoped_vector.empty());
+  EXPECT_TRUE(watcher.IsWatching(scoped_vector.back()));
 
-    butil::ScopedVector<LifeCycleObject> scoped_vector_copy(scoped_vector.Pass());
-    EXPECT_TRUE(scoped_vector.empty());
-    EXPECT_FALSE(scoped_vector_copy.empty());
-    EXPECT_TRUE(watcher.IsWatching(scoped_vector_copy.back()));
+  butil::ScopedVector<LifeCycleObject> scoped_vector_copy(scoped_vector.Pass());
+  EXPECT_TRUE(scoped_vector.empty());
+  EXPECT_FALSE(scoped_vector_copy.empty());
+  EXPECT_TRUE(watcher.IsWatching(scoped_vector_copy.back()));
 
-    EXPECT_EQ(LC_CONSTRUCTED, watcher.life_cycle_state());
+  EXPECT_EQ(LC_CONSTRUCTED, watcher.life_cycle_state());
   }
   EXPECT_EQ(LC_DESTROYED, watcher.life_cycle_state());
 }
@@ -237,18 +237,18 @@ TEST(ScopedVectorTest, MoveAssign) {
   LifeCycleWatcher watcher;
   EXPECT_EQ(LC_INITIAL, watcher.life_cycle_state());
   {
-    butil::ScopedVector<LifeCycleObject> scoped_vector;
-    scoped_vector.push_back(watcher.NewLifeCycleObject());
-    butil::ScopedVector<LifeCycleObject> scoped_vector_assign;
-    EXPECT_FALSE(scoped_vector.empty());
-    EXPECT_TRUE(watcher.IsWatching(scoped_vector.back()));
+  butil::ScopedVector<LifeCycleObject> scoped_vector;
+  scoped_vector.push_back(watcher.NewLifeCycleObject());
+  butil::ScopedVector<LifeCycleObject> scoped_vector_assign;
+  EXPECT_FALSE(scoped_vector.empty());
+  EXPECT_TRUE(watcher.IsWatching(scoped_vector.back()));
 
-    scoped_vector_assign = scoped_vector.Pass();
-    EXPECT_TRUE(scoped_vector.empty());
-    EXPECT_FALSE(scoped_vector_assign.empty());
-    EXPECT_TRUE(watcher.IsWatching(scoped_vector_assign.back()));
+  scoped_vector_assign = scoped_vector.Pass();
+  EXPECT_TRUE(scoped_vector.empty());
+  EXPECT_FALSE(scoped_vector_assign.empty());
+  EXPECT_TRUE(watcher.IsWatching(scoped_vector_assign.back()));
 
-    EXPECT_EQ(LC_CONSTRUCTED, watcher.life_cycle_state());
+  EXPECT_EQ(LC_CONSTRUCTED, watcher.life_cycle_state());
   }
   EXPECT_EQ(LC_DESTROYED, watcher.life_cycle_state());
 }
@@ -256,11 +256,11 @@ TEST(ScopedVectorTest, MoveAssign) {
 class DeleteCounter {
  public:
   explicit DeleteCounter(int* deletes)
-      : deletes_(deletes) {
+    : deletes_(deletes) {
   }
 
   ~DeleteCounter() {
-    (*deletes_)++;
+  (*deletes_)++;
   }
 
   void VoidMethod0() {}
@@ -294,26 +294,26 @@ TEST(ScopedVectorTest, InsertRange) {
 
   std::vector<LifeCycleObject*> vec;
   for(LifeCycleWatcher* it = watchers; it != watchers + arraysize(watchers);
-      ++it) {
-    EXPECT_EQ(LC_INITIAL, it->life_cycle_state());
-    vec.push_back(it->NewLifeCycleObject());
-    EXPECT_EQ(LC_CONSTRUCTED, it->life_cycle_state());
+    ++it) {
+  EXPECT_EQ(LC_INITIAL, it->life_cycle_state());
+  vec.push_back(it->NewLifeCycleObject());
+  EXPECT_EQ(LC_CONSTRUCTED, it->life_cycle_state());
   }
   // Start scope for ScopedVector.
   {
-    butil::ScopedVector<LifeCycleObject> scoped_vector;
-    scoped_vector.insert(scoped_vector.end(), vec.begin() + 1, vec.begin() + 3);
-    for(LifeCycleWatcher* it = watchers; it != watchers + arraysize(watchers);
-        ++it)
-      EXPECT_EQ(LC_CONSTRUCTED, it->life_cycle_state());
+  butil::ScopedVector<LifeCycleObject> scoped_vector;
+  scoped_vector.insert(scoped_vector.end(), vec.begin() + 1, vec.begin() + 3);
+  for(LifeCycleWatcher* it = watchers; it != watchers + arraysize(watchers);
+    ++it)
+    EXPECT_EQ(LC_CONSTRUCTED, it->life_cycle_state());
   }
   for(LifeCycleWatcher* it = watchers; it != watchers + 1; ++it)
-    EXPECT_EQ(LC_CONSTRUCTED, it->life_cycle_state());
+  EXPECT_EQ(LC_CONSTRUCTED, it->life_cycle_state());
   for(LifeCycleWatcher* it = watchers + 1; it != watchers + 3; ++it)
-    EXPECT_EQ(LC_DESTROYED, it->life_cycle_state());
+  EXPECT_EQ(LC_DESTROYED, it->life_cycle_state());
   for(LifeCycleWatcher* it = watchers + 3; it != watchers + arraysize(watchers);
-      ++it)
-    EXPECT_EQ(LC_CONSTRUCTED, it->life_cycle_state());
+    ++it)
+  EXPECT_EQ(LC_CONSTRUCTED, it->life_cycle_state());
 }
 
 }  // namespace

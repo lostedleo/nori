@@ -26,7 +26,7 @@ class MultipleInheritanceNodeBase {
 };
 
 class MultipleInheritanceNode : public MultipleInheritanceNodeBase,
-                                public LinkNode<MultipleInheritanceNode> {
+                public LinkNode<MultipleInheritanceNode> {
  public:
   MultipleInheritanceNode() {}
 };
@@ -38,26 +38,26 @@ void ExpectListContentsForDirection(const LinkedList<Node>& list,
   int num_nodes, const int* node_ids, bool forward) {
   int i = 0;
   for (const LinkNode<Node>* node = (forward ? list.head() : list.tail());
-       node != list.end();
-       node = (forward ? node->next() : node->previous())) {
-    ASSERT_LT(i, num_nodes);
-    int index_of_id = forward ? i : num_nodes - i - 1;
-    EXPECT_EQ(node_ids[index_of_id], node->value()->id());
-    ++i;
+     node != list.end();
+     node = (forward ? node->next() : node->previous())) {
+  ASSERT_LT(i, num_nodes);
+  int index_of_id = forward ? i : num_nodes - i - 1;
+  EXPECT_EQ(node_ids[index_of_id], node->value()->id());
+  ++i;
   }
   EXPECT_EQ(num_nodes, i);
 }
 
 void ExpectListContents(const LinkedList<Node>& list,
-                        int num_nodes,
-                        const int* node_ids) {
+            int num_nodes,
+            const int* node_ids) {
   {
-    SCOPED_TRACE("Iterating forward (from head to tail)");
-    ExpectListContentsForDirection(list, num_nodes, node_ids, true);
+  SCOPED_TRACE("Iterating forward (from head to tail)");
+  ExpectListContentsForDirection(list, num_nodes, node_ids, true);
   }
   {
-    SCOPED_TRACE("Iterating backward (from tail to head)");
-    ExpectListContentsForDirection(list, num_nodes, node_ids, false);
+  SCOPED_TRACE("Iterating backward (from tail to head)");
+  ExpectListContentsForDirection(list, num_nodes, node_ids, false);
   }
 }
 
@@ -78,8 +78,8 @@ TEST(LinkedList, Append) {
   EXPECT_EQ(&n1, list.head());
   EXPECT_EQ(&n1, list.tail());
   {
-    const int expected[] = {1};
-    ExpectListContents(list, arraysize(expected), expected);
+  const int expected[] = {1};
+  ExpectListContents(list, arraysize(expected), expected);
   }
 
   Node n2(2);
@@ -88,8 +88,8 @@ TEST(LinkedList, Append) {
   EXPECT_EQ(&n1, list.head());
   EXPECT_EQ(&n2, list.tail());
   {
-    const int expected[] = {1, 2};
-    ExpectListContents(list, arraysize(expected), expected);
+  const int expected[] = {1, 2};
+  ExpectListContents(list, arraysize(expected), expected);
   }
 
   Node n3(3);
@@ -98,8 +98,8 @@ TEST(LinkedList, Append) {
   EXPECT_EQ(&n1, list.head());
   EXPECT_EQ(&n3, list.tail());
   {
-    const int expected[] = {1, 2, 3};
-    ExpectListContents(list, arraysize(expected), expected);
+  const int expected[] = {1, 2, 3};
+  ExpectListContents(list, arraysize(expected), expected);
   }
 }
 
@@ -121,8 +121,8 @@ TEST(LinkedList, RemoveFromList) {
   EXPECT_EQ(&n1, list.head());
   EXPECT_EQ(&n5, list.tail());
   {
-    const int expected[] = {1, 2, 3, 4, 5};
-    ExpectListContents(list, arraysize(expected), expected);
+  const int expected[] = {1, 2, 3, 4, 5};
+  ExpectListContents(list, arraysize(expected), expected);
   }
 
   // Remove from the middle.
@@ -131,8 +131,8 @@ TEST(LinkedList, RemoveFromList) {
   EXPECT_EQ(&n1, list.head());
   EXPECT_EQ(&n5, list.tail());
   {
-    const int expected[] = {1, 2, 4, 5};
-    ExpectListContents(list, arraysize(expected), expected);
+  const int expected[] = {1, 2, 4, 5};
+  ExpectListContents(list, arraysize(expected), expected);
   }
 
   // Remove from the tail.
@@ -141,8 +141,8 @@ TEST(LinkedList, RemoveFromList) {
   EXPECT_EQ(&n1, list.head());
   EXPECT_EQ(&n4, list.tail());
   {
-    const int expected[] = {1, 2, 4};
-    ExpectListContents(list, arraysize(expected), expected);
+  const int expected[] = {1, 2, 4};
+  ExpectListContents(list, arraysize(expected), expected);
   }
 
   // Remove from the head.
@@ -151,8 +151,8 @@ TEST(LinkedList, RemoveFromList) {
   EXPECT_EQ(&n2, list.head());
   EXPECT_EQ(&n4, list.tail());
   {
-    const int expected[] = {2, 4};
-    ExpectListContents(list, arraysize(expected), expected);
+  const int expected[] = {2, 4};
+  ExpectListContents(list, arraysize(expected), expected);
   }
 
   // Empty the list.
@@ -173,8 +173,8 @@ TEST(LinkedList, RemoveFromList) {
   EXPECT_EQ(&n1, list.head());
   EXPECT_EQ(&n5, list.tail());
   {
-    const int expected[] = {1, 2, 3, 4, 5};
-    ExpectListContents(list, arraysize(expected), expected);
+  const int expected[] = {1, 2, 3, 4, 5};
+  ExpectListContents(list, arraysize(expected), expected);
   }
 }
 
@@ -192,8 +192,8 @@ TEST(LinkedList, InsertBefore) {
   EXPECT_EQ(&n1, list.head());
   EXPECT_EQ(&n2, list.tail());
   {
-    const int expected[] = {1, 2};
-    ExpectListContents(list, arraysize(expected), expected);
+  const int expected[] = {1, 2};
+  ExpectListContents(list, arraysize(expected), expected);
   }
 
   n3.InsertBefore(&n2);
@@ -201,8 +201,8 @@ TEST(LinkedList, InsertBefore) {
   EXPECT_EQ(&n1, list.head());
   EXPECT_EQ(&n2, list.tail());
   {
-    const int expected[] = {1, 3, 2};
-    ExpectListContents(list, arraysize(expected), expected);
+  const int expected[] = {1, 3, 2};
+  ExpectListContents(list, arraysize(expected), expected);
   }
 
   n4.InsertBefore(&n1);
@@ -210,8 +210,8 @@ TEST(LinkedList, InsertBefore) {
   EXPECT_EQ(&n4, list.head());
   EXPECT_EQ(&n2, list.tail());
   {
-    const int expected[] = {4, 1, 3, 2};
-    ExpectListContents(list, arraysize(expected), expected);
+  const int expected[] = {4, 1, 3, 2};
+  ExpectListContents(list, arraysize(expected), expected);
   }
 }
 
@@ -229,8 +229,8 @@ TEST(LinkedList, InsertAfter) {
   EXPECT_EQ(&n1, list.head());
   EXPECT_EQ(&n2, list.tail());
   {
-    const int expected[] = {1, 2};
-    ExpectListContents(list, arraysize(expected), expected);
+  const int expected[] = {1, 2};
+  ExpectListContents(list, arraysize(expected), expected);
   }
 
   n3.InsertAfter(&n2);
@@ -238,8 +238,8 @@ TEST(LinkedList, InsertAfter) {
   EXPECT_EQ(&n1, list.head());
   EXPECT_EQ(&n3, list.tail());
   {
-    const int expected[] = {1, 2, 3};
-    ExpectListContents(list, arraysize(expected), expected);
+  const int expected[] = {1, 2, 3};
+  ExpectListContents(list, arraysize(expected), expected);
   }
 
   n4.InsertAfter(&n1);
@@ -247,8 +247,8 @@ TEST(LinkedList, InsertAfter) {
   EXPECT_EQ(&n1, list.head());
   EXPECT_EQ(&n3, list.tail());
   {
-    const int expected[] = {1, 4, 2, 3};
-    ExpectListContents(list, arraysize(expected), expected);
+  const int expected[] = {1, 4, 2, 3};
+  ExpectListContents(list, arraysize(expected), expected);
   }
 }
 

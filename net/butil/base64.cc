@@ -27,7 +27,7 @@ bool Base64Decode(const StringPiece& input, std::string* output) {
   size_t input_size = input.size();
   size_t output_size = modp_b64_decode(&(temp[0]), input.data(), input_size);
   if (output_size == MODP_B64_ERROR)
-    return false;
+  return false;
 
   temp.resize(output_size);
   output->swap(temp);

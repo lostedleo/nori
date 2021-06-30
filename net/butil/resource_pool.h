@@ -22,7 +22,7 @@
 #ifndef BUTIL_RESOURCE_POOL_H
 #define BUTIL_RESOURCE_POOL_H
 
-#include <cstddef>                       // size_t
+#include <cstddef>             // size_t
 
 // Efficiently allocate fixed-size (small) objects addressable by identifiers
 // in multi-threaded environment.
@@ -52,28 +52,28 @@ namespace butil {
 
 // Specialize following classes to override default parameters for type T.
 //   namespace butil {
-//     template <> struct ResourcePoolBlockMaxSize<Foo> {
-//       static const size_t value = 1024;
-//     };
+//   template <> struct ResourcePoolBlockMaxSize<Foo> {
+//     static const size_t value = 1024;
+//   };
 //   }
 
 // Memory is allocated in blocks, memory size of a block will not exceed:
 //   min(ResourcePoolBlockMaxSize<T>::value,
-//       ResourcePoolBlockMaxItem<T>::value * sizeof(T))
+//     ResourcePoolBlockMaxItem<T>::value * sizeof(T))
 template <typename T> struct ResourcePoolBlockMaxSize {
-    static const size_t value = 64 * 1024; // bytes
+  static const size_t value = 64 * 1024; // bytes
 };
 template <typename T> struct ResourcePoolBlockMaxItem {
-    static const size_t value = 256;
+  static const size_t value = 256;
 };
 
 // Free objects of each thread are grouped into a chunk before they are merged
 // to the global list. Memory size of objects in one free chunk will not exceed:
 //   min(ResourcePoolFreeChunkMaxItem<T>::value(),
-//       ResourcePoolBlockMaxSize<T>::value,
-//       ResourcePoolBlockMaxItem<T>::value * sizeof(T))
+//     ResourcePoolBlockMaxSize<T>::value,
+//     ResourcePoolBlockMaxItem<T>::value * sizeof(T))
 template <typename T> struct ResourcePoolFreeChunkMaxItem {
-    static size_t value() { return 256; }
+  static size_t value() { return 256; }
 };
 
 // ResourcePool calls this function on newly constructed objects. If this
@@ -81,7 +81,7 @@ template <typename T> struct ResourcePoolFreeChunkMaxItem {
 // get_resource() shall return NULL. This is useful when the constructor
 // failed internally(namely ENOMEM).
 template <typename T> struct ResourcePoolValidator {
-    static bool validate(const T*) { return true; }
+  static bool validate(const T*) { return true; }
 };
 
 }  // namespace butil
@@ -94,19 +94,19 @@ namespace butil {
 // The object should be cleared before usage.
 // NOTE: T must be default-constructible.
 template <typename T> inline T* get_resource(ResourceId<T>* id) {
-    return ResourcePool<T>::singleton()->get_resource(id);
+  return ResourcePool<T>::singleton()->get_resource(id);
 }
 
 // Get an object whose constructor is T(arg1)
 template <typename T, typename A1>
 inline T* get_resource(ResourceId<T>* id, const A1& arg1) {
-    return ResourcePool<T>::singleton()->get_resource(id, arg1);
+  return ResourcePool<T>::singleton()->get_resource(id, arg1);
 }
 
 // Get an object whose constructor is T(arg1, arg2)
 template <typename T, typename A1, typename A2>
 inline T* get_resource(ResourceId<T>* id, const A1& arg1, const A2& arg2) {
-    return ResourcePool<T>::singleton()->get_resource(id, arg1, arg2);
+  return ResourcePool<T>::singleton()->get_resource(id, arg1, arg2);
 }
 
 // Return the object associated with identifier |id| back. The object is NOT
@@ -115,7 +115,7 @@ inline T* get_resource(ResourceId<T>* id, const A1& arg1, const A2& arg2) {
 // not-yet-allocated or already-returned id otherwise behavior is undefined.
 // Returns 0 when successful, -1 otherwise.
 template <typename T> inline int return_resource(ResourceId<T> id) {
-    return ResourcePool<T>::singleton()->return_resource(id);
+  return ResourcePool<T>::singleton()->return_resource(id);
 }
 
 // Get the object associated with the identifier |id|.
@@ -123,24 +123,24 @@ template <typename T> inline int return_resource(ResourceId<T> id) {
 // ResourcePool<T>::get_resource() of a variant before.
 // Addressing a free(returned to pool) identifier does not return NULL.
 // NOTE: Calling this function before any other get_resource<T>/
-//       return_resource<T>/address<T>, even if the identifier is valid,
-//       may race with another thread calling clear_resources<T>.
+//     return_resource<T>/address<T>, even if the identifier is valid,
+//     may race with another thread calling clear_resources<T>.
 template <typename T> inline T* address_resource(ResourceId<T> id) {
-    return ResourcePool<T>::address_resource(id);
+  return ResourcePool<T>::address_resource(id);
 }
 
 // Reclaim all allocated resources typed T if caller is the last thread called
 // this function, otherwise do nothing. You rarely need to call this function
 // manually because it's called automatically when each thread quits.
 template <typename T> inline void clear_resources() {
-    ResourcePool<T>::singleton()->clear_resources();
+  ResourcePool<T>::singleton()->clear_resources();
 }
 
 // Get description of resources typed T.
 // This function is possibly slow because it iterates internal structures.
 // Don't use it frequently like a "getter" function.
 template <typename T> ResourcePoolInfo describe_resources() {
-    return ResourcePool<T>::singleton()->describe_resources();
+  return ResourcePool<T>::singleton()->describe_resources();
 }
 
 }  // namespace butil

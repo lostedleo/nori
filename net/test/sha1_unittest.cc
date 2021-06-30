@@ -14,30 +14,30 @@ TEST(SHA1Test, Test1) {
   std::string input = "abc";
 
   int expected[] = { 0xa9, 0x99, 0x3e, 0x36,
-                     0x47, 0x06, 0x81, 0x6a,
-                     0xba, 0x3e, 0x25, 0x71,
-                     0x78, 0x50, 0xc2, 0x6c,
-                     0x9c, 0xd0, 0xd8, 0x9d };
+           0x47, 0x06, 0x81, 0x6a,
+           0xba, 0x3e, 0x25, 0x71,
+           0x78, 0x50, 0xc2, 0x6c,
+           0x9c, 0xd0, 0xd8, 0x9d };
 
   std::string output = butil::SHA1HashString(input);
   for (size_t i = 0; i < butil::kSHA1Length; i++)
-    EXPECT_EQ(expected[i], output[i] & 0xFF);
+  EXPECT_EQ(expected[i], output[i] & 0xFF);
 }
 
 TEST(SHA1Test, Test2) {
   // Example A.2 from FIPS 180-2: multi-block message.
   std::string input =
-      "abcdbcdecdefdefgefghfghighijhijkijkljklmklmnlmnomnopnopq";
+    "abcdbcdecdefdefgefghfghighijhijkijkljklmklmnlmnomnopnopq";
 
   int expected[] = { 0x84, 0x98, 0x3e, 0x44,
-                     0x1c, 0x3b, 0xd2, 0x6e,
-                     0xba, 0xae, 0x4a, 0xa1,
-                     0xf9, 0x51, 0x29, 0xe5,
-                     0xe5, 0x46, 0x70, 0xf1 };
+           0x1c, 0x3b, 0xd2, 0x6e,
+           0xba, 0xae, 0x4a, 0xa1,
+           0xf9, 0x51, 0x29, 0xe5,
+           0xe5, 0x46, 0x70, 0xf1 };
 
   std::string output = butil::SHA1HashString(input);
   for (size_t i = 0; i < butil::kSHA1Length; i++)
-    EXPECT_EQ(expected[i], output[i] & 0xFF);
+  EXPECT_EQ(expected[i], output[i] & 0xFF);
 }
 
 TEST(SHA1Test, Test3) {
@@ -45,14 +45,14 @@ TEST(SHA1Test, Test3) {
   std::string input(1000000, 'a');
 
   int expected[] = { 0x34, 0xaa, 0x97, 0x3c,
-                     0xd4, 0xc4, 0xda, 0xa4,
-                     0xf6, 0x1e, 0xeb, 0x2b,
-                     0xdb, 0xad, 0x27, 0x31,
-                     0x65, 0x34, 0x01, 0x6f };
+           0xd4, 0xc4, 0xda, 0xa4,
+           0xf6, 0x1e, 0xeb, 0x2b,
+           0xdb, 0xad, 0x27, 0x31,
+           0x65, 0x34, 0x01, 0x6f };
 
   std::string output = butil::SHA1HashString(input);
   for (size_t i = 0; i < butil::kSHA1Length; i++)
-    EXPECT_EQ(expected[i], output[i] & 0xFF);
+  EXPECT_EQ(expected[i], output[i] & 0xFF);
 }
 
 TEST(SHA1Test, Test1Bytes) {
@@ -61,33 +61,33 @@ TEST(SHA1Test, Test1Bytes) {
   unsigned char output[butil::kSHA1Length];
 
   unsigned char expected[] = { 0xa9, 0x99, 0x3e, 0x36,
-                               0x47, 0x06, 0x81, 0x6a,
-                               0xba, 0x3e, 0x25, 0x71,
-                               0x78, 0x50, 0xc2, 0x6c,
-                               0x9c, 0xd0, 0xd8, 0x9d };
+                 0x47, 0x06, 0x81, 0x6a,
+                 0xba, 0x3e, 0x25, 0x71,
+                 0x78, 0x50, 0xc2, 0x6c,
+                 0x9c, 0xd0, 0xd8, 0x9d };
 
   butil::SHA1HashBytes(reinterpret_cast<const unsigned char*>(input.c_str()),
-                      input.length(), output);
+            input.length(), output);
   for (size_t i = 0; i < butil::kSHA1Length; i++)
-    EXPECT_EQ(expected[i], output[i]);
+  EXPECT_EQ(expected[i], output[i]);
 }
 
 TEST(SHA1Test, Test2Bytes) {
   // Example A.2 from FIPS 180-2: multi-block message.
   std::string input =
-      "abcdbcdecdefdefgefghfghighijhijkijkljklmklmnlmnomnopnopq";
+    "abcdbcdecdefdefgefghfghighijhijkijkljklmklmnlmnomnopnopq";
   unsigned char output[butil::kSHA1Length];
 
   unsigned char expected[] = { 0x84, 0x98, 0x3e, 0x44,
-                               0x1c, 0x3b, 0xd2, 0x6e,
-                               0xba, 0xae, 0x4a, 0xa1,
-                               0xf9, 0x51, 0x29, 0xe5,
-                               0xe5, 0x46, 0x70, 0xf1 };
+                 0x1c, 0x3b, 0xd2, 0x6e,
+                 0xba, 0xae, 0x4a, 0xa1,
+                 0xf9, 0x51, 0x29, 0xe5,
+                 0xe5, 0x46, 0x70, 0xf1 };
 
   butil::SHA1HashBytes(reinterpret_cast<const unsigned char*>(input.c_str()),
-                      input.length(), output);
+            input.length(), output);
   for (size_t i = 0; i < butil::kSHA1Length; i++)
-    EXPECT_EQ(expected[i], output[i]);
+  EXPECT_EQ(expected[i], output[i]);
 }
 
 TEST(SHA1Test, Test3Bytes) {
@@ -96,13 +96,13 @@ TEST(SHA1Test, Test3Bytes) {
   unsigned char output[butil::kSHA1Length];
 
   unsigned char expected[] = { 0x34, 0xaa, 0x97, 0x3c,
-                               0xd4, 0xc4, 0xda, 0xa4,
-                               0xf6, 0x1e, 0xeb, 0x2b,
-                               0xdb, 0xad, 0x27, 0x31,
-                               0x65, 0x34, 0x01, 0x6f };
+                 0xd4, 0xc4, 0xda, 0xa4,
+                 0xf6, 0x1e, 0xeb, 0x2b,
+                 0xdb, 0xad, 0x27, 0x31,
+                 0x65, 0x34, 0x01, 0x6f };
 
   butil::SHA1HashBytes(reinterpret_cast<const unsigned char*>(input.c_str()),
-                      input.length(), output);
+            input.length(), output);
   for (size_t i = 0; i < butil::kSHA1Length; i++)
-    EXPECT_EQ(expected[i], output[i]);
+  EXPECT_EQ(expected[i], output[i]);
 }

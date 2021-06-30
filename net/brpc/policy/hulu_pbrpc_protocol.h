@@ -39,12 +39,12 @@ bool VerifyHuluRequest(const InputMessageBase* msg);
 
 // Pack `request' to `method' into `buf'.
 void PackHuluRequest(butil::IOBuf* buf,
-                     SocketMessage**,
-                     uint64_t correlation_id,
-                     const google::protobuf::MethodDescriptor* method,
-                     Controller* controller,
-                     const butil::IOBuf& request,
-                     const Authenticator* auth);
+           SocketMessage**,
+           uint64_t correlation_id,
+           const google::protobuf::MethodDescriptor* method,
+           Controller* controller,
+           const butil::IOBuf& request,
+           const Authenticator* auth);
 
 }  // namespace policy
 } // namespace brpc

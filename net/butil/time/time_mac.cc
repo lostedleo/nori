@@ -32,21 +32,21 @@ uint64_t ComputeCurrentTicks() {
   int kr = sysctl(mib, arraysize(mib), &boottime, &size, NULL, 0);
   DCHECK_EQ(KERN_SUCCESS, kr);
   butil::TimeDelta time_difference = butil::Time::Now() -
-      (butil::Time::FromTimeT(boottime.tv_sec) +
-       butil::TimeDelta::FromMicroseconds(boottime.tv_usec));
+    (butil::Time::FromTimeT(boottime.tv_sec) +
+     butil::TimeDelta::FromMicroseconds(boottime.tv_usec));
   return time_difference.InMicroseconds();
 #else
   uint64_t absolute_micro;
 
   static mach_timebase_info_data_t timebase_info;
   if (timebase_info.denom == 0) {
-    // Zero-initialization of statics guarantees that denom will be 0 before
-    // calling mach_timebase_info.  mach_timebase_info will never set denom to
-    // 0 as that would be invalid, so the zero-check can be used to determine
-    // whether mach_timebase_info has already been called.  This is
-    // recommended by Apple's QA1398.
-    kern_return_t kr = mach_timebase_info(&timebase_info);
-    DCHECK(kr == KERN_SUCCESS) << "Fail to call mach_timebase_info";
+  // Zero-initialization of statics guarantees that denom will be 0 before
+  // calling mach_timebase_info.  mach_timebase_info will never set denom to
+  // 0 as that would be invalid, so the zero-check can be used to determine
+  // whether mach_timebase_info has already been called.  This is
+  // recommended by Apple's QA1398.
+  kern_return_t kr = mach_timebase_info(&timebase_info);
+  DCHECK(kr == KERN_SUCCESS) << "Fail to call mach_timebase_info";
   }
 
   // mach_absolute_time is it when it comes to ticks on the Mac.  Other calls
@@ -56,8 +56,8 @@ uint64_t ComputeCurrentTicks() {
   // timebase_info converts absolute time tick units into nanoseconds.  Convert
   // to microseconds up front to stave off overflows.
   absolute_micro =
-      mach_absolute_time() / butil::Time::kNanosecondsPerMicrosecond *
-      timebase_info.numer / timebase_info.denom;
+    mach_absolute_time() / butil::Time::kNanosecondsPerMicrosecond *
+    timebase_info.numer / timebase_info.denom;
 
   // Don't bother with the rollover handling that the Windows version does.
   // With numer and denom = 1 (the expected case), the 64-bit absolute time
@@ -76,20 +76,20 @@ uint64_t ComputeThreadTicks() {
   thread_basic_info_data_t thread_info_data;
 
   if (thread.get() == MACH_PORT_NULL) {
-    DLOG(ERROR) << "Failed to get mach_thread_self()";
-    return 0;
+  DLOG(ERROR) << "Failed to get mach_thread_self()";
+  return 0;
   }
 
   kern_return_t kr = thread_info(
-      thread.get(),
-      THREAD_BASIC_INFO,
-      reinterpret_cast<thread_info_t>(&thread_info_data),
-      &thread_info_count);
+    thread.get(),
+    THREAD_BASIC_INFO,
+    reinterpret_cast<thread_info_t>(&thread_info_data),
+    &thread_info_count);
   DCHECK(kr == KERN_SUCCESS) << "Fail to call thread_info";
 
   return (thread_info_data.user_time.seconds *
-              butil::Time::kMicrosecondsPerSecond) +
-         thread_info_data.user_time.microseconds;
+        butil::Time::kMicrosecondsPerSecond) +
+     thread_info_data.user_time.microseconds;
 #endif  // defined(OS_IOS)
 }
 
@@ -117,7 +117,7 @@ static const int64_t kWindowsEpochDeltaSeconds = GG_INT64_C(11644473600);
 
 // static
 const int64_t Time::kWindowsEpochDeltaMicroseconds =
-    kWindowsEpochDeltaSeconds * Time::kMicrosecondsPerSecond;
+  kWindowsEpochDeltaSeconds * Time::kMicrosecondsPerSecond;
 
 // Some functions in time.cc use time_t directly, so we provide an offset
 // to convert from time_t (Unix epoch) and internal (Windows epoch).
@@ -132,25 +132,25 @@ Time Time::Now() {
 // static
 Time Time::FromCFAbsoluteTime(CFAbsoluteTime t) {
   COMPILE_ASSERT(std::numeric_limits<CFAbsoluteTime>::has_infinity,
-                 numeric_limits_infinity_is_undefined_when_not_has_infinity);
+         numeric_limits_infinity_is_undefined_when_not_has_infinity);
   if (t == 0)
-    return Time();  // Consider 0 as a null Time.
+  return Time();  // Consider 0 as a null Time.
   if (t == std::numeric_limits<CFAbsoluteTime>::infinity())
-    return Max();
+  return Max();
   return Time(static_cast<int64_t>(
-      (t + kCFAbsoluteTimeIntervalSince1970) * kMicrosecondsPerSecond) +
-      kWindowsEpochDeltaMicroseconds);
+    (t + kCFAbsoluteTimeIntervalSince1970) * kMicrosecondsPerSecond) +
+    kWindowsEpochDeltaMicroseconds);
 }
 
 CFAbsoluteTime Time::ToCFAbsoluteTime() const {
   COMPILE_ASSERT(std::numeric_limits<CFAbsoluteTime>::has_infinity,
-                 numeric_limits_infinity_is_undefined_when_not_has_infinity);
+         numeric_limits_infinity_is_undefined_when_not_has_infinity);
   if (is_null())
-    return 0;  // Consider 0 as a null Time.
+  return 0;  // Consider 0 as a null Time.
   if (is_max())
-    return std::numeric_limits<CFAbsoluteTime>::infinity();
+  return std::numeric_limits<CFAbsoluteTime>::infinity();
   return (static_cast<CFAbsoluteTime>(us_ - kWindowsEpochDeltaMicroseconds) /
-      kMicrosecondsPerSecond) - kCFAbsoluteTimeIntervalSince1970;
+    kMicrosecondsPerSecond) - kCFAbsoluteTimeIntervalSince1970;
 }
 
 // static
@@ -163,7 +163,7 @@ Time Time::NowFromSystemTime() {
 Time Time::FromExploded(bool is_local, const Exploded& exploded) {
   CFGregorianDate date;
   date.second = exploded.second +
-      exploded.millisecond / static_cast<double>(kMillisecondsPerSecond);
+    exploded.millisecond / static_cast<double>(kMillisecondsPerSecond);
   date.minute = exploded.minute;
   date.hour = exploded.hour;
   date.day = exploded.day_of_month;
@@ -171,11 +171,11 @@ Time Time::FromExploded(bool is_local, const Exploded& exploded) {
   date.year = exploded.year;
 
   butil::ScopedCFTypeRef<CFTimeZoneRef> time_zone(
-      is_local ? CFTimeZoneCopySystem() : NULL);
+    is_local ? CFTimeZoneCopySystem() : NULL);
   CFAbsoluteTime seconds = CFGregorianDateGetAbsoluteTime(date, time_zone) +
-      kCFAbsoluteTimeIntervalSince1970;
+    kCFAbsoluteTimeIntervalSince1970;
   return Time(static_cast<int64_t>(seconds * kMicrosecondsPerSecond) +
-      kWindowsEpochDeltaMicroseconds);
+    kWindowsEpochDeltaMicroseconds);
 }
 
 void Time::Explode(bool is_local, Exploded* exploded) const {
@@ -183,13 +183,13 @@ void Time::Explode(bool is_local, Exploded* exploded) const {
   // (rounded towards -infinity) into a |CFAbsoluteTime| (which is a |double|).
   int64_t microsecond = us_ % kMicrosecondsPerSecond;
   if (microsecond < 0)
-    microsecond += kMicrosecondsPerSecond;
+  microsecond += kMicrosecondsPerSecond;
   CFAbsoluteTime seconds = ((us_ - microsecond) / kMicrosecondsPerSecond) -
-                           kWindowsEpochDeltaSeconds -
-                           kCFAbsoluteTimeIntervalSince1970;
+               kWindowsEpochDeltaSeconds -
+               kCFAbsoluteTimeIntervalSince1970;
 
   butil::ScopedCFTypeRef<CFTimeZoneRef> time_zone(
-      is_local ? CFTimeZoneCopySystem() : NULL);
+    is_local ? CFTimeZoneCopySystem() : NULL);
   CFGregorianDate date = CFAbsoluteTimeGetGregorianDate(seconds, time_zone);
   // 1 = Monday, ..., 7 = Sunday.
   int cf_day_of_week = CFAbsoluteTimeGetDayOfWeek(seconds, time_zone);
@@ -205,9 +205,9 @@ void Time::Explode(bool is_local, Exploded* exploded) const {
   // Calculate milliseconds ourselves, since we rounded the |seconds|, making
   // sure to round towards -infinity.
   exploded->millisecond =
-      (microsecond >= 0) ? microsecond / kMicrosecondsPerMillisecond :
-                           (microsecond - kMicrosecondsPerMillisecond + 1) /
-                               kMicrosecondsPerMillisecond;
+    (microsecond >= 0) ? microsecond / kMicrosecondsPerMillisecond :
+               (microsecond - kMicrosecondsPerMillisecond + 1) /
+                 kMicrosecondsPerMillisecond;
 }
 
 // TimeTicks ------------------------------------------------------------------

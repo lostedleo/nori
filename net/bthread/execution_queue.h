@@ -40,91 +40,91 @@ class TaskIteratorBase {
 DISALLOW_COPY_AND_ASSIGN(TaskIteratorBase);
 friend class ExecutionQueueBase;
 public:
-    // Returns true when the ExecutionQueue is stopped and there will never be
-    // more tasks and you can safely release all the related resources ever 
-    // after.
-    bool is_queue_stopped() const { return _is_stopped; }
-    operator bool() const;
+  // Returns true when the ExecutionQueue is stopped and there will never be
+  // more tasks and you can safely release all the related resources ever 
+  // after.
+  bool is_queue_stopped() const { return _is_stopped; }
+  operator bool() const;
 protected:
-    TaskIteratorBase(TaskNode* head, ExecutionQueueBase* queue,
-                     bool is_stopped, bool high_priority)
-        : _cur_node(head)
-        , _head(head)
-        , _q(queue)
-        , _is_stopped(is_stopped)
-        , _high_priority(high_priority)
-        , _should_break(false)
-        , _num_iterated(0)
-    { operator++(); }
-    ~TaskIteratorBase();
-    void operator++();
-    TaskNode* cur_node() const { return _cur_node; }
+  TaskIteratorBase(TaskNode* head, ExecutionQueueBase* queue,
+           bool is_stopped, bool high_priority)
+    : _cur_node(head)
+    , _head(head)
+    , _q(queue)
+    , _is_stopped(is_stopped)
+    , _high_priority(high_priority)
+    , _should_break(false)
+    , _num_iterated(0)
+  { operator++(); }
+  ~TaskIteratorBase();
+  void operator++();
+  TaskNode* cur_node() const { return _cur_node; }
 private:
-    int num_iterated() const { return _num_iterated; }
-    bool should_break_for_high_priority_tasks();
+  int num_iterated() const { return _num_iterated; }
+  bool should_break_for_high_priority_tasks();
 
-    TaskNode*               _cur_node;
-    TaskNode*               _head;
-    ExecutionQueueBase*     _q;
-    bool                    _is_stopped;
-    bool                    _high_priority;
-    bool                    _should_break;
-    int                     _num_iterated;
+  TaskNode*         _cur_node;
+  TaskNode*         _head;
+  ExecutionQueueBase*   _q;
+  bool          _is_stopped;
+  bool          _high_priority;
+  bool          _should_break;
+  int           _num_iterated;
 };
 
 // Iterate over the given tasks
 // 
 // Examples:
 // int demo_execute(void* meta, TaskIterator<T>& iter) {
-//     if (iter.is_queue_stopped()) {
-//         // destroy meta and related resources
-//         return 0;
-//     }
-//     for (; iter; ++iter) {
-//         // do_something(*iter)
-//         // or do_something(iter->a_member_of_T)
-//     }
+//   if (iter.is_queue_stopped()) {
+//     // destroy meta and related resources
 //     return 0;
+//   }
+//   for (; iter; ++iter) {
+//     // do_something(*iter)
+//     // or do_something(iter->a_member_of_T)
+//   }
+//   return 0;
 // }
 template <typename T>
 class TaskIterator : public TaskIteratorBase {
-    TaskIterator();
+  TaskIterator();
 public:
-    typedef T*          pointer;
-    typedef T&          reference;
+  typedef T*      pointer;
+  typedef T&      reference;
 
-    reference operator*() const;
-    pointer operator->() const { return &(operator*()); }
-    TaskIterator& operator++();
-    void operator++(int);
+  reference operator*() const;
+  pointer operator->() const { return &(operator*()); }
+  TaskIterator& operator++();
+  void operator++(int);
 };
 
 struct TaskHandle {
-    TaskHandle();
-    TaskNode* node;
-    int64_t version;
+  TaskHandle();
+  TaskNode* node;
+  int64_t version;
 };
 
 struct TaskOptions {
-    TaskOptions();
-    TaskOptions(bool high_priority, bool in_place_if_possible);
+  TaskOptions();
+  TaskOptions(bool high_priority, bool in_place_if_possible);
 
-    // Executor would execute high-priority tasks in the FIFO order but before 
-    // all pending normal-priority tasks.
-    // NOTE: We don't guarantee any kind of real-time as there might be tasks still
-    // in process which are uninterruptible.
-    //
-    // Default: false 
-    bool high_priority;
+  // Executor would execute high-priority tasks in the FIFO order but before 
+  // all pending normal-priority tasks.
+  // NOTE: We don't guarantee any kind of real-time as there might be tasks still
+  // in process which are uninterruptible.
+  //
+  // Default: false 
+  bool high_priority;
 
-    // If |in_place_if_possible| is true, execution_queue_execute would call 
-    // execute immediately instead of starting a bthread if possible
-    //
-    // Note: Running callbacks in place might cause the dead lock issue, you
-    // should be very careful turning this flag on.
-    //
-    // Default: false
-    bool in_place_if_possible;
+  // If |in_place_if_possible| is true, execution_queue_execute would call 
+  // execute immediately instead of starting a bthread if possible
+  //
+  // Note: Running callbacks in place might cause the dead lock issue, you
+  // should be very careful turning this flag on.
+  //
+  // Default: false
+  bool in_place_if_possible;
 };
 
 const static TaskOptions TASK_OPTIONS_NORMAL = TaskOptions(false, false);
@@ -133,22 +133,22 @@ const static TaskOptions TASK_OPTIONS_INPLACE = TaskOptions(false, true);
 
 class Executor {
 public:
-    virtual ~Executor() {}
+  virtual ~Executor() {}
 
-    // Return 0 on success.
-    virtual int submit(void * (*fn)(void*), void* args) = 0;
+  // Return 0 on success.
+  virtual int submit(void * (*fn)(void*), void* args) = 0;
 };
 
 struct ExecutionQueueOptions {
-    ExecutionQueueOptions();
-    // Attribute of the bthread which execute runs on
-    // default: BTHREAD_ATTR_NORMAL
-    bthread_attr_t bthread_attr;
+  ExecutionQueueOptions();
+  // Attribute of the bthread which execute runs on
+  // default: BTHREAD_ATTR_NORMAL
+  bthread_attr_t bthread_attr;
 
-    // Executor that tasks run on. bthread will be used when executor = NULL.
-    // Note that TaskOptions.in_place_if_possible = false will not work, if implementation of
-    // Executor is in-place(synchronous).
-    Executor * executor;
+  // Executor that tasks run on. bthread will be used when executor = NULL.
+  // Note that TaskOptions.in_place_if_possible = false will not work, if implementation of
+  // Executor is in-place(synchronous).
+  Executor * executor;
 };
 
 // Start a ExecutionQueue. If |options| is NULL, the queue will be created with
@@ -157,17 +157,17 @@ struct ExecutionQueueOptions {
 // NOTE: type |T| can be non-POD but must be copy-constructible
 template <typename T>
 int execution_queue_start(
-        ExecutionQueueId<T>* id, 
-        const ExecutionQueueOptions* options,
-        int (*execute)(void* meta, TaskIterator<T>& iter),
-        void* meta);
+    ExecutionQueueId<T>* id, 
+    const ExecutionQueueOptions* options,
+    int (*execute)(void* meta, TaskIterator<T>& iter),
+    void* meta);
 
 // Stop the ExecutionQueue.
 // After this function is called:
 //  - All the following calls to execution_queue_execute would fail immediately.
 //  - The executor will call |execute| with TaskIterator::is_queue_stopped() being 
-//    true exactly once when all the pending tasks have been executed, and after
-//    this point it's ok to release the resource referenced by |meta|.
+//  true exactly once when all the pending tasks have been executed, and after
+//  this point it's ok to release the resource referenced by |meta|.
 // Returns 0 on success, errno othrwise
 template <typename T>
 int execution_queue_stop(ExecutionQueueId<T> id);
@@ -181,7 +181,7 @@ int execution_queue_join(ExecutionQueueId<T> id);
 // Execute a task with defaut TaskOptions (normal task);
 template <typename T>
 int execution_queue_execute(ExecutionQueueId<T> id, 
-                            typename butil::add_const_reference<T>::type task);
+              typename butil::add_const_reference<T>::type task);
 
 // Thread-safe and Wait-free.
 // Execute a task with options. e.g
@@ -190,13 +190,13 @@ int execution_queue_execute(ExecutionQueueId<T> id,
 // If |handle| is not NULL, we will assign it with the hanlder of this task.
 template <typename T>
 int execution_queue_execute(ExecutionQueueId<T> id, 
-                            typename butil::add_const_reference<T>::type task,
-                            const TaskOptions* options);
+              typename butil::add_const_reference<T>::type task,
+              const TaskOptions* options);
 template <typename T>
 int execution_queue_execute(ExecutionQueueId<T> id, 
-                            typename butil::add_const_reference<T>::type task,
-                            const TaskOptions* options,
-                            TaskHandle* handle);
+              typename butil::add_const_reference<T>::type task,
+              const TaskOptions* options,
+              TaskHandle* handle);
 
 // [Thread safe and ABA free] Cancel the corrosponding task.
 // Returns:

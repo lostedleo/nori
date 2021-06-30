@@ -26,16 +26,16 @@ struct FileDescriptor {
   FileDescriptor(File file) : fd(file.TakePlatformFile()), auto_close(true) {}
 
   bool operator==(const FileDescriptor& other) const {
-    return (fd == other.fd && auto_close == other.auto_close);
+  return (fd == other.fd && auto_close == other.auto_close);
   }
 
   bool operator!=(const FileDescriptor& other) const {
-    return !operator==(other);
+  return !operator==(other);
   }
 
   // A comparison operator so that we can use these as keys in a std::map.
   bool operator<(const FileDescriptor& other) const {
-    return other.fd < fd;
+  return other.fd < fd;
   }
 
   int fd;

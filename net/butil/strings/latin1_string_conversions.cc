@@ -7,12 +7,12 @@
 namespace butil {
 
 string16 Latin1OrUTF16ToUTF16(size_t length,
-                              const Latin1Char* latin1,
-                              const char16* utf16) {
+                const Latin1Char* latin1,
+                const char16* utf16) {
   if (!length)
-    return string16();
+  return string16();
   if (latin1)
-    return string16(latin1, latin1 + length);
+  return string16(latin1, latin1 + length);
   return string16(utf16, utf16 + length);
 }
 

@@ -22,12 +22,12 @@
 #ifndef BTHREAD_SYS_FUTEX_H
 #define BTHREAD_SYS_FUTEX_H
 
-#include "butil/build_config.h"         // OS_MACOSX
-#include <unistd.h>                     // syscall
-#include <time.h>                       // timespec
+#include "butil/build_config.h"     // OS_MACOSX
+#include <unistd.h>           // syscall
+#include <time.h>             // timespec
 #if defined(OS_LINUX)
-#include <syscall.h>                    // SYS_futex
-#include <linux/futex.h>                // FUTEX_WAIT, FUTEX_WAKE
+#include <syscall.h>          // SYS_futex
+#include <linux/futex.h>        // FUTEX_WAIT, FUTEX_WAKE
 
 namespace bthread {
 
@@ -36,19 +36,19 @@ namespace bthread {
 #endif
 
 inline int futex_wait_private(
-    void* addr1, int expected, const timespec* timeout) {
-    return syscall(SYS_futex, addr1, (FUTEX_WAIT | FUTEX_PRIVATE_FLAG),
-                   expected, timeout, NULL, 0);
+  void* addr1, int expected, const timespec* timeout) {
+  return syscall(SYS_futex, addr1, (FUTEX_WAIT | FUTEX_PRIVATE_FLAG),
+           expected, timeout, NULL, 0);
 }
 
 inline int futex_wake_private(void* addr1, int nwake) {
-    return syscall(SYS_futex, addr1, (FUTEX_WAKE | FUTEX_PRIVATE_FLAG),
-                   nwake, NULL, NULL, 0);
+  return syscall(SYS_futex, addr1, (FUTEX_WAKE | FUTEX_PRIVATE_FLAG),
+           nwake, NULL, NULL, 0);
 }
 
 inline int futex_requeue_private(void* addr1, int nwake, void* addr2) {
-    return syscall(SYS_futex, addr1, (FUTEX_REQUEUE | FUTEX_PRIVATE_FLAG),
-                   nwake, NULL, addr2, 0);
+  return syscall(SYS_futex, addr1, (FUTEX_REQUEUE | FUTEX_PRIVATE_FLAG),
+           nwake, NULL, addr2, 0);
 }
 
 }  // namespace bthread

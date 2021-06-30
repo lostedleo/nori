@@ -36,7 +36,7 @@ typedef unsigned __int64 uint64_t;
 #endif // !defined(_MSC_VER)
 
 #if defined(_MSC_VER)
-#define MURMURHASH_FORCE_INLINE    __forceinline
+#define MURMURHASH_FORCE_INLINE  __forceinline
 #define BIG_CONSTANT(x) (x)
 #else
 #define MURMURHASH_FORCE_INLINE inline __attribute__((always_inline))
@@ -73,39 +73,39 @@ void MurmurHash3_x64_128(const void* key, int len, uint32_t seed, void* out);
 // similar with iterative MD5 API.
 // Notice: |ctx| must be non-NULL and valid, otherwise the behavior is undefined.
 struct MurmurHash3_x86_32_Context {
-    uint32_t h1;
-    int total_len;
-    int tail_len;
-    uint8_t tail[4];
+  uint32_t h1;
+  int total_len;
+  int tail_len;
+  uint8_t tail[4];
 };
 void MurmurHash3_x86_32_Init(MurmurHash3_x86_32_Context* ctx, uint32_t seed);
 void MurmurHash3_x86_32_Update(MurmurHash3_x86_32_Context* ctx, const void* key, int len);
 void MurmurHash3_x86_32_Final(void* out, const MurmurHash3_x86_32_Context* ctx);
 
 struct MurmurHash3_x86_128_Context {
-    uint32_t h1;
-    uint32_t h2;
-    uint32_t h3;
-    uint32_t h4;
-    // Notice: may overflow, but fine.
-    int total_len;
-    int tail_len;
-    uint8_t tail[16];   
+  uint32_t h1;
+  uint32_t h2;
+  uint32_t h3;
+  uint32_t h4;
+  // Notice: may overflow, but fine.
+  int total_len;
+  int tail_len;
+  uint8_t tail[16];   
 };
 void MurmurHash3_x86_128_Init(MurmurHash3_x86_128_Context* ctx, uint32_t seed);
 void MurmurHash3_x86_128_Update(MurmurHash3_x86_128_Context* ctx, const void* key, int len);
 void MurmurHash3_x86_128_Final(void* out, const MurmurHash3_x86_128_Context* ctx);
 
 struct MurmurHash3_x64_128_Context {
-    uint64_t h1;
-    uint64_t h2;
-    // Notice:
-    //   different from MurmurHash3_x86_128_Context where total_len is int.
-    //   When total_len >= 2^31, this is also (slightly) different from
-    //   MurmurHash3_x64_128() because len in the function is int. 
-    uint64_t total_len;
-    int tail_len;
-    uint8_t tail[16];   
+  uint64_t h1;
+  uint64_t h2;
+  // Notice:
+  //   different from MurmurHash3_x86_128_Context where total_len is int.
+  //   When total_len >= 2^31, this is also (slightly) different from
+  //   MurmurHash3_x64_128() because len in the function is int. 
+  uint64_t total_len;
+  int tail_len;
+  uint8_t tail[16];   
 };
 void MurmurHash3_x64_128_Init(MurmurHash3_x64_128_Context* ctx, uint32_t seed);
 void MurmurHash3_x64_128_Update(MurmurHash3_x64_128_Context* ctx, const void* key, int len);

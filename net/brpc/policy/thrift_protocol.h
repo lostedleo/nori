@@ -34,16 +34,16 @@ void ProcessThriftRequest(InputMessageBase* msg);
 void ProcessThriftResponse(InputMessageBase* msg);
 
 void SerializeThriftRequest(butil::IOBuf* request_buf, Controller* controller,
-                            const google::protobuf::Message* request);
+              const google::protobuf::Message* request);
 
 void PackThriftRequest(
-    butil::IOBuf* packet_buf,
-    SocketMessage**,
-    uint64_t correlation_id,
-    const google::protobuf::MethodDescriptor*,
-    Controller* controller,
-    const butil::IOBuf&,
-    const Authenticator*);
+  butil::IOBuf* packet_buf,
+  SocketMessage**,
+  uint64_t correlation_id,
+  const google::protobuf::MethodDescriptor*,
+  Controller* controller,
+  const butil::IOBuf&,
+  const Authenticator*);
 
 // Verify authentication information in thrift binary format
 bool VerifyThriftRequest(const InputMessageBase *msg);

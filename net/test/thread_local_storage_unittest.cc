@@ -31,24 +31,24 @@ static ThreadLocalStorage::StaticSlot tls_slot = TLS_INITIALIZER;
 class ThreadLocalStorageRunner : public DelegateSimpleThread::Delegate {
  public:
   explicit ThreadLocalStorageRunner(int* tls_value_ptr)
-      : tls_value_ptr_(tls_value_ptr) {}
+    : tls_value_ptr_(tls_value_ptr) {}
 
   virtual ~ThreadLocalStorageRunner() {}
 
   virtual void Run() OVERRIDE {
-    *tls_value_ptr_ = kInitialTlsValue;
-    tls_slot.Set(tls_value_ptr_);
+  *tls_value_ptr_ = kInitialTlsValue;
+  tls_slot.Set(tls_value_ptr_);
 
-    int *ptr = static_cast<int*>(tls_slot.Get());
-    EXPECT_EQ(ptr, tls_value_ptr_);
-    EXPECT_EQ(*ptr, kInitialTlsValue);
-    *tls_value_ptr_ = 0;
+  int *ptr = static_cast<int*>(tls_slot.Get());
+  EXPECT_EQ(ptr, tls_value_ptr_);
+  EXPECT_EQ(*ptr, kInitialTlsValue);
+  *tls_value_ptr_ = 0;
 
-    ptr = static_cast<int*>(tls_slot.Get());
-    EXPECT_EQ(ptr, tls_value_ptr_);
-    EXPECT_EQ(*ptr, 0);
+  ptr = static_cast<int*>(tls_slot.Get());
+  EXPECT_EQ(ptr, tls_value_ptr_);
+  EXPECT_EQ(*ptr, 0);
 
-    *ptr = kFinalTlsValue + kNumberDestructorCallRepetitions;
+  *ptr = kFinalTlsValue + kNumberDestructorCallRepetitions;
   }
 
  private:
@@ -62,7 +62,7 @@ void ThreadLocalStorageCleanup(void *value) {
   // Destructors should never be called with a NULL.
   ASSERT_NE(reinterpret_cast<int*>(NULL), ptr);
   if (*ptr == kFinalTlsValue)
-    return;  // We've been called enough times.
+  return;  // We've been called enough times.
   ASSERT_LT(kFinalTlsValue, *ptr);
   ASSERT_GE(kFinalTlsValue + kNumberDestructorCallRepetitions, *ptr);
   --*ptr;  // Move closer to our target.
@@ -102,21 +102,21 @@ TEST(ThreadLocalStorageTest, MAYBE_TLSDestructors) {
 
   // Spawn the threads.
   for (int index = 0; index < kNumThreads; index++) {
-    values[index] = kInitialTlsValue;
-    thread_delegates[index] = new ThreadLocalStorageRunner(&values[index]);
-    threads[index] = new DelegateSimpleThread(thread_delegates[index],
-                                              "tls thread");
-    threads[index]->Start();
+  values[index] = kInitialTlsValue;
+  thread_delegates[index] = new ThreadLocalStorageRunner(&values[index]);
+  threads[index] = new DelegateSimpleThread(thread_delegates[index],
+                        "tls thread");
+  threads[index]->Start();
   }
 
   // Wait for the threads to finish.
   for (int index = 0; index < kNumThreads; index++) {
-    threads[index]->Join();
-    delete threads[index];
-    delete thread_delegates[index];
+  threads[index]->Join();
+  delete threads[index];
+  delete thread_delegates[index];
 
-    // Verify that the destructor was called and that we reset.
-    EXPECT_EQ(values[index], kFinalTlsValue);
+  // Verify that the destructor was called and that we reset.
+  EXPECT_EQ(values[index], kFinalTlsValue);
   }
   tls_slot.Free();  // Stop doing callbacks to cleanup threads.
 }

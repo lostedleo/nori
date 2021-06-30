@@ -21,8 +21,8 @@ BUTIL_EXPORT uint32_t SuperFastHash(const char* data, int len);
 // WARNING: This hash function should not be used for any cryptographic purpose.
 inline uint32_t Hash(const char* data, size_t length) {
   if (length > static_cast<size_t>(std::numeric_limits<int>::max())) {
-    NOTREACHED();
-    return 0;
+  NOTREACHED();
+  return 0;
   }
   return SuperFastHash(data, static_cast<int>(length));
 }

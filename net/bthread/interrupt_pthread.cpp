@@ -31,12 +31,12 @@ void do_nothing_handler(int) {}
 static pthread_once_t register_sigurg_once = PTHREAD_ONCE_INIT;
 
 static void register_sigurg() {
-    signal(SIGURG, do_nothing_handler);
+  signal(SIGURG, do_nothing_handler);
 }
 
 int interrupt_pthread(pthread_t th) {
-    pthread_once(&register_sigurg_once, register_sigurg);
-    return pthread_kill(th, SIGURG);
+  pthread_once(&register_sigurg_once, register_sigurg);
+  return pthread_kill(th, SIGURG);
 }
 
 }  // namespace bthread

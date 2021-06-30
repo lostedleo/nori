@@ -4,13 +4,13 @@
 
 // This file adds defines about the platform we're currently building on.
 //  Operating System:
-//    OS_WIN / OS_MACOSX / OS_LINUX / OS_POSIX (MACOSX or LINUX) /
-//    OS_NACL (NACL_SFI or NACL_NONSFI) / OS_NACL_SFI / OS_NACL_NONSFI
+//  OS_WIN / OS_MACOSX / OS_LINUX / OS_POSIX (MACOSX or LINUX) /
+//  OS_NACL (NACL_SFI or NACL_NONSFI) / OS_NACL_SFI / OS_NACL_NONSFI
 //  Compiler:
-//    COMPILER_MSVC / COMPILER_GCC
+//  COMPILER_MSVC / COMPILER_GCC
 //  Processor:
-//    ARCH_CPU_X86 / ARCH_CPU_X86_64 / ARCH_CPU_X86_FAMILY (X86 or X86_64)
-//    ARCH_CPU_32_BITS / ARCH_CPU_64_BITS
+//  ARCH_CPU_X86 / ARCH_CPU_X86_64 / ARCH_CPU_X86_FAMILY (X86 or X86_64)
+//  ARCH_CPU_32_BITS / ARCH_CPU_64_BITS
 
 #ifndef BUTIL_BUILD_CONFIG_H_
 #define BUTIL_BUILD_CONFIG_H_
@@ -73,15 +73,15 @@
 
 // For access to standard POSIXish features, use OS_POSIX instead of a
 // more specific macro.
-#if defined(OS_MACOSX) || defined(OS_LINUX) || defined(OS_FREEBSD) ||     \
-    defined(OS_OPENBSD) || defined(OS_SOLARIS) || defined(OS_ANDROID) ||  \
-    defined(OS_NACL) || defined(OS_QNX)
+#if defined(OS_MACOSX) || defined(OS_LINUX) || defined(OS_FREEBSD) ||   \
+  defined(OS_OPENBSD) || defined(OS_SOLARIS) || defined(OS_ANDROID) ||  \
+  defined(OS_NACL) || defined(OS_QNX)
 #define OS_POSIX 1
 #endif
 
 // Use tcmalloc
 #if (defined(OS_WIN) || defined(OS_LINUX) || defined(OS_ANDROID)) && \
-    !defined(NO_TCMALLOC)
+  !defined(NO_TCMALLOC)
 #define USE_TCMALLOC 1
 #endif
 
@@ -141,12 +141,12 @@
 #if defined(OS_WIN)
 #define WCHAR_T_IS_UTF16
 #elif defined(OS_POSIX) && defined(COMPILER_GCC) && \
-    defined(__WCHAR_MAX__) && \
-    (__WCHAR_MAX__ == 0x7fffffff || __WCHAR_MAX__ == 0xffffffff)
+  defined(__WCHAR_MAX__) && \
+  (__WCHAR_MAX__ == 0x7fffffff || __WCHAR_MAX__ == 0xffffffff)
 #define WCHAR_T_IS_UTF32
 #elif defined(OS_POSIX) && defined(COMPILER_GCC) && \
-    defined(__WCHAR_MAX__) && \
-    (__WCHAR_MAX__ == 0x7fff || __WCHAR_MAX__ == 0xffff)
+  defined(__WCHAR_MAX__) && \
+  (__WCHAR_MAX__ == 0x7fff || __WCHAR_MAX__ == 0xffff)
 // On Posix, we'll detect short wchar_t, but projects aren't guaranteed to
 // compile in this mode (in particular, Chrome doesn't). This is intended for
 // other projects using base who manage their own dependencies and make sure

@@ -38,7 +38,7 @@ extern "C" {
  *   at least modp_b64_encode_len(len) bytes (see below)
  *   This will contain the null-terminated b64 encoded result
  * returns length of the destination string plus the ending null byte
- *    i.e.  the result will be equal to strlen(dest) + 1
+ *  i.e.  the result will be equal to strlen(dest) + 1
  *
  * Example
  * 
@@ -61,11 +61,11 @@ size_t modp_b64_encode(char* dest, const char* str, size_t len);
  * Decode a base64 encoded string
  *
  * src should contain exactly len bytes of b64 characters.
- *     if src contains -any- non-base characters (such as white
- *     space, -1 is returned.
+ *   if src contains -any- non-base characters (such as white
+ *   space, -1 is returned.
  *
  * dest should be allocated by the caller to contain at least
- *    len * 3 / 4 bytes.
+ *  len * 3 / 4 bytes.
  *
  * Returns the length (strlen) of the output, or -1 if unable to
  * decode
@@ -114,14 +114,14 @@ size_t modp_b64_decode(char* dest, const char* src, size_t len);
  *
  * struct datastuff foo;
  * if (modp_b64_encode_strlen(sizeof(struct datastuff)) != len) {
- *    // wrong size
- *    return false;
+ *  // wrong size
+ *  return false;
  * } else {
- *    // safe to do;
- *    if (modp_b64_decode((char*) &foo, b64encoded, len) == -1) {
- *      // bad characters
- *      return false;
- *    }
+ *  // safe to do;
+ *  if (modp_b64_decode((char*) &foo, b64encoded, len) == -1) {
+ *    // bad characters
+ *    return false;
+ *  }
  * }
  * // foo is filled out now
  * \endcode
@@ -137,11 +137,11 @@ size_t modp_b64_decode(char* dest, const char* src, size_t len);
 
 inline std::string& modp_b64_encode(std::string& s)
 {
-    std::string x(modp_b64_encode_len(s.size()), '\0');
-    size_t d = modp_b64_encode(const_cast<char*>(x.data()), s.data(), (int)s.size());
-    x.erase(d, std::string::npos);
-    s.swap(x);
-    return s;
+  std::string x(modp_b64_encode_len(s.size()), '\0');
+  size_t d = modp_b64_encode(const_cast<char*>(x.data()), s.data(), (int)s.size());
+  x.erase(d, std::string::npos);
+  s.swap(x);
+  return s;
 }
 
 /**
@@ -155,15 +155,15 @@ inline std::string& modp_b64_encode(std::string& s)
  */
 inline std::string& modp_b64_decode(std::string& s)
 {
-    std::string x(modp_b64_decode_len(s.size()), '\0');
-    size_t d = modp_b64_decode(const_cast<char*>(x.data()), s.data(), (int)s.size());
-    if (d == MODP_B64_ERROR) {
-        x.clear();
-    } else {
-        x.erase(d, std::string::npos);
-    }
-    s.swap(x);
-    return s;
+  std::string x(modp_b64_decode_len(s.size()), '\0');
+  size_t d = modp_b64_decode(const_cast<char*>(x.data()), s.data(), (int)s.size());
+  if (d == MODP_B64_ERROR) {
+    x.clear();
+  } else {
+    x.erase(d, std::string::npos);
+  }
+  s.swap(x);
+  return s;
 }
 
 #endif /* __cplusplus */

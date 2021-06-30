@@ -20,7 +20,7 @@ typedef subtle::Atomic32 AtomicRefCount;
 
 // Increment a reference count by "increment", which must exceed 0.
 inline void AtomicRefCountIncN(volatile AtomicRefCount *ptr,
-                               AtomicRefCount increment) {
+                 AtomicRefCount increment) {
   subtle::NoBarrier_AtomicIncrement(ptr, increment);
 }
 
@@ -29,11 +29,11 @@ inline void AtomicRefCountIncN(volatile AtomicRefCount *ptr,
 // Insert barriers to ensure that state written before the reference count
 // became zero will be visible to a thread that has just made the count zero.
 inline bool AtomicRefCountDecN(volatile AtomicRefCount *ptr,
-                               AtomicRefCount decrement) {
+                 AtomicRefCount decrement) {
   ANNOTATE_HAPPENS_BEFORE(ptr);
   bool res = (subtle::Barrier_AtomicIncrement(ptr, -decrement) != 0);
   if (!res) {
-    ANNOTATE_HAPPENS_AFTER(ptr);
+  ANNOTATE_HAPPENS_AFTER(ptr);
   }
   return res;
 }
@@ -59,7 +59,7 @@ inline bool AtomicRefCountDec(volatile AtomicRefCount *ptr) {
 inline bool AtomicRefCountIsOne(volatile AtomicRefCount *ptr) {
   bool res = (subtle::Acquire_Load(ptr) == 1);
   if (res) {
-    ANNOTATE_HAPPENS_AFTER(ptr);
+  ANNOTATE_HAPPENS_AFTER(ptr);
   }
   return res;
 }
@@ -70,7 +70,7 @@ inline bool AtomicRefCountIsOne(volatile AtomicRefCount *ptr) {
 inline bool AtomicRefCountIsZero(volatile AtomicRefCount *ptr) {
   bool res = (subtle::Acquire_Load(ptr) == 0);
   if (res) {
-    ANNOTATE_HAPPENS_AFTER(ptr);
+  ANNOTATE_HAPPENS_AFTER(ptr);
   }
   return res;
 }

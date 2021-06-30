@@ -31,20 +31,20 @@
 // that the test passes, even if load varies, and external events vary.
 
 #define SPIN_FOR_1_SECOND_OR_UNTIL_TRUE(expression) \
-    SPIN_FOR_TIMEDELTA_OR_UNTIL_TRUE(butil::TimeDelta::FromSeconds(1), \
-                                     (expression))
+  SPIN_FOR_TIMEDELTA_OR_UNTIL_TRUE(butil::TimeDelta::FromSeconds(1), \
+                   (expression))
 
 #define SPIN_FOR_TIMEDELTA_OR_UNTIL_TRUE(delta, expression) do { \
   butil::TimeTicks start = butil::TimeTicks::Now(); \
   const butil::TimeDelta kTimeout = delta; \
-    while (!(expression)) { \
-      if (kTimeout < butil::TimeTicks::Now() - start) { \
-      EXPECT_LE((butil::TimeTicks::Now() - start).InMilliseconds(), \
-                kTimeout.InMilliseconds()) << "Timed out"; \
-        break; \
-      } \
-      butil::PlatformThread::Sleep(butil::TimeDelta::FromMilliseconds(50)); \
+  while (!(expression)) { \
+    if (kTimeout < butil::TimeTicks::Now() - start) { \
+    EXPECT_LE((butil::TimeTicks::Now() - start).InMilliseconds(), \
+        kTimeout.InMilliseconds()) << "Timed out"; \
+    break; \
     } \
+    butil::PlatformThread::Sleep(butil::TimeDelta::FromMilliseconds(50)); \
+  } \
   } while (0)
 
 #endif  // BUTIL_SYNCHRONIZATION_SPIN_WAIT_H_

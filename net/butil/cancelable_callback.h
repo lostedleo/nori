@@ -33,7 +33,7 @@
 //
 // CancelableClosure timeout(butil::Bind(&TimeoutCallback, "Test timed out."));
 // MessageLoop::current()->PostDelayedTask(FROM_HERE, timeout.callback(),
-//                                         4000)  // 4 seconds to run.
+//                     4000)  // 4 seconds to run.
 // RunIntensiveTest();
 // MessageLoop::current()->Run();
 // timeout.Cancel();  // Hopefully this is hit before the timeout callback runs.
@@ -62,55 +62,55 @@ class CancelableCallback<void(void)> {
 
   // |callback| must not be null.
   explicit CancelableCallback(const butil::Callback<void(void)>& callback)
-      : weak_factory_(this),
-        callback_(callback) {
-    DCHECK(!callback.is_null());
-    InitializeForwarder();
+    : weak_factory_(this),
+    callback_(callback) {
+  DCHECK(!callback.is_null());
+  InitializeForwarder();
   }
 
   ~CancelableCallback() {}
 
   // Cancels and drops the reference to the wrapped callback.
   void Cancel() {
-    weak_factory_.InvalidateWeakPtrs();
-    forwarder_.Reset();
-    callback_.Reset();
+  weak_factory_.InvalidateWeakPtrs();
+  forwarder_.Reset();
+  callback_.Reset();
   }
 
   // Returns true if the wrapped callback has been cancelled.
   bool IsCancelled() const {
-    return callback_.is_null();
+  return callback_.is_null();
   }
 
   // Sets |callback| as the closure that may be cancelled. |callback| may not
   // be null. Outstanding and any previously wrapped callbacks are cancelled.
   void Reset(const butil::Callback<void(void)>& callback) {
-    DCHECK(!callback.is_null());
+  DCHECK(!callback.is_null());
 
-    // Outstanding tasks (e.g., posted to a message loop) must not be called.
-    Cancel();
+  // Outstanding tasks (e.g., posted to a message loop) must not be called.
+  Cancel();
 
-    // |forwarder_| is no longer valid after Cancel(), so re-bind.
-    InitializeForwarder();
+  // |forwarder_| is no longer valid after Cancel(), so re-bind.
+  InitializeForwarder();
 
-    callback_ = callback;
+  callback_ = callback;
   }
 
   // Returns a callback that can be disabled by calling Cancel().
   const butil::Callback<void(void)>& callback() const {
-    return forwarder_;
+  return forwarder_;
   }
 
  private:
   void Forward() {
-    callback_.Run();
+  callback_.Run();
   }
 
   // Helper method to bind |forwarder_| using a weak pointer from
   // |weak_factory_|.
   void InitializeForwarder() {
-    forwarder_ = butil::Bind(&CancelableCallback<void(void)>::Forward,
-                            weak_factory_.GetWeakPtr());
+  forwarder_ = butil::Bind(&CancelableCallback<void(void)>::Forward,
+              weak_factory_.GetWeakPtr());
   }
 
   // Used to ensure Forward() is not run when this object is destroyed.
@@ -132,55 +132,55 @@ class CancelableCallback<void(A1)> {
 
   // |callback| must not be null.
   explicit CancelableCallback(const butil::Callback<void(A1)>& callback)
-      : weak_factory_(this),
-        callback_(callback) {
-    DCHECK(!callback.is_null());
-    InitializeForwarder();
+    : weak_factory_(this),
+    callback_(callback) {
+  DCHECK(!callback.is_null());
+  InitializeForwarder();
   }
 
   ~CancelableCallback() {}
 
   // Cancels and drops the reference to the wrapped callback.
   void Cancel() {
-    weak_factory_.InvalidateWeakPtrs();
-    forwarder_.Reset();
-    callback_.Reset();
+  weak_factory_.InvalidateWeakPtrs();
+  forwarder_.Reset();
+  callback_.Reset();
   }
 
   // Returns true if the wrapped callback has been cancelled.
   bool IsCancelled() const {
-    return callback_.is_null();
+  return callback_.is_null();
   }
 
   // Sets |callback| as the closure that may be cancelled. |callback| may not
   // be null. Outstanding and any previously wrapped callbacks are cancelled.
   void Reset(const butil::Callback<void(A1)>& callback) {
-    DCHECK(!callback.is_null());
+  DCHECK(!callback.is_null());
 
-    // Outstanding tasks (e.g., posted to a message loop) must not be called.
-    Cancel();
+  // Outstanding tasks (e.g., posted to a message loop) must not be called.
+  Cancel();
 
-    // |forwarder_| is no longer valid after Cancel(), so re-bind.
-    InitializeForwarder();
+  // |forwarder_| is no longer valid after Cancel(), so re-bind.
+  InitializeForwarder();
 
-    callback_ = callback;
+  callback_ = callback;
   }
 
   // Returns a callback that can be disabled by calling Cancel().
   const butil::Callback<void(A1)>& callback() const {
-    return forwarder_;
+  return forwarder_;
   }
 
  private:
   void Forward(A1 a1) const {
-    callback_.Run(a1);
+  callback_.Run(a1);
   }
 
   // Helper method to bind |forwarder_| using a weak pointer from
   // |weak_factory_|.
   void InitializeForwarder() {
-    forwarder_ = butil::Bind(&CancelableCallback<void(A1)>::Forward,
-                            weak_factory_.GetWeakPtr());
+  forwarder_ = butil::Bind(&CancelableCallback<void(A1)>::Forward,
+              weak_factory_.GetWeakPtr());
   }
 
   // Used to ensure Forward() is not run when this object is destroyed.
@@ -202,55 +202,55 @@ class CancelableCallback<void(A1, A2)> {
 
   // |callback| must not be null.
   explicit CancelableCallback(const butil::Callback<void(A1, A2)>& callback)
-      : weak_factory_(this),
-        callback_(callback) {
-    DCHECK(!callback.is_null());
-    InitializeForwarder();
+    : weak_factory_(this),
+    callback_(callback) {
+  DCHECK(!callback.is_null());
+  InitializeForwarder();
   }
 
   ~CancelableCallback() {}
 
   // Cancels and drops the reference to the wrapped callback.
   void Cancel() {
-    weak_factory_.InvalidateWeakPtrs();
-    forwarder_.Reset();
-    callback_.Reset();
+  weak_factory_.InvalidateWeakPtrs();
+  forwarder_.Reset();
+  callback_.Reset();
   }
 
   // Returns true if the wrapped callback has been cancelled.
   bool IsCancelled() const {
-    return callback_.is_null();
+  return callback_.is_null();
   }
 
   // Sets |callback| as the closure that may be cancelled. |callback| may not
   // be null. Outstanding and any previously wrapped callbacks are cancelled.
   void Reset(const butil::Callback<void(A1, A2)>& callback) {
-    DCHECK(!callback.is_null());
+  DCHECK(!callback.is_null());
 
-    // Outstanding tasks (e.g., posted to a message loop) must not be called.
-    Cancel();
+  // Outstanding tasks (e.g., posted to a message loop) must not be called.
+  Cancel();
 
-    // |forwarder_| is no longer valid after Cancel(), so re-bind.
-    InitializeForwarder();
+  // |forwarder_| is no longer valid after Cancel(), so re-bind.
+  InitializeForwarder();
 
-    callback_ = callback;
+  callback_ = callback;
   }
 
   // Returns a callback that can be disabled by calling Cancel().
   const butil::Callback<void(A1, A2)>& callback() const {
-    return forwarder_;
+  return forwarder_;
   }
 
  private:
   void Forward(A1 a1, A2 a2) const {
-    callback_.Run(a1, a2);
+  callback_.Run(a1, a2);
   }
 
   // Helper method to bind |forwarder_| using a weak pointer from
   // |weak_factory_|.
   void InitializeForwarder() {
-    forwarder_ = butil::Bind(&CancelableCallback<void(A1, A2)>::Forward,
-                            weak_factory_.GetWeakPtr());
+  forwarder_ = butil::Bind(&CancelableCallback<void(A1, A2)>::Forward,
+              weak_factory_.GetWeakPtr());
   }
 
   // Used to ensure Forward() is not run when this object is destroyed.

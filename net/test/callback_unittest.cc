@@ -33,15 +33,15 @@ struct BindState;
 // one-definition-rule.
 template <>
 struct BindState<void(void), void(void), void(FakeInvoker)>
-    : public BindStateBase {
+  : public BindStateBase {
  public:
   typedef FakeInvoker InvokerType;
 };
 
 template <>
 struct BindState<void(void), void(void),
-                           void(FakeInvoker, FakeInvoker)>
-    : public BindStateBase {
+               void(FakeInvoker, FakeInvoker)>
+  : public BindStateBase {
  public:
   typedef FakeInvoker InvokerType;
 };
@@ -50,16 +50,16 @@ struct BindState<void(void), void(void),
 namespace {
 
 typedef internal::BindState<void(void), void(void), void(FakeInvoker)>
-    FakeBindState1;
+  FakeBindState1;
 typedef internal::BindState<void(void), void(void),
-                            void(FakeInvoker, FakeInvoker)>
+              void(FakeInvoker, FakeInvoker)>
    FakeBindState2;
 
 class CallbackTest : public ::testing::Test {
  public:
   CallbackTest()
-      : callback_a_(new FakeBindState1()),
-        callback_b_(new FakeBindState2()) {
+    : callback_a_(new FakeBindState1()),
+    callback_b_(new FakeBindState2()) {
   }
 
   virtual ~CallbackTest() {
@@ -126,12 +126,12 @@ TEST_F(CallbackTest, Reset) {
 
 struct TestForReentrancy {
   TestForReentrancy()
-      : cb_already_run(false),
-        cb(Bind(&TestForReentrancy::AssertCBIsNull, Unretained(this))) {
+    : cb_already_run(false),
+    cb(Bind(&TestForReentrancy::AssertCBIsNull, Unretained(this))) {
   }
   void AssertCBIsNull() {
-    ASSERT_TRUE(cb.is_null());
-    cb_already_run = true;
+  ASSERT_TRUE(cb.is_null());
+  cb_already_run = true;
   }
   bool cb_already_run;
   Closure cb;
@@ -149,21 +149,21 @@ TEST_F(CallbackTest, ResetAndReturn) {
 class CallbackOwner : public butil::RefCounted<CallbackOwner> {
  public:
   explicit CallbackOwner(bool* deleted) {
-    callback_ = Bind(&CallbackOwner::Unused, this);
-    deleted_ = deleted;
+  callback_ = Bind(&CallbackOwner::Unused, this);
+  deleted_ = deleted;
   }
   void Reset() {
-    callback_.Reset();
-    // We are deleted here if no-one else had a ref to us.
+  callback_.Reset();
+  // We are deleted here if no-one else had a ref to us.
   }
 
  private:
   friend class butil::RefCounted<CallbackOwner>;
   virtual ~CallbackOwner() {
-    *deleted_ = true;
+  *deleted_ = true;
   }
   void Unused() {
-    FAIL() << "Should never be called";
+  FAIL() << "Should never be called";
   }
 
   Closure callback_;

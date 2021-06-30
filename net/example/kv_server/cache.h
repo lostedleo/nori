@@ -23,7 +23,7 @@ class Cache {
 
  private:
   mutable butil::Lock   lock_;
-  Map                   key_values_;
+  Map           key_values_;
 };
 }  // namespace push
 

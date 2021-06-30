@@ -41,9 +41,9 @@ void STLClearObject(T* obj) {
 template <class ForwardIterator>
 void STLDeleteContainerPointers(ForwardIterator begin, ForwardIterator end) {
   while (begin != end) {
-    ForwardIterator temp = begin;
-    ++begin;
-    delete *temp;
+  ForwardIterator temp = begin;
+  ++begin;
+  delete *temp;
   }
 }
 
@@ -56,12 +56,12 @@ void STLDeleteContainerPointers(ForwardIterator begin, ForwardIterator end) {
 // pointer.
 template <class ForwardIterator>
 void STLDeleteContainerPairPointers(ForwardIterator begin,
-                                    ForwardIterator end) {
+                  ForwardIterator end) {
   while (begin != end) {
-    ForwardIterator temp = begin;
-    ++begin;
-    delete temp->first;
-    delete temp->second;
+  ForwardIterator temp = begin;
+  ++begin;
+  delete temp->first;
+  delete temp->second;
   }
 }
 
@@ -70,11 +70,11 @@ void STLDeleteContainerPairPointers(ForwardIterator begin,
 // NOTE: Like STLDeleteContainerPointers, deleting behind the iterator.
 template <class ForwardIterator>
 void STLDeleteContainerPairFirstPointers(ForwardIterator begin,
-                                         ForwardIterator end) {
+                     ForwardIterator end) {
   while (begin != end) {
-    ForwardIterator temp = begin;
-    ++begin;
-    delete temp->first;
+  ForwardIterator temp = begin;
+  ++begin;
+  delete temp->first;
   }
 }
 
@@ -84,11 +84,11 @@ void STLDeleteContainerPairFirstPointers(ForwardIterator begin,
 // do so if the key is a pointer into the value object.
 template <class ForwardIterator>
 void STLDeleteContainerPairSecondPointers(ForwardIterator begin,
-                                          ForwardIterator end) {
+                      ForwardIterator end) {
   while (begin != end) {
-    ForwardIterator temp = begin;
-    ++begin;
-    delete temp->second;
+  ForwardIterator temp = begin;
+  ++begin;
+  delete temp->second;
   }
 }
 
@@ -138,7 +138,7 @@ inline char* string_as_array(std::string* str) {
 template <class T>
 void STLDeleteElements(T* container) {
   if (!container)
-    return;
+  return;
   STLDeleteContainerPointers(container->begin(), container->end());
   container->clear();
 }
@@ -149,9 +149,9 @@ void STLDeleteElements(T* container) {
 template <class T>
 void STLDeleteValues(T* container) {
   if (!container)
-    return;
+  return;
   for (typename T::iterator i(container->begin()); i != container->end(); ++i)
-    delete i->second;
+  delete i->second;
   container->clear();
 }
 
@@ -204,8 +204,8 @@ bool STLIsSorted(const Container& cont) {
   // Note: Use reverse iterator on container to ensure we only require
   // value_type to implement operator<.
   return std::adjacent_find(cont.rbegin(), cont.rend(),
-                            std::less<typename Container::value_type>())
-      == cont.rend();
+              std::less<typename Container::value_type>())
+    == cont.rend();
 }
 
 // Returns a new ResultType containing the difference of two sorted containers.
@@ -215,8 +215,8 @@ ResultType STLSetDifference(const Arg1& a1, const Arg2& a2) {
   DCHECK(STLIsSorted(a2));
   ResultType difference;
   std::set_difference(a1.begin(), a1.end(),
-                      a2.begin(), a2.end(),
-                      std::inserter(difference, difference.end()));
+            a2.begin(), a2.end(),
+            std::inserter(difference, difference.end()));
   return difference;
 }
 
@@ -227,8 +227,8 @@ ResultType STLSetUnion(const Arg1& a1, const Arg2& a2) {
   DCHECK(STLIsSorted(a2));
   ResultType result;
   std::set_union(a1.begin(), a1.end(),
-                 a2.begin(), a2.end(),
-                 std::inserter(result, result.end()));
+         a2.begin(), a2.end(),
+         std::inserter(result, result.end()));
   return result;
 }
 
@@ -240,8 +240,8 @@ ResultType STLSetIntersection(const Arg1& a1, const Arg2& a2) {
   DCHECK(STLIsSorted(a2));
   ResultType result;
   std::set_intersection(a1.begin(), a1.end(),
-                        a2.begin(), a2.end(),
-                        std::inserter(result, result.end()));
+            a2.begin(), a2.end(),
+            std::inserter(result, result.end()));
   return result;
 }
 
@@ -252,7 +252,7 @@ bool STLIncludes(const Arg1& a1, const Arg2& a2) {
   DCHECK(STLIsSorted(a1));
   DCHECK(STLIsSorted(a2));
   return std::includes(a1.begin(), a1.end(),
-                       a2.begin(), a2.end());
+             a2.begin(), a2.end());
 }
 
 }  // namespace butil

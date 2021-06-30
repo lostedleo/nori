@@ -28,14 +28,14 @@ class Server;
 
 class ListService : public list {
 public:
-    explicit ListService(Server* server) : _server(server) {}
-    
-    void default_method(::google::protobuf::RpcController* cntl_base,
-                        const ::brpc::ListRequest* request,
-                        ::brpc::ListResponse* response,
-                        ::google::protobuf::Closure* done);
+  explicit ListService(Server* server) : _server(server) {}
+  
+  void default_method(::google::protobuf::RpcController* cntl_base,
+            const ::brpc::ListRequest* request,
+            ::brpc::ListResponse* response,
+            ::google::protobuf::Closure* done);
 private:
-    Server* _server;
+  Server* _server;
 };
 
 } // namespace brpc

@@ -53,7 +53,7 @@ TEST(WaitableEventTest, AutoBasics) {
 TEST(WaitableEventTest, WaitManyShortcut) {
   WaitableEvent* ev[5];
   for (unsigned i = 0; i < 5; ++i)
-    ev[i] = new WaitableEvent(false, false);
+  ev[i] = new WaitableEvent(false, false);
 
   ev[3]->Signal();
   EXPECT_EQ(WaitableEvent::WaitMany(ev, 5), 3u);
@@ -68,19 +68,19 @@ TEST(WaitableEventTest, WaitManyShortcut) {
   EXPECT_EQ(WaitableEvent::WaitMany(ev, 5), 0u);
 
   for (unsigned i = 0; i < 5; ++i)
-    delete ev[i];
+  delete ev[i];
 }
 
 class WaitableEventSignaler : public PlatformThread::Delegate {
  public:
   WaitableEventSignaler(double seconds, WaitableEvent* ev)
-      : seconds_(seconds),
-        ev_(ev) {
+    : seconds_(seconds),
+    ev_(ev) {
   }
 
   virtual void ThreadMain() OVERRIDE {
-    PlatformThread::Sleep(TimeDelta::FromSeconds(static_cast<int>(seconds_)));
-    ev_->Signal();
+  PlatformThread::Sleep(TimeDelta::FromSeconds(static_cast<int>(seconds_)));
+  ev_->Signal();
   }
 
  private:
@@ -91,7 +91,7 @@ class WaitableEventSignaler : public PlatformThread::Delegate {
 TEST(WaitableEventTest, WaitMany) {
   WaitableEvent* ev[5];
   for (unsigned i = 0; i < 5; ++i)
-    ev[i] = new WaitableEvent(false, false);
+  ev[i] = new WaitableEvent(false, false);
 
   WaitableEventSignaler signaler(0.1, ev[2]);
   PlatformThreadHandle thread;
@@ -102,7 +102,7 @@ TEST(WaitableEventTest, WaitMany) {
   PlatformThread::Join(thread);
 
   for (unsigned i = 0; i < 5; ++i)
-    delete ev[i];
+  delete ev[i];
 }
 
 }  // namespace butil

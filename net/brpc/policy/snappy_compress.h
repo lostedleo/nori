@@ -19,8 +19,8 @@
 #ifndef BRPC_POLICY_SNAPPY_COMPRESS_H
 #define BRPC_POLICY_SNAPPY_COMPRESS_H
 
-#include <google/protobuf/message.h>          // Message
-#include "butil/iobuf.h"                       // IOBuf
+#include <google/protobuf/message.h>      // Message
+#include "butil/iobuf.h"             // IOBuf
 
 
 namespace brpc {

@@ -38,17 +38,17 @@ struct ServerId;
 // servers when recovering from all servers are down.
 class ClusterRecoverPolicy {
 public:
-    virtual ~ClusterRecoverPolicy() {}
+  virtual ~ClusterRecoverPolicy() {}
 
-    // Indicate that recover from all server being down is happening.
-    virtual void StartRecover() = 0;
+  // Indicate that recover from all server being down is happening.
+  virtual void StartRecover() = 0;
 
-    // Return true if some customized policies are satisfied.
-    virtual bool DoReject(const std::vector<ServerId>& server_list) = 0;
+  // Return true if some customized policies are satisfied.
+  virtual bool DoReject(const std::vector<ServerId>& server_list) = 0;
 
-    // Stop recover state and do not reject the request if some condition is
-    // satisfied. Return true if the current state is still in recovering.
-    virtual bool StopRecoverIfNecessary() = 0;
+  // Stop recover state and do not reject the request if some condition is
+  // satisfied. Return true if the current state is still in recovering.
+  virtual bool StopRecoverIfNecessary() = 0;
 };
 
 // The default cluster recover policy. Once no servers are available, recover is start.
@@ -59,29 +59,29 @@ public:
 // would be sent to the current available servers.
 class DefaultClusterRecoverPolicy : public ClusterRecoverPolicy {
 public:
-    DefaultClusterRecoverPolicy(int64_t min_working_instances, int64_t hold_seconds);
+  DefaultClusterRecoverPolicy(int64_t min_working_instances, int64_t hold_seconds);
 
-    void StartRecover() override;
-    bool DoReject(const std::vector<ServerId>& server_list) override;
-    bool StopRecoverIfNecessary() override;
-
-private:
-    uint64_t GetUsableServerCount(int64_t now_ms, const std::vector<ServerId>& server_list);
+  void StartRecover() override;
+  bool DoReject(const std::vector<ServerId>& server_list) override;
+  bool StopRecoverIfNecessary() override;
 
 private:
-    bool _recovering;
-    int64_t _min_working_instances;
-    butil::Mutex _mutex;
-    uint64_t _last_usable;
-    int64_t _last_usable_change_time_ms;
-    int64_t _hold_seconds;
-    uint64_t _usable_cache;
-    int64_t _usable_cache_time_ms;
+  uint64_t GetUsableServerCount(int64_t now_ms, const std::vector<ServerId>& server_list);
+
+private:
+  bool _recovering;
+  int64_t _min_working_instances;
+  butil::Mutex _mutex;
+  uint64_t _last_usable;
+  int64_t _last_usable_change_time_ms;
+  int64_t _hold_seconds;
+  uint64_t _usable_cache;
+  int64_t _usable_cache_time_ms;
 };
 
 // Return a DefaultClusterRecoverPolicy object by params.
 bool GetRecoverPolicyByParams(const butil::StringPiece& params,
-                              std::shared_ptr<ClusterRecoverPolicy>* ptr_out);
+                std::shared_ptr<ClusterRecoverPolicy>* ptr_out);
 
 } // namespace brpc
 

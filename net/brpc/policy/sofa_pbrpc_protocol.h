@@ -20,7 +20,7 @@
 #define BRPC_POLICY_SOFA_PBRPC_PROTOCOL_H
 
 #include "brpc/policy/sofa_pbrpc_meta.pb.h"
-#include "brpc/protocol.h"             
+#include "brpc/protocol.h"       
 
 
 namespace brpc {
@@ -40,12 +40,12 @@ bool VerifySofaRequest(const InputMessageBase* msg);
 
 // Pack `request' to `method' into `buf'.
 void PackSofaRequest(butil::IOBuf* buf,
-                     SocketMessage**,
-                     uint64_t correlation_id,
-                     const google::protobuf::MethodDescriptor* method,
-                     Controller* controller,
-                     const butil::IOBuf& request,
-                     const Authenticator* auth);
+           SocketMessage**,
+           uint64_t correlation_id,
+           const google::protobuf::MethodDescriptor* method,
+           Controller* controller,
+           const butil::IOBuf& request,
+           const Authenticator* auth);
 
 }  // namespace policy
 } // namespace brpc

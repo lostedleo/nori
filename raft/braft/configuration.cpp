@@ -4,7 +4,7 @@
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 // 
-//     http://www.apache.org/licenses/LICENSE-2.0
+//   http://www.apache.org/licenses/LICENSE-2.0
 // 
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -13,7 +13,7 @@
 // limitations under the License.
 
 // Authors: Wang,Yao(wangyao02@baidu.com)
-//          Zhangyi Chen(chenzhangyi01@baidu.com)
+//      Zhangyi Chen(chenzhangyi01@baidu.com)
 
 #include "braft/configuration.h"
 #include <butil/logging.h>
@@ -22,30 +22,30 @@
 namespace braft {
 
 std::ostream& operator<<(std::ostream& os, const Configuration& a) {
-    std::vector<PeerId> peers;
-    a.list_peers(&peers);
-    for (size_t i = 0; i < peers.size(); i++) {
-        os << peers[i];
-        if (i < peers.size() - 1) {
-            os << ",";
-        }
+  std::vector<PeerId> peers;
+  a.list_peers(&peers);
+  for (size_t i = 0; i < peers.size(); i++) {
+    os << peers[i];
+    if (i < peers.size() - 1) {
+      os << ",";
     }
-    return os;
+  }
+  return os;
 }
 
 int Configuration::parse_from(butil::StringPiece conf) {
-    reset();
-    std::string peer_str;
-    for (butil::StringSplitter sp(conf.begin(), conf.end(), ','); sp; ++sp) {
-        braft::PeerId peer;
-        peer_str.assign(sp.field(), sp.length());
-        if (peer.parse(peer_str) != 0) {
-            LOG(ERROR) << "Fail to parse " << peer_str;
-            return -1;
-        }
-        add_peer(peer);
+  reset();
+  std::string peer_str;
+  for (butil::StringSplitter sp(conf.begin(), conf.end(), ','); sp; ++sp) {
+    braft::PeerId peer;
+    peer_str.assign(sp.field(), sp.length());
+    if (peer.parse(peer_str) != 0) {
+      LOG(ERROR) << "Fail to parse " << peer_str;
+      return -1;
     }
-    return 0;
+    add_peer(peer);
+  }
+  return 0;
 }
 
 }

@@ -25,35 +25,35 @@ namespace brpc {
 
 class PProfService : public pprof {
 public:
-    void profile(::google::protobuf::RpcController* controller,
-                 const ::brpc::ProfileRequest* request,
-                 ::brpc::ProfileResponse* response,
-                 ::google::protobuf::Closure* done);
+  void profile(::google::protobuf::RpcController* controller,
+         const ::brpc::ProfileRequest* request,
+         ::brpc::ProfileResponse* response,
+         ::google::protobuf::Closure* done);
 
-    void contention(::google::protobuf::RpcController* controller,
-                    const ::brpc::ProfileRequest* request,
-                    ::brpc::ProfileResponse* response,
-                    ::google::protobuf::Closure* done);
-    
-    void heap(::google::protobuf::RpcController* controller,
-              const ::brpc::ProfileRequest* request,
-              ::brpc::ProfileResponse* response,
-              ::google::protobuf::Closure* done);
+  void contention(::google::protobuf::RpcController* controller,
+          const ::brpc::ProfileRequest* request,
+          ::brpc::ProfileResponse* response,
+          ::google::protobuf::Closure* done);
+  
+  void heap(::google::protobuf::RpcController* controller,
+        const ::brpc::ProfileRequest* request,
+        ::brpc::ProfileResponse* response,
+        ::google::protobuf::Closure* done);
 
-    void growth(::google::protobuf::RpcController* controller,
-                const ::brpc::ProfileRequest* request,
-                ::brpc::ProfileResponse* response,
-                ::google::protobuf::Closure* done);
+  void growth(::google::protobuf::RpcController* controller,
+        const ::brpc::ProfileRequest* request,
+        ::brpc::ProfileResponse* response,
+        ::google::protobuf::Closure* done);
 
-    void symbol(::google::protobuf::RpcController* controller,
-                const ::brpc::ProfileRequest* request,
-                ::brpc::ProfileResponse* response,
-                ::google::protobuf::Closure* done);
+  void symbol(::google::protobuf::RpcController* controller,
+        const ::brpc::ProfileRequest* request,
+        ::brpc::ProfileResponse* response,
+        ::google::protobuf::Closure* done);
 
-    void cmdline(::google::protobuf::RpcController* controller,
-                 const ::brpc::ProfileRequest* request,
-                 ::brpc::ProfileResponse* response,
-                 ::google::protobuf::Closure* done);
+  void cmdline(::google::protobuf::RpcController* controller,
+         const ::brpc::ProfileRequest* request,
+         ::brpc::ProfileResponse* response,
+         ::google::protobuf::Closure* done);
 };
 
 } // namespace brpc

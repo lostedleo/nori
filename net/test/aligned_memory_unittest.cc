@@ -7,7 +7,7 @@
 #include <gtest/gtest.h>
 
 #define EXPECT_ALIGNED(ptr, align) \
-    EXPECT_EQ(0u, reinterpret_cast<uintptr_t>(ptr) & (align - 1))
+  EXPECT_EQ(0u, reinterpret_cast<uintptr_t>(ptr) & (align - 1))
 
 namespace {
 
@@ -32,8 +32,8 @@ TEST(AlignedMemoryTest, StaticAlignment) {
 
 // stack alignment is buggy before gcc 4.6
 // https://gcc.gnu.org/bugzilla/show_bug.cgi?id=16660
-#if defined(COMPILER_GCC) &&                                    \
-    ( __GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 6))
+#if defined(COMPILER_GCC) &&                  \
+  ( __GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 6))
 #define GOOD_GCC_STACK_ALIGNMENT
 #endif
 
@@ -51,8 +51,8 @@ TEST(AlignedMemoryTest, StackAlignment) {
 
   // TODO(ios): __attribute__((aligned(X))) with X >= 128 does not works on
   // the stack when building for arm64 on iOS, http://crbug.com/349003
-#if !(defined(OS_IOS) && defined(ARCH_CPU_ARM64)) &&    \
-    defined(GOOD_GCC_STACK_ALIGNMENT)
+#if !(defined(OS_IOS) && defined(ARCH_CPU_ARM64)) &&  \
+  defined(GOOD_GCC_STACK_ALIGNMENT)
   EXPECT_ALIGNED(raw128.void_data(), 128);
 
   // NaCl x86-64 compiler emits non-validating instructions for >128
@@ -62,14 +62,14 @@ TEST(AlignedMemoryTest, StackAlignment) {
   // this limitation and this #if should be removed.
   // https://code.google.com/p/nativeclient/issues/detail?id=3463
 #if !(defined(OS_NACL) && defined(ARCH_CPU_X86_64)) &&  \
-    defined(GOOD_GCC_STACK_ALIGNMENT)
+  defined(GOOD_GCC_STACK_ALIGNMENT)
   AlignedMemory<8, 256> raw256;
   EXPECT_EQ(256u, ALIGNOF(raw256));
   EXPECT_ALIGNED(raw256.void_data(), 256);
 
   // TODO(ios): This test hits an armv7 bug in clang. crbug.com/138066
-#if !(defined(OS_IOS) && defined(ARCH_CPU_ARM_FAMILY)) &&       \
-    defined(GOOD_GCC_STACK_ALIGNMENT)
+#if !(defined(OS_IOS) && defined(ARCH_CPU_ARM_FAMILY)) &&     \
+  defined(GOOD_GCC_STACK_ALIGNMENT)
   AlignedMemory<8, 4096> raw4096;
   EXPECT_EQ(4096u, ALIGNOF(raw4096));
   EXPECT_ALIGNED(raw4096.void_data(), 4096);
@@ -102,7 +102,7 @@ TEST(AlignedMemoryTest, DynamicAllocation) {
 
 TEST(AlignedMemoryTest, ScopedDynamicAllocation) {
   scoped_ptr<float, butil::AlignedFreeDeleter> p(
-      static_cast<float*>(butil::AlignedAlloc(8, 8)));
+    static_cast<float*>(butil::AlignedAlloc(8, 8)));
   EXPECT_TRUE(p.get());
   EXPECT_ALIGNED(p.get(), 8);
 }

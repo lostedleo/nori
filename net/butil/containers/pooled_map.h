@@ -85,10 +85,10 @@ template <class T1, size_t BLOCK_SIZE> class PooledAllocator;
 // Randomly erasing 10000 from FlatMap/std::map/butil::PooledMap/butil::hash_map takes 7/299/246/88
 
 template <typename K, typename V, size_t BLOCK_SIZE = 512,
-          typename C = std::less<K> >
+      typename C = std::less<K> >
 class PooledMap
-    : public std::map<K, V, C, details::PooledAllocator<std::pair<const K, V>, BLOCK_SIZE> > {
-    
+  : public std::map<K, V, C, details::PooledAllocator<std::pair<const K, V>, BLOCK_SIZE> > {
+  
 };
 
 namespace details {
@@ -96,73 +96,73 @@ namespace details {
 template <size_t BLOCK_SIZE>
 class PooledAllocator<void, BLOCK_SIZE> {
 public:
-    typedef void * pointer;
-    typedef const void* const_pointer;
-    typedef void value_type;
-    template <class U1> struct rebind {
-        typedef PooledAllocator<U1, BLOCK_SIZE> other;
-    };
+  typedef void * pointer;
+  typedef const void* const_pointer;
+  typedef void value_type;
+  template <class U1> struct rebind {
+    typedef PooledAllocator<U1, BLOCK_SIZE> other;
+  };
 };
 
 template <class T1, size_t BLOCK_SIZE>
 class PooledAllocator {
 public:
-    typedef T1 value_type;
-    typedef size_t size_type;
-    typedef ptrdiff_t difference_type;
-    typedef T1* pointer;
-    typedef const T1* const_pointer;
-    typedef T1& reference;
-    typedef const T1& const_reference;
-    template <class U1> struct rebind {
-        typedef PooledAllocator<U1, BLOCK_SIZE> other;
-    };
-    
+  typedef T1 value_type;
+  typedef size_t size_type;
+  typedef ptrdiff_t difference_type;
+  typedef T1* pointer;
+  typedef const T1* const_pointer;
+  typedef T1& reference;
+  typedef const T1& const_reference;
+  template <class U1> struct rebind {
+    typedef PooledAllocator<U1, BLOCK_SIZE> other;
+  };
+  
 public:
-    PooledAllocator() {}
-    PooledAllocator(const PooledAllocator&) {}
-    template <typename U1, size_t BS2>
-    PooledAllocator(const PooledAllocator<U1, BS2>&) {}
-    void operator=(const PooledAllocator&) {}
-    template <typename U1, size_t BS2>
-    void operator=(const PooledAllocator<U1, BS2>&) {}
+  PooledAllocator() {}
+  PooledAllocator(const PooledAllocator&) {}
+  template <typename U1, size_t BS2>
+  PooledAllocator(const PooledAllocator<U1, BS2>&) {}
+  void operator=(const PooledAllocator&) {}
+  template <typename U1, size_t BS2>
+  void operator=(const PooledAllocator<U1, BS2>&) {}
 
-    void swap(PooledAllocator& other) { _pool.swap(other._pool); }
+  void swap(PooledAllocator& other) { _pool.swap(other._pool); }
 
-    // Convert references to pointers.
-    pointer address(reference r) const { return &r; }
-    const_pointer address(const_reference r) const { return &r; }
+  // Convert references to pointers.
+  pointer address(reference r) const { return &r; }
+  const_pointer address(const_reference r) const { return &r; }
 
-    // Allocate storage for n values of T1.
-    pointer allocate(size_type n, PooledAllocator<void, 0>::const_pointer = 0) {
-        if (n == 1) {
-            return (pointer)_pool.get();
-        } else {
-            return (pointer)malloc(n * sizeof(T1));
-        }
+  // Allocate storage for n values of T1.
+  pointer allocate(size_type n, PooledAllocator<void, 0>::const_pointer = 0) {
+    if (n == 1) {
+      return (pointer)_pool.get();
+    } else {
+      return (pointer)malloc(n * sizeof(T1));
     }
+  }
 
-    // Deallocate storage obtained by a call to allocate.
-    void deallocate(pointer p, size_type n) {
-        if (n == 1) {
-            return _pool.back(p);
-        } else {
-            free(p);
-        }
+  // Deallocate storage obtained by a call to allocate.
+  void deallocate(pointer p, size_type n) {
+    if (n == 1) {
+      return _pool.back(p);
+    } else {
+      free(p);
     }
+  }
 
-    // Return the largest possible storage available through a call to allocate.
-    size_type max_size() const { return 0xFFFFFFFF / sizeof(T1); }
+  // Return the largest possible storage available through a call to allocate.
+  size_type max_size() const { return 0xFFFFFFFF / sizeof(T1); }
 
-    void construct(pointer ptr) { ::new (ptr) T1; }
-    void construct(pointer ptr, const T1& val) { ::new (ptr) T1(val); }
-    template <class U1> void construct(pointer ptr, const U1& val)
-    { ::new (ptr) T1(val); }
+  void construct(pointer ptr) { ::new (ptr) T1; }
+  void construct(pointer ptr, const T1& val) { ::new (ptr) T1(val); }
+  template <class U1> void construct(pointer ptr, const U1& val)
+  { ::new (ptr) T1(val); }
 
-    void destroy(pointer p) { p->T1::~T1(); }
+  void destroy(pointer p) { p->T1::~T1(); }
 
 private:
-    butil::SingleThreadedPool<sizeof(T1), BLOCK_SIZE, 1> _pool;
+  butil::SingleThreadedPool<sizeof(T1), BLOCK_SIZE, 1> _pool;
 };
 
 // Return true if b could be used to deallocate storage obtained through a
@@ -182,14 +182,14 @@ bool operator!=(const PooledAllocator<T1, S1>& a, const PooledAllocator<T2, S2>&
 #if !defined(BUTIL_CXX11_ENABLED)
 #include <algorithm>  // std::swap until C++11
 #else
-#include <utility>    // std::swap since C++11
+#include <utility>  // std::swap since C++11
 #endif
 
 namespace std {
 template <class T1, size_t BLOCK_SIZE>
 inline void swap(::butil::details::PooledAllocator<T1, BLOCK_SIZE> &lhs,
-                 ::butil::details::PooledAllocator<T1, BLOCK_SIZE> &rhs){
-    lhs.swap(rhs);
+         ::butil::details::PooledAllocator<T1, BLOCK_SIZE> &rhs){
+  lhs.swap(rhs);
 }
 }  // namespace std
 

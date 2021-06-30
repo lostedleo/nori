@@ -30,11 +30,11 @@ class ThreadCheckerClass : public ThreadChecker {
 
   // Verifies that it was called on the same thread as the constructor.
   void DoStuff() {
-    DCHECK(CalledOnValidThread());
+  DCHECK(CalledOnValidThread());
   }
 
   void DetachFromThread() {
-    ThreadChecker::DetachFromThread();
+  ThreadChecker::DetachFromThread();
   }
 
   static void MethodOnDifferentThreadImpl();
@@ -48,12 +48,12 @@ class ThreadCheckerClass : public ThreadChecker {
 class CallDoStuffOnThread : public butil::SimpleThread {
  public:
   explicit CallDoStuffOnThread(ThreadCheckerClass* thread_checker_class)
-      : SimpleThread("call_do_stuff_on_thread"),
-        thread_checker_class_(thread_checker_class) {
+    : SimpleThread("call_do_stuff_on_thread"),
+    thread_checker_class_(thread_checker_class) {
   }
 
   virtual void Run() OVERRIDE {
-    thread_checker_class_->DoStuff();
+  thread_checker_class_->DoStuff();
   }
 
  private:
@@ -66,13 +66,13 @@ class CallDoStuffOnThread : public butil::SimpleThread {
 class DeleteThreadCheckerClassOnThread : public butil::SimpleThread {
  public:
   explicit DeleteThreadCheckerClassOnThread(
-      ThreadCheckerClass* thread_checker_class)
-      : SimpleThread("delete_thread_checker_class_on_thread"),
-        thread_checker_class_(thread_checker_class) {
+    ThreadCheckerClass* thread_checker_class)
+    : SimpleThread("delete_thread_checker_class_on_thread"),
+    thread_checker_class_(thread_checker_class) {
   }
 
   virtual void Run() OVERRIDE {
-    thread_checker_class_.reset();
+  thread_checker_class_.reset();
   }
 
  private:
@@ -85,7 +85,7 @@ class DeleteThreadCheckerClassOnThread : public butil::SimpleThread {
 
 TEST(ThreadCheckerTest, CallsAllowedOnSameThread) {
   scoped_ptr<ThreadCheckerClass> thread_checker_class(
-      new ThreadCheckerClass);
+    new ThreadCheckerClass);
 
   // Verify that DoStuff doesn't assert.
   thread_checker_class->DoStuff();
@@ -96,12 +96,12 @@ TEST(ThreadCheckerTest, CallsAllowedOnSameThread) {
 
 TEST(ThreadCheckerTest, DestructorAllowedOnDifferentThread) {
   scoped_ptr<ThreadCheckerClass> thread_checker_class(
-      new ThreadCheckerClass);
+    new ThreadCheckerClass);
 
   // Verify that the destructor doesn't assert
   // when called on a different thread.
   DeleteThreadCheckerClassOnThread delete_on_thread(
-      thread_checker_class.release());
+    thread_checker_class.release());
 
   delete_on_thread.Start();
   delete_on_thread.Join();
@@ -109,7 +109,7 @@ TEST(ThreadCheckerTest, DestructorAllowedOnDifferentThread) {
 
 TEST(ThreadCheckerTest, DetachFromThread) {
   scoped_ptr<ThreadCheckerClass> thread_checker_class(
-      new ThreadCheckerClass);
+    new ThreadCheckerClass);
 
   // Verify that DoStuff doesn't assert when called on a different thread after
   // a call to DetachFromThread.
@@ -124,7 +124,7 @@ TEST(ThreadCheckerTest, DetachFromThread) {
 
 void ThreadCheckerClass::MethodOnDifferentThreadImpl() {
   scoped_ptr<ThreadCheckerClass> thread_checker_class(
-      new ThreadCheckerClass);
+    new ThreadCheckerClass);
 
   // DoStuff should assert in debug builds only when called on a
   // different thread.
@@ -137,8 +137,8 @@ void ThreadCheckerClass::MethodOnDifferentThreadImpl() {
 #if ENABLE_THREAD_CHECKER
 TEST(ThreadCheckerDeathTest, MethodNotAllowedOnDifferentThreadInDebug) {
   ASSERT_DEATH({
-      ThreadCheckerClass::MethodOnDifferentThreadImpl();
-    }, "");
+    ThreadCheckerClass::MethodOnDifferentThreadImpl();
+  }, "");
 }
 #else
 TEST(ThreadCheckerTest, MethodAllowedOnDifferentThreadInRelease) {
@@ -148,7 +148,7 @@ TEST(ThreadCheckerTest, MethodAllowedOnDifferentThreadInRelease) {
 
 void ThreadCheckerClass::DetachThenCallFromDifferentThreadImpl() {
   scoped_ptr<ThreadCheckerClass> thread_checker_class(
-      new ThreadCheckerClass);
+    new ThreadCheckerClass);
 
   // DoStuff doesn't assert when called on a different thread
   // after a call to DetachFromThread.
@@ -166,8 +166,8 @@ void ThreadCheckerClass::DetachThenCallFromDifferentThreadImpl() {
 #if ENABLE_THREAD_CHECKER
 TEST(ThreadCheckerDeathTest, DetachFromThreadInDebug) {
   ASSERT_DEATH({
-    ThreadCheckerClass::DetachThenCallFromDifferentThreadImpl();
-    }, "");
+  ThreadCheckerClass::DetachThenCallFromDifferentThreadImpl();
+  }, "");
 }
 #else
 TEST(ThreadCheckerTest, DetachFromThreadInRelease) {

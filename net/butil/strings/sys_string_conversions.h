@@ -46,9 +46,9 @@ BUTIL_EXPORT std::wstring SysNativeMBToWide(const StringPiece& native_mb);
 // code page identifier is one accepted by the Windows function
 // MultiByteToWideChar().
 BUTIL_EXPORT std::wstring SysMultiByteToWide(const StringPiece& mb,
-                                            uint32_t code_page);
+                      uint32_t code_page);
 BUTIL_EXPORT std::string SysWideToMultiByte(const std::wstring& wide,
-                                           uint32_t code_page);
+                       uint32_t code_page);
 
 #endif  // defined(OS_WIN)
 

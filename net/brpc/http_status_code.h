@@ -25,48 +25,48 @@ namespace brpc {
 // Read the description of a status code carefully before using it
 
 // http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html
-// Status-Code    =
-//        "100"  ; Section 10.1.1: Continue
-//      | "101"  ; Section 10.1.2: Switching Protocols
-//      | "200"  ; Section 10.2.1: OK
-//      | "201"  ; Section 10.2.2: Created
-//      | "202"  ; Section 10.2.3: Accepted
-//      | "203"  ; Section 10.2.4: Non-Authoritative Information
-//      | "204"  ; Section 10.2.5: No Content
-//      | "205"  ; Section 10.2.6: Reset Content
-//      | "206"  ; Section 10.2.7: Partial Content
-//      | "300"  ; Section 10.3.1: Multiple Choices
-//      | "301"  ; Section 10.3.2: Moved Permanently
-//      | "302"  ; Section 10.3.3: Found
-//      | "303"  ; Section 10.3.4: See Other
-//      | "304"  ; Section 10.3.5: Not Modified
-//      | "305"  ; Section 10.3.6: Use Proxy
-//      | "307"  ; Section 10.3.8: Temporary Redirect
-//      | "400"  ; Section 10.4.1: Bad Request
-//      | "401"  ; Section 10.4.2: Unauthorized
-//      | "402"  ; Section 10.4.3: Payment Required
-//      | "403"  ; Section 10.4.4: Forbidden
-//      | "404"  ; Section 10.4.5: Not Found
-//      | "405"  ; Section 10.4.6: Method Not Allowed
-//      | "406"  ; Section 10.4.7: Not Acceptable
-//      | "407"  ; Section 10.4.8: Proxy Authentication Required
-//      | "408"  ; Section 10.4.9: Request Time-out
-//      | "409"  ; Section 10.4.10: Conflict
-//      | "410"  ; Section 10.4.11: Gone
-//      | "411"  ; Section 10.4.12: Length Required
-//      | "412"  ; Section 10.4.13: Precondition Failed
-//      | "413"  ; Section 10.4.14: Request Entity Too Large
-//      | "414"  ; Section 10.4.15: Request-URI Too Large
-//      | "415"  ; Section 10.4.16: Unsupported Media Type
-//      | "416"  ; Section 10.4.17: Requested range not satisfiable
-//      | "417"  ; Section 10.4.18: Expectation Failed
-//      | "500"  ; Section 10.5.1: Internal Server Error
-//      | "501"  ; Section 10.5.2: Not Implemented
-//      | "502"  ; Section 10.5.3: Bad Gateway
-//      | "503"  ; Section 10.5.4: Service Unavailable
-//      | "504"  ; Section 10.5.5: Gateway Time-out
-//      | "505"  ; Section 10.5.6: HTTP Version not supported
-//      | extension-code
+// Status-Code  =
+//    "100"  ; Section 10.1.1: Continue
+//    | "101"  ; Section 10.1.2: Switching Protocols
+//    | "200"  ; Section 10.2.1: OK
+//    | "201"  ; Section 10.2.2: Created
+//    | "202"  ; Section 10.2.3: Accepted
+//    | "203"  ; Section 10.2.4: Non-Authoritative Information
+//    | "204"  ; Section 10.2.5: No Content
+//    | "205"  ; Section 10.2.6: Reset Content
+//    | "206"  ; Section 10.2.7: Partial Content
+//    | "300"  ; Section 10.3.1: Multiple Choices
+//    | "301"  ; Section 10.3.2: Moved Permanently
+//    | "302"  ; Section 10.3.3: Found
+//    | "303"  ; Section 10.3.4: See Other
+//    | "304"  ; Section 10.3.5: Not Modified
+//    | "305"  ; Section 10.3.6: Use Proxy
+//    | "307"  ; Section 10.3.8: Temporary Redirect
+//    | "400"  ; Section 10.4.1: Bad Request
+//    | "401"  ; Section 10.4.2: Unauthorized
+//    | "402"  ; Section 10.4.3: Payment Required
+//    | "403"  ; Section 10.4.4: Forbidden
+//    | "404"  ; Section 10.4.5: Not Found
+//    | "405"  ; Section 10.4.6: Method Not Allowed
+//    | "406"  ; Section 10.4.7: Not Acceptable
+//    | "407"  ; Section 10.4.8: Proxy Authentication Required
+//    | "408"  ; Section 10.4.9: Request Time-out
+//    | "409"  ; Section 10.4.10: Conflict
+//    | "410"  ; Section 10.4.11: Gone
+//    | "411"  ; Section 10.4.12: Length Required
+//    | "412"  ; Section 10.4.13: Precondition Failed
+//    | "413"  ; Section 10.4.14: Request Entity Too Large
+//    | "414"  ; Section 10.4.15: Request-URI Too Large
+//    | "415"  ; Section 10.4.16: Unsupported Media Type
+//    | "416"  ; Section 10.4.17: Requested range not satisfiable
+//    | "417"  ; Section 10.4.18: Expectation Failed
+//    | "500"  ; Section 10.5.1: Internal Server Error
+//    | "501"  ; Section 10.5.2: Not Implemented
+//    | "502"  ; Section 10.5.3: Bad Gateway
+//    | "503"  ; Section 10.5.4: Service Unavailable
+//    | "504"  ; Section 10.5.5: Gateway Time-out
+//    | "505"  ; Section 10.5.6: HTTP Version not supported
+//    | extension-code
 
 // Return the reason phrase of a given status_code. 
 // "Unknown status code (|status_code|)" will be returned if the status_code is
@@ -112,7 +112,7 @@ int ErrorCodeToStatusCode(int error_code);
 //
 // See http://www.w3.org/Protocols/rfc2616/rfc2616-sec8.html#sec8.2.3 for
 // detailed discussion of the use and handling of this status code. 
-static const int HTTP_STATUS_CONTINUE                        = 100;
+static const int HTTP_STATUS_CONTINUE            = 100;
 
 // 101 Switching Protocols
 //
@@ -127,7 +127,7 @@ static const int HTTP_STATUS_CONTINUE                        = 100;
 // For example, switching to a newer version of HTTP is advantageous over
 // older versions, and switching to a real-time, synchronous protocol might
 // be advantageous when delivering resources that use such features. 
-static const int HTTP_STATUS_SWITCHING_PROTOCOLS             = 101;
+static const int HTTP_STATUS_SWITCHING_PROTOCOLS       = 101;
 
 // Successful 2xx
 // This class of status code indicates that the client's request was
@@ -138,13 +138,13 @@ static const int HTTP_STATUS_SWITCHING_PROTOCOLS             = 101;
 // The request has succeeded. The information returned with the response is
 // dependent on the method used in the request, for example:
 //  - GET an entity corresponding to the requested resource is sent in the
-//    response.
+//  response.
 //  - HEAD the entity-header fields corresponding to the requested resource
-//    are sent in the response without any message-body.
+//  are sent in the response without any message-body.
 //  - POST an entity describing or containing the result of the action;
 //  - TRACE an entity containing the request message as received by the end
-//    server. 
-static const int HTTP_STATUS_OK                              = 200;
+//  server. 
+static const int HTTP_STATUS_OK                = 200;
 
 // 201 Created
 //
@@ -164,7 +164,7 @@ static const int HTTP_STATUS_OK                              = 200;
 // current value of the entity tag for the requested variant just created;
 // see section 14.19
 // (http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html#sec14.19)
-static const int HTTP_STATUS_CREATED                         = 201;
+static const int HTTP_STATUS_CREATED             = 201;
 
 // 202 Accepted
 //
@@ -182,7 +182,7 @@ static const int HTTP_STATUS_CREATED                         = 201;
 // indication of the request's current status and either a pointer to a
 // status monitor or some estimate of when the user can expect the request
 // to be fulfilled. 
-static const int HTTP_STATUS_ACCEPTED                        = 202;
+static const int HTTP_STATUS_ACCEPTED            = 202;
 
 // 203 Non-Authoritative Information
 //
@@ -212,8 +212,8 @@ static const int HTTP_STATUS_NON_AUTHORITATIVE_INFORMATION   = 203;
 //
 // The 204 response MUST NOT include a message-body, and thus is always
 // terminated by the first empty line after the header fields. 
-static const int HTTP_STATUS_NO_CONTENT                      = 204;
-    
+static const int HTTP_STATUS_NO_CONTENT            = 204;
+  
 // 205 Reset Content
 //
 // The server has fulfilled the request and the user agent SHOULD reset the
@@ -222,7 +222,7 @@ static const int HTTP_STATUS_NO_CONTENT                      = 204;
 // input, followed by a clearing of the form in which the input is given so
 // that the user can easily initiate another input action. The response
 // MUST NOT include an entity. 
-static const int HTTP_STATUS_RESET_CONTENT                   = 205;
+static const int HTTP_STATUS_RESET_CONTENT           = 205;
 
 // 206 Partial Content
 //
@@ -234,18 +234,18 @@ static const int HTTP_STATUS_RESET_CONTENT                   = 205;
 //
 // The response MUST include the following header fields: 
 //   - Either a Content-Range header field (section 14.16
-//     http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html#sec14.16) 
-//     indicating the range included with this response, or a 
-//     multipart/byteranges Content-Type including Content-Range fields for
-//     each part. If a Content-Length header field is present in the 
-//     response, its value MUST match the actual number of OCTETs 
-//     transmitted in the message-body.
+//   http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html#sec14.16) 
+//   indicating the range included with this response, or a 
+//   multipart/byteranges Content-Type including Content-Range fields for
+//   each part. If a Content-Length header field is present in the 
+//   response, its value MUST match the actual number of OCTETs 
+//   transmitted in the message-body.
 //   - Date
 //   - ETag and/or Content-Location, if the header would have been sent
-//     in a 200 response to the same request
+//   in a 200 response to the same request
 //   - Expires, Cache-Control, and/or Vary, if the field-value might
-//     differ from that sent in any previous response for the same
-//     variant
+//   differ from that sent in any previous response for the same
+//   variant
 //
 // If the 206 response is the result of an If-Range request that used a
 // strong cache validator (see section 13.3.3
@@ -263,7 +263,7 @@ static const int HTTP_STATUS_RESET_CONTENT                   = 205;
 //
 // A cache that does not support the Range and Content-Range headers MUST
 // NOT cache 206 (Partial) responses. 
-static const int HTTP_STATUS_PARTIAL_CONTENT                 = 206;
+static const int HTTP_STATUS_PARTIAL_CONTENT         = 206;
 
 // Redirection 3xx
 // This class of status code indicates that further action needs to be
@@ -295,7 +295,7 @@ static const int HTTP_STATUS_PARTIAL_CONTENT                 = 206;
 // the specific URI for that representation in the Location field; user
 // agents MAY use the Location field value for automatic redirection. This
 // response is cacheable unless indicated otherwise. 
-static const int HTTP_STATUS_MULTIPLE_CHOICES                = 300;
+static const int HTTP_STATUS_MULTIPLE_CHOICES        = 300;
 
 // 301 Moved Permanently
 //
@@ -315,7 +315,7 @@ static const int HTTP_STATUS_MULTIPLE_CHOICES                = 300;
 // GET or HEAD, the user agent MUST NOT automatically redirect the request
 // unless it can be confirmed by the user, since this might change the
 // conditions under which the request was issued. 
-static const int HTTP_STATUS_MOVE_PERMANENTLY                = 301;
+static const int HTTP_STATUS_MOVE_PERMANENTLY        = 301;
 
 // 302 Found
 //
@@ -332,7 +332,7 @@ static const int HTTP_STATUS_MOVE_PERMANENTLY                = 301;
 // GET or HEAD, the user agent MUST NOT automatically redirect the request
 // unless it can be confirmed by the user, since this might change the
 // conditions under which the request was issued.
-static const int HTTP_STATUS_FOUND                           = 302;
+static const int HTTP_STATUS_FOUND               = 302;
 
 // 303 See Other
 //
@@ -347,7 +347,7 @@ static const int HTTP_STATUS_FOUND                           = 302;
 // The different URI SHOULD be given by the Location field in the response.
 // Unless the request method was HEAD, the entity of the response SHOULD
 // contain a short hypertext note with a hyperlink to the new URI(s). 
-static const int HTTP_STATUS_SEE_OTHER                       = 303;
+static const int HTTP_STATUS_SEE_OTHER             = 303;
 
 // 304 Not Modified
 //
@@ -359,13 +359,13 @@ static const int HTTP_STATUS_SEE_OTHER                       = 303;
 //
 // The response MUST include the following header fields: 
 //  - Date, unless its omission is required by section 14.18.1
-//    (http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html#sec14.18.1)
+//  (http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html#sec14.18.1)
 // If a clockless origin server obeys these rules, and proxies and clients
 // add their own Date to any response received without one (as already
 // specified by [RFC 2068], section 14.19
 // http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html#sec14.19), caches
 // will operate correctly. 
-static const int HTTP_STATUS_NOT_MODIFIED                    = 304;
+static const int HTTP_STATUS_NOT_MODIFIED          = 304;
 
 // 305 Use Proxy
 //
@@ -374,11 +374,11 @@ static const int HTTP_STATUS_NOT_MODIFIED                    = 304;
 // recipient is expected to repeat this single request via the proxy. 305
 // responses MUST only be generated by origin servers. 
 //
-//       Note: RFC 2068 was not clear that 305 was intended to redirect a
-//             single request, and to be generated by origin servers only.
-//             Not observing these limitations has significant security
-//             consequences.
-static const int HTTP_STATUS_USE_PROXY                       = 305;
+//     Note: RFC 2068 was not clear that 305 was intended to redirect a
+//       single request, and to be generated by origin servers only.
+//       Not observing these limitations has significant security
+//       consequences.
+static const int HTTP_STATUS_USE_PROXY             = 305;
 
 // 307 Temporary Redirect
 //
@@ -398,8 +398,8 @@ static const int HTTP_STATUS_USE_PROXY                       = 305;
 // GET or HEAD, the user agent MUST NOT automatically redirect the request
 // unless it can be confirmed by the user, since this might change the
 // conditions under which the request was issued. 
-static const int HTTP_STATUS_TEMPORARY_REDIRECT              = 307;
-    
+static const int HTTP_STATUS_TEMPORARY_REDIRECT        = 307;
+  
 // Client Error 4xx
 // The 4xx class of status code is intended for cases in which the client
 // seems to have erred. Except when responding to a HEAD request, the
@@ -419,7 +419,7 @@ static const int HTTP_STATUS_TEMPORARY_REDIRECT              = 307;
 // 400 Bad Request
 // The request could not be understood by the server due to malformed
 // syntax. The client SHOULD NOT repeat the request without modifications. 
-static const int HTTP_STATUS_BAD_REQUEST                     = 400;
+static const int HTTP_STATUS_BAD_REQUEST           = 400;
 
 // 401 Unauthorized
 //
@@ -435,12 +435,12 @@ static const int HTTP_STATUS_BAD_REQUEST                     = 400;
 // since that entity might include relevant diagnostic information. HTTP
 // access authentication is explained in "HTTP Authentication: Basic and
 // Digest Access Authentication" (http://www.ietf.org/rfc/rfc2617.txt)
-static const int HTTP_STATUS_UNAUTHORIZED                    = 401;
+static const int HTTP_STATUS_UNAUTHORIZED          = 401;
 
 // 402 Payment Required
 //
 // This code is reserved for future use. 
-static const int HTTP_STATUS_PAYMENT_REQUIRED                = 402;
+static const int HTTP_STATUS_PAYMENT_REQUIRED        = 402;
 
 // 403 Forbidden
 //
@@ -451,7 +451,7 @@ static const int HTTP_STATUS_PAYMENT_REQUIRED                = 402;
 // the refusal in the entity. If the server does not wish to make this
 // information available to the client, the status code 404 (Not Found) can
 // be used instead. 
-static const int HTTP_STATUS_FORBIDDEN                       = 403;
+static const int HTTP_STATUS_FORBIDDEN             = 403;
 
 // 404 Not Found
 //
@@ -462,14 +462,14 @@ static const int HTTP_STATUS_FORBIDDEN                       = 403;
 // unavailable and has no forwarding address. This status code is commonly
 // used when the server does not wish to reveal exactly why the request has
 // been refused, or when no other response is applicable. 
-static const int HTTP_STATUS_NOT_FOUND                       = 404;
+static const int HTTP_STATUS_NOT_FOUND             = 404;
 
 // 405 Method Not Allowed
 //
 // The method specified in the Request-Line is not allowed for the resource
 // identified by the Request-URI. The response MUST include an Allow header
 // containing a list of valid methods for the requested resource. 
-static const int HTTP_STATUS_METHOD_NOT_ALLOWED              = 405;
+static const int HTTP_STATUS_METHOD_NOT_ALLOWED        = 405;
 
 // 406 Not Acceptable
 //
@@ -485,7 +485,7 @@ static const int HTTP_STATUS_METHOD_NOT_ALLOWED              = 405;
 // capabilities of the user agent, selection of the most appropriate choice
 // MAY be performed automatically. However, this specification does not
 // define any standard for such automatic selection. 
-static const int HTTP_STATUS_NOT_ACCEPTABLE                  = 406;
+static const int HTTP_STATUS_NOT_ACCEPTABLE          = 406;
 
 // 407 Proxy Authentication Required
 // This code is similar to 401 (Unauthorized), but indicates that the client
@@ -502,7 +502,7 @@ static const int HTTP_STATUS_PROXY_AUTHENTICATION_REQUIRED   = 407;
 // The client did not produce a request within the time that the server was
 // prepared to wait. The client MAY repeat the request without modifications
 // at any later time. 
-static const int HTTP_STATUS_REQUEST_TIMEOUT                 = 408;
+static const int HTTP_STATUS_REQUEST_TIMEOUT         = 408;
 
 // 409 Conflict
 //
@@ -522,7 +522,7 @@ static const int HTTP_STATUS_REQUEST_TIMEOUT                 = 408;
 // that it can't complete the request. In this case, the response entity
 // would likely contain a list of the differences between the two versions
 // in a format defined by the response Content-Type. 
-static const int HTTP_STATUS_CONFLICT                        = 409;
+static const int HTTP_STATUS_CONFLICT            = 409;
 
 // 410 Gone
 //
@@ -542,7 +542,7 @@ static const int HTTP_STATUS_CONFLICT                        = 409;
 // working at the server's site. It is not necessary to mark all permanently
 // unavailable resources as "gone" or to keep the mark for any length of
 // time -- that is left to the discretion of the server owner. 
-static const int HTTP_STATUS_GONE                            = 410;
+static const int HTTP_STATUS_GONE              = 410;
 
 // 411 Length Required
 //
@@ -550,7 +550,7 @@ static const int HTTP_STATUS_GONE                            = 410;
 // Content-Length. The client MAY repeat the request if it adds a valid
 // Content-Length header field containing the length of the message-body in
 // the request message. 
-static const int HTTP_STATUS_LENGTH_REQUIRED                 = 411;
+static const int HTTP_STATUS_LENGTH_REQUIRED         = 411;
 
 // 412 Precondition Failed
 //
@@ -559,7 +559,7 @@ static const int HTTP_STATUS_LENGTH_REQUIRED                 = 411;
 // allows the client to place preconditions on the current resource
 // metainformation (header field data) and thus prevent the requested method
 // from being applied to a resource other than the one intended. 
-static const int HTTP_STATUS_PRECONDITION_FAILED             = 412;
+static const int HTTP_STATUS_PRECONDITION_FAILED       = 412;
 
 // 413 Request Entity Too Large
 //
@@ -570,7 +570,7 @@ static const int HTTP_STATUS_PRECONDITION_FAILED             = 412;
 // If the condition is temporary, the server SHOULD include a Retry-After
 // header field to indicate that it is temporary and after what time the
 // client MAY try again. 
-static const int HTTP_STATUS_REQUEST_ENTITY_TOO_LARGE        = 413;
+static const int HTTP_STATUS_REQUEST_ENTITY_TOO_LARGE    = 413;
 
 // 414 Request-URI Too Long
 //
@@ -583,14 +583,14 @@ static const int HTTP_STATUS_REQUEST_ENTITY_TOO_LARGE        = 413;
 // attack by a client attempting to exploit security holes present in some
 // servers using fixed-length buffers for reading or manipulating the
 // Request-URI. 
-static const int HTTP_STATUS_REQUEST_URI_TOO_LARG            = 414;
+static const int HTTP_STATUS_REQUEST_URI_TOO_LARG      = 414;
 
 // 415 Unsupported Media Type
 //
 // The server is refusing to service the request because the entity of the
 // request is in a format not supported by the requested resource for the
 // requested method. 
-static const int HTTP_STATUS_UNSUPPORTED_MEDIA_TYPE          = 415;
+static const int HTTP_STATUS_UNSUPPORTED_MEDIA_TYPE      = 415;
 
 // 416 Requested Range Not Satisfiable
 //
@@ -615,7 +615,7 @@ static const int HTTP_STATUS_REQUEST_RANGE_NOT_SATISFIABLE   = 416;
 // could not be met by this server, or, if the server is a proxy, the
 // server has unambiguous evidence that the request could not be met by the
 // next-hop server. 
-static const int HTTP_STATUS_EXPECTATION_FAILED              = 417;
+static const int HTTP_STATUS_EXPECTATION_FAILED        = 417;
 
 // Server Error 5xx
 //
@@ -631,7 +631,7 @@ static const int HTTP_STATUS_EXPECTATION_FAILED              = 417;
 //
 // The server encountered an unexpected condition which prevented it from
 // fulfilling the request. 
-static const int HTTP_STATUS_INTERNAL_SERVER_ERROR           = 500;
+static const int HTTP_STATUS_INTERNAL_SERVER_ERROR       = 500;
 
 // 501 Not Implemented
 //
@@ -639,14 +639,14 @@ static const int HTTP_STATUS_INTERNAL_SERVER_ERROR           = 500;
 // request. This is the appropriate response when the server does not
 // recognize the request method and is not capable of supporting it for any
 // resource. 
-static const int HTTP_STATUS_NOT_IMPLEMENTED                 = 501;
+static const int HTTP_STATUS_NOT_IMPLEMENTED         = 501;
 
 // 502 Bad Gateway
 //
 // The server, while acting as a gateway or proxy, received an invalid
 // response from the upstream server it accessed in attempting to fulfill
 // the request. 
-static const int HTTP_STATUS_BAD_GATEWAY                     = 502;
+static const int HTTP_STATUS_BAD_GATEWAY           = 502;
 
 // 503 Service Unavailable
 //
@@ -656,7 +656,7 @@ static const int HTTP_STATUS_BAD_GATEWAY                     = 502;
 // known, the length of the delay MAY be indicated in a Retry-After header.
 // If no Retry-After is given, the client SHOULD handle the response as it
 // would for a 500 response. 
-static const int HTTP_STATUS_SERVICE_UNAVAILABLE             = 503;
+static const int HTTP_STATUS_SERVICE_UNAVAILABLE       = 503;
 
 // 504 Gateway Timeout
 //
@@ -664,7 +664,7 @@ static const int HTTP_STATUS_SERVICE_UNAVAILABLE             = 503;
 // response from the upstream server specified by the URI (e.g. HTTP, FTP;
 // LDAP) or some other auxiliary server (e.g. DNS) it needed to access in
 // attempting to complete the request. 
-static const int HTTP_STATUS_GATEWAY_TIMEOUT                 = 504;
+static const int HTTP_STATUS_GATEWAY_TIMEOUT         = 504;
 
 // 505 HTTP Version Not Supported
 //
@@ -675,7 +675,7 @@ static const int HTTP_STATUS_GATEWAY_TIMEOUT                 = 504;
 // this error message. The response SHOULD contain an entity describing why
 // that version is not supported and what other protocols are supported by
 // that server. 
-static const int HTTP_STATUS_VERSION_NOT_SUPPORTED           = 505;
+static const int HTTP_STATUS_VERSION_NOT_SUPPORTED       = 505;
 
 } // namespace brpc
 

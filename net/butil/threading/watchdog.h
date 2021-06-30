@@ -33,8 +33,8 @@ class BUTIL_EXPORT Watchdog {
  public:
   // Constructor specifies how long the Watchdog will wait before alarming.
   Watchdog(const TimeDelta& duration,
-           const std::string& thread_watched_name,
-           bool enabled);
+       const std::string& thread_watched_name,
+       bool enabled);
   virtual ~Watchdog();
 
   // Notify watchdog thread to finish up. Sets the state_ to SHUTDOWN.
@@ -63,13 +63,13 @@ class BUTIL_EXPORT Watchdog {
  private:
   class ThreadDelegate : public PlatformThread::Delegate {
    public:
-    explicit ThreadDelegate(Watchdog* watchdog) : watchdog_(watchdog) {
-    }
-    virtual void ThreadMain() OVERRIDE;
+  explicit ThreadDelegate(Watchdog* watchdog) : watchdog_(watchdog) {
+  }
+  virtual void ThreadMain() OVERRIDE;
    private:
-    void SetThreadName() const;
+  void SetThreadName() const;
 
-    Watchdog* watchdog_;
+  Watchdog* watchdog_;
   };
 
   enum State {ARMED, DISARMED, SHUTDOWN, JOINABLE };

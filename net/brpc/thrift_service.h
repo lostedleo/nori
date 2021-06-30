@@ -19,8 +19,8 @@
 #ifndef BRPC_THRIFT_SERVICE_H
 #define BRPC_THRIFT_SERVICE_H
 
-#include "brpc/controller.h"                        // Controller
-#include "brpc/thrift_message.h"                    // ThriftFramedMessage
+#include "brpc/controller.h"            // Controller
+#include "brpc/thrift_message.h"          // ThriftFramedMessage
 #include "brpc/describable.h"
 
 namespace brpc {
@@ -37,23 +37,23 @@ void ProcessThriftRequest(InputMessageBase* msg_base);
 // Inherit this class to let brpc server understands thrift_binary requests.
 class ThriftService : public Describable {
 public:
-    ThriftService();
-    virtual ~ThriftService();
+  ThriftService();
+  virtual ~ThriftService();
 
-    // Implement this method to handle thrift_binary requests.
-    // Parameters:
-    //   controller  per-rpc settings. controller->Failed() is always false.
-    //   request     The thrift_binary request received.
-    //   response    The thrift_binary response that you should fill in.
-    //   done        You must call done->Run() to end the processing.
-    virtual void ProcessThriftFramedRequest(
-        Controller* controller,
-        ThriftFramedMessage* request,
-        ThriftFramedMessage* response,
-        ::google::protobuf::Closure* done) = 0;
+  // Implement this method to handle thrift_binary requests.
+  // Parameters:
+  //   controller  per-rpc settings. controller->Failed() is always false.
+  //   request   The thrift_binary request received.
+  //   response  The thrift_binary response that you should fill in.
+  //   done    You must call done->Run() to end the processing.
+  virtual void ProcessThriftFramedRequest(
+    Controller* controller,
+    ThriftFramedMessage* request,
+    ThriftFramedMessage* response,
+    ::google::protobuf::Closure* done) = 0;
 
-    // Put descriptions into the stream.
-    void Describe(std::ostream &os, const DescribeOptions&) const;
+  // Put descriptions into the stream.
+  void Describe(std::ostream &os, const DescribeOptions&) const;
 
 private:
 DISALLOW_COPY_AND_ASSIGN(ThriftService);
@@ -63,9 +63,9 @@ friend class StatusService;
 friend class Server;
 
 private:
-    void Expose(const butil::StringPiece& prefix);
-    
-    MethodStatus* _status;
+  void Expose(const butil::StringPiece& prefix);
+  
+  MethodStatus* _status;
 };
 
 } // namespace brpc

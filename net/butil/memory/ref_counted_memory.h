@@ -18,7 +18,7 @@ namespace butil {
 // of its two subclasses own the data they carry, and we need to have
 // heterogeneous containers of these two types of memory.
 class BUTIL_EXPORT RefCountedMemory
-    : public butil::RefCountedThreadSafe<RefCountedMemory> {
+  : public butil::RefCountedThreadSafe<RefCountedMemory> {
  public:
   // Retrieves a pointer to the beginning of the data we point to. If the data
   // is empty, this will return NULL.
@@ -32,7 +32,7 @@ class BUTIL_EXPORT RefCountedMemory
 
   // Handy method to simplify calling front() with a reinterpret_cast.
   template<typename T> const T* front_as() const {
-    return reinterpret_cast<const T*>(front());
+  return reinterpret_cast<const T*>(front());
   }
 
  protected:
@@ -46,10 +46,10 @@ class BUTIL_EXPORT RefCountedMemory
 class BUTIL_EXPORT RefCountedStaticMemory : public RefCountedMemory {
  public:
   RefCountedStaticMemory()
-      : data_(NULL), length_(0) {}
+    : data_(NULL), length_(0) {}
   RefCountedStaticMemory(const void* data, size_t length)
-      : data_(static_cast<const unsigned char*>(length ? data : NULL)),
-        length_(length) {}
+    : data_(static_cast<const unsigned char*>(length ? data : NULL)),
+    length_(length) {}
 
   // Overridden from RefCountedMemory:
   virtual const unsigned char* front() const OVERRIDE;

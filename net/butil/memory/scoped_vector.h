@@ -33,7 +33,7 @@ class ScopedVector {
   typedef typename std::vector<T*>::const_iterator const_iterator;
   typedef typename std::vector<T*>::reverse_iterator reverse_iterator;
   typedef typename std::vector<T*>::const_reverse_iterator
-      const_reverse_iterator;
+    const_reverse_iterator;
 
   ScopedVector() {}
   ~ScopedVector() { clear(); }
@@ -43,8 +43,8 @@ class ScopedVector {
 #endif
 
   ScopedVector& operator=(RValue rhs) {
-    swap(*rhs.object);
-    return *this;
+  swap(*rhs.object);
+  return *this;
   }
 
   reference operator[](size_t index) { return v_[index]; }
@@ -71,9 +71,9 @@ class ScopedVector {
   void push_back(T* elem) { v_.push_back(elem); }
 
   void pop_back() {
-    DCHECK(!empty());
-    delete v_.back();
-    v_.pop_back();
+  DCHECK(!empty());
+  delete v_.back();
+  v_.pop_back();
   }
 
   std::vector<T*>& get() { return v_; }
@@ -81,22 +81,22 @@ class ScopedVector {
   void swap(std::vector<T*>& other) { v_.swap(other); }
   void swap(ScopedVector<T>& other) { v_.swap(other.v_); }
   void release(std::vector<T*>* out) {
-    out->swap(v_);
-    v_.clear();
+  out->swap(v_);
+  v_.clear();
   }
 
   void reserve(size_t capacity) { v_.reserve(capacity); }
 
   // Resize, deleting elements in the disappearing range if we are shrinking.
   void resize(size_t new_size) {
-    if (v_.size() > new_size)
-      STLDeleteContainerPointers(v_.begin() + new_size, v_.end());
-    v_.resize(new_size);
+  if (v_.size() > new_size)
+    STLDeleteContainerPointers(v_.begin() + new_size, v_.end());
+  v_.resize(new_size);
   }
 
   template<typename InputIterator>
   void assign(InputIterator begin, InputIterator end) {
-    v_.assign(begin, end);
+  v_.assign(begin, end);
   }
 
   void clear() { STLDeleteElements(&v_); }
@@ -106,33 +106,33 @@ class ScopedVector {
 
   // Lets the ScopedVector take ownership of |x|.
   iterator insert(iterator position, T* x) {
-    return v_.insert(position, x);
+  return v_.insert(position, x);
   }
 
   // Lets the ScopedVector take ownership of elements in [first,last).
   template<typename InputIterator>
   void insert(iterator position, InputIterator first, InputIterator last) {
-    v_.insert(position, first, last);
+  v_.insert(position, first, last);
   }
 
   iterator erase(iterator position) {
-    delete *position;
-    return v_.erase(position);
+  delete *position;
+  return v_.erase(position);
   }
 
   iterator erase(iterator first, iterator last) {
-    STLDeleteContainerPointers(first, last);
-    return v_.erase(first, last);
+  STLDeleteContainerPointers(first, last);
+  return v_.erase(first, last);
   }
 
   // Like |erase()|, but doesn't delete the element at |position|.
   iterator weak_erase(iterator position) {
-    return v_.erase(position);
+  return v_.erase(position);
   }
 
   // Like |erase()|, but doesn't delete the elements in [first, last).
   iterator weak_erase(iterator first, iterator last) {
-    return v_.erase(first, last);
+  return v_.erase(first, last);
   }
 
  private:

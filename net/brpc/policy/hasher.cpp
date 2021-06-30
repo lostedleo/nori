@@ -26,51 +26,51 @@ namespace brpc {
 namespace policy {
 
 void MD5HashSignature(const void* key, size_t len, unsigned char* results) {
-    MD5_CTX my_md5;
-    MD5_Init(&my_md5);
-    MD5_Update(&my_md5, (const unsigned char *)key, len);
-    MD5_Final(results, &my_md5);
+  MD5_CTX my_md5;
+  MD5_Init(&my_md5);
+  MD5_Update(&my_md5, (const unsigned char *)key, len);
+  MD5_Final(results, &my_md5);
 }
 
 uint32_t MD5Hash32(const void* key, size_t len) {
-    unsigned char results[16];
-    MD5HashSignature(key, len, results);
-    return ((uint32_t) (results[3] & 0xFF) << 24) 
-            | ((uint32_t) (results[2] & 0xFF) << 16) 
-            | ((uint32_t) (results[1] & 0xFF) << 8)
-            | (results[0] & 0xFF);
+  unsigned char results[16];
+  MD5HashSignature(key, len, results);
+  return ((uint32_t) (results[3] & 0xFF) << 24) 
+      | ((uint32_t) (results[2] & 0xFF) << 16) 
+      | ((uint32_t) (results[1] & 0xFF) << 8)
+      | (results[0] & 0xFF);
 }
 
 uint32_t MD5Hash32V(const butil::StringPiece* keys, size_t num_keys) {
-    MD5_CTX ctx;
-    MD5_Init(&ctx);
-    for (size_t i = 0; i < num_keys; ++i) {
-        MD5_Update(&ctx, (const unsigned char *)keys[i].data(),
-                   keys[i].size());
-    }
-    unsigned char results[16];
-    MD5_Final(results, &ctx);
-    return ((uint32_t) (results[3] & 0xFF) << 24) 
-            | ((uint32_t) (results[2] & 0xFF) << 16) 
-            | ((uint32_t) (results[1] & 0xFF) << 8)
-            | (results[0] & 0xFF);
+  MD5_CTX ctx;
+  MD5_Init(&ctx);
+  for (size_t i = 0; i < num_keys; ++i) {
+    MD5_Update(&ctx, (const unsigned char *)keys[i].data(),
+           keys[i].size());
+  }
+  unsigned char results[16];
+  MD5_Final(results, &ctx);
+  return ((uint32_t) (results[3] & 0xFF) << 24) 
+      | ((uint32_t) (results[2] & 0xFF) << 16) 
+      | ((uint32_t) (results[1] & 0xFF) << 8)
+      | (results[0] & 0xFF);
 }
 
 uint32_t MurmurHash32(const void* key, size_t len) {
-    uint32_t hash;
-    butil::MurmurHash3_x86_32(key, (int)len, 0, &hash);
-    return hash;
+  uint32_t hash;
+  butil::MurmurHash3_x86_32(key, (int)len, 0, &hash);
+  return hash;
 }
 
 uint32_t MurmurHash32V(const butil::StringPiece* keys, size_t num_keys) {
-    butil::MurmurHash3_x86_32_Context ctx;
-    butil::MurmurHash3_x86_32_Init(&ctx, 0);
-    for (size_t i = 0; i < num_keys; ++i) {
-        butil::MurmurHash3_x86_32_Update(&ctx, keys[i].data(), keys[i].size());
-    }
-    uint32_t hash;
-    butil::MurmurHash3_x86_32_Final(&hash, &ctx);
-    return hash;
+  butil::MurmurHash3_x86_32_Context ctx;
+  butil::MurmurHash3_x86_32_Init(&ctx, 0);
+  for (size_t i = 0; i < num_keys; ++i) {
+    butil::MurmurHash3_x86_32_Update(&ctx, keys[i].data(), keys[i].size());
+  }
+  uint32_t hash;
+  butil::MurmurHash3_x86_32_Final(&hash, &ctx);
+  return hash;
 }
 
 /* The crc32 functions and data was originally written by Spencer
@@ -146,25 +146,25 @@ static const uint32_t crc32tab[256] = {
 };
 
 uint32_t CRCHash32(const void* key, size_t len) {
-    uint32_t crc = UINT_MAX;
-    for (size_t x = 0; x < len; x++) {
-        crc = (crc >> 8) ^ crc32tab[(crc ^ (uint32_t)((const char*)key)[x]) & 0xff];
-    }
-    return ((~crc) >> 16) & 0x7fff;
+  uint32_t crc = UINT_MAX;
+  for (size_t x = 0; x < len; x++) {
+    crc = (crc >> 8) ^ crc32tab[(crc ^ (uint32_t)((const char*)key)[x]) & 0xff];
+  }
+  return ((~crc) >> 16) & 0x7fff;
 }
 
 const char *GetHashName(HashFunc hasher) {
-    if (hasher == MurmurHash32) {
-        return "murmurhash3";
-    }
-    if (hasher == MD5Hash32) {
-        return "md5";
-    }
-    if (hasher == CRCHash32) {
-        return "crc32";
-    }
+  if (hasher == MurmurHash32) {
+    return "murmurhash3";
+  }
+  if (hasher == MD5Hash32) {
+    return "md5";
+  }
+  if (hasher == CRCHash32) {
+    return "crc32";
+  }
 
-    return "user_defined";
+  return "user_defined";
 }
 
 }  // namespace policy

@@ -24,16 +24,16 @@
 #include "brpc/http_status_code.h"
 
 class HttpStatusTest : public testing::Test {
-    void SetUp() {}
-    void TearDown() {}
+  void SetUp() {}
+  void TearDown() {}
 };
 
 TEST_F(HttpStatusTest, sanity) {
-    ASSERT_STREQ("OK", brpc::HttpReasonPhrase(
-                     brpc::HTTP_STATUS_OK));
-    ASSERT_STREQ("Continue", brpc::HttpReasonPhrase(
-                     brpc::HTTP_STATUS_CONTINUE));
-    ASSERT_STREQ("HTTP Version Not Supported", brpc::HttpReasonPhrase(
-                     brpc::HTTP_STATUS_VERSION_NOT_SUPPORTED));
-    ASSERT_STREQ("Unknown status code (-2)", brpc::HttpReasonPhrase(-2));
+  ASSERT_STREQ("OK", brpc::HttpReasonPhrase(
+           brpc::HTTP_STATUS_OK));
+  ASSERT_STREQ("Continue", brpc::HttpReasonPhrase(
+           brpc::HTTP_STATUS_CONTINUE));
+  ASSERT_STREQ("HTTP Version Not Supported", brpc::HttpReasonPhrase(
+           brpc::HTTP_STATUS_VERSION_NOT_SUPPORTED));
+  ASSERT_STREQ("Unknown status code (-2)", brpc::HttpReasonPhrase(-2));
 }

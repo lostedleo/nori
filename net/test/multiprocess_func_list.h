@@ -19,8 +19,8 @@
 //
 // Example usage:
 //  MULTIPROCESS_TEST_MAIN(a_test_func) {
-//    // Code here runs in a child process.
-//    return 0;
+//  // Code here runs in a child process.
+//  return 0;
 //  }
 //
 // The prototype of a_test_func is implicitly
@@ -41,8 +41,8 @@ class AppendMultiProcessTest {
   // |main_func_ptr| is the main function that is run in the child process.
   // |setup_func_ptr| is a function run when the global mapping is added.
   AppendMultiProcessTest(std::string test_name,
-                         TestMainFunctionPtr main_func_ptr,
-                         SetupFunctionPtr setup_func_ptr);
+             TestMainFunctionPtr main_func_ptr,
+             SetupFunctionPtr setup_func_ptr);
 };
 
 // Invoke the main function of a test previously registered with
@@ -60,8 +60,8 @@ int InvokeChildProcessTest(std::string test_name);
 #define MULTIPROCESS_TEST_MAIN_WITH_SETUP(test_main, test_setup) \
   int test_main(); \
   namespace { \
-    multi_process_function_list::AppendMultiProcessTest \
-    AddMultiProcessTest##_##test_main(#test_main, (test_main), (test_setup)); \
+  multi_process_function_list::AppendMultiProcessTest \
+  AddMultiProcessTest##_##test_main(#test_main, (test_main), (test_setup)); \
   } \
   int test_main()
 

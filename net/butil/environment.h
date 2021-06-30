@@ -40,7 +40,7 @@ class BUTIL_EXPORT Environment {
 
   // Returns true on success, otherwise returns false.
   virtual bool SetVar(const char* variable_name,
-                      const std::string& new_value) = 0;
+            const std::string& new_value) = 0;
 
   // Returns true on success, otherwise returns false.
   virtual bool UnSetVar(const char* variable_name) = 0;
@@ -51,7 +51,7 @@ class BUTIL_EXPORT Environment {
 
 typedef string16 NativeEnvironmentString;
 typedef std::map<NativeEnvironmentString, NativeEnvironmentString>
-    EnvironmentMap;
+  EnvironmentMap;
 
 // Returns a modified environment vector constructed from the given environment
 // and the list of changes given in |changes|. Each key in the environment is
@@ -64,13 +64,13 @@ typedef std::map<NativeEnvironmentString, NativeEnvironmentString>
 // marked by a double-null terminator. The size of the returned string will
 // include the terminators.
 BUTIL_EXPORT string16 AlterEnvironment(const wchar_t* env,
-                                      const EnvironmentMap& changes);
+                    const EnvironmentMap& changes);
 
 #elif defined(OS_POSIX)
 
 typedef std::string NativeEnvironmentString;
 typedef std::map<NativeEnvironmentString, NativeEnvironmentString>
-    EnvironmentMap;
+  EnvironmentMap;
 
 // See general comments for the Windows version above.
 //
@@ -80,8 +80,8 @@ typedef std::map<NativeEnvironmentString, NativeEnvironmentString>
 // there is only one pointer to manage, but this means that you can't copy the
 // array without keeping the original around.
 BUTIL_EXPORT scoped_ptr<char*[]> AlterEnvironment(
-    const char* const* env,
-    const EnvironmentMap& changes);
+  const char* const* env,
+  const EnvironmentMap& changes);
 
 #endif
 

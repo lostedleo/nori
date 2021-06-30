@@ -4,13 +4,13 @@
 // modification, are permitted provided that the following conditions are
 // met:
 //
-//     * Redistributions of source code must retain the above copyright
+//   * Redistributions of source code must retain the above copyright
 // notice, this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above
+//   * Redistributions in binary form must reproduce the above
 // copyright notice, this list of conditions and the following disclaimer
 // in the documentation and/or other materials provided with the
 // distribution.
-//     * Neither the name of Google Inc. nor the names of its
+//   * Neither the name of Google Inc. nor the names of its
 // contributors may be used to endorse or promote products derived from
 // this software without specific prior written permission.
 //
@@ -72,8 +72,8 @@ class Sink {
   // The default implementation just calls Append and frees "bytes".
   // Other implementations may avoid a copy while appending the buffer.
   virtual void AppendAndTakeOwnership(
-      char* bytes, size_t n, void (*deleter)(void*, const char*, size_t),
-      void *deleter_arg);
+    char* bytes, size_t n, void (*deleter)(void*, const char*, size_t),
+    void *deleter_arg);
 
   // Returns a writable buffer for appending and writes the buffer's capacity to
   // *allocated_size. Guarantees *allocated_size >= min_size.
@@ -99,8 +99,8 @@ class Sink {
   //
   // The default implementation always returns the scratch buffer.
   virtual char* GetAppendBufferVariable(
-      size_t min_size, size_t desired_size_hint, char* scratch,
-      size_t scratch_size, size_t* allocated_size);
+    size_t min_size, size_t desired_size_hint, char* scratch,
+    size_t scratch_size, size_t* allocated_size);
 
  private:
   // No copying
@@ -164,11 +164,11 @@ class UncheckedByteArraySink : public Sink {
   void Append(const char* data, size_t n) override;
   char* GetAppendBuffer(size_t len, char* scratch) override;
   char* GetAppendBufferVariable(
-      size_t min_size, size_t desired_size_hint, char* scratch,
-      size_t scratch_size, size_t* allocated_size) override;
+    size_t min_size, size_t desired_size_hint, char* scratch,
+    size_t scratch_size, size_t* allocated_size) override;
   void AppendAndTakeOwnership(
-      char* bytes, size_t n, void (*deleter)(void*, const char*, size_t),
-      void *deleter_arg) override;
+    char* bytes, size_t n, void (*deleter)(void*, const char*, size_t),
+    void *deleter_arg) override;
 
   // Return the current output pointer so that a caller can see how
   // many bytes were produced.

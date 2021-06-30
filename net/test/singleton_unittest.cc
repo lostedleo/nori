@@ -15,7 +15,7 @@ typedef void (*CallbackFunc)();
 class IntSingleton {
  public:
   static IntSingleton* GetInstance() {
-    return Singleton<IntSingleton>::get();
+  return Singleton<IntSingleton>::get();
   }
 
   int value_;
@@ -26,7 +26,7 @@ class Init5Singleton {
   struct Trait;
 
   static Init5Singleton* GetInstance() {
-    return Singleton<Init5Singleton, Trait>::get();
+  return Singleton<Init5Singleton, Trait>::get();
   }
 
   int value_;
@@ -34,9 +34,9 @@ class Init5Singleton {
 
 struct Init5Singleton::Trait : public DefaultSingletonTraits<Init5Singleton> {
   static Init5Singleton* New() {
-    Init5Singleton* instance = new Init5Singleton();
-    instance->value_ = 5;
-    return instance;
+  Init5Singleton* instance = new Init5Singleton();
+  instance->value_ = 5;
+  return instance;
   }
 };
 
@@ -51,9 +51,9 @@ int* SingletonInt5() {
 template <typename Type>
 struct CallbackTrait : public DefaultSingletonTraits<Type> {
   static void Delete(Type* instance) {
-    if (instance->callback_)
-      (instance->callback_)();
-    DefaultSingletonTraits<Type>::Delete(instance);
+  if (instance->callback_)
+    (instance->callback_)();
+  DefaultSingletonTraits<Type>::Delete(instance);
   }
 };
 
@@ -70,20 +70,20 @@ class CallbackSingletonWithNoLeakTrait : public CallbackSingleton {
   CallbackSingletonWithNoLeakTrait() : CallbackSingleton() { }
 
   static CallbackSingletonWithNoLeakTrait* GetInstance() {
-    return Singleton<CallbackSingletonWithNoLeakTrait, Trait>::get();
+  return Singleton<CallbackSingletonWithNoLeakTrait, Trait>::get();
   }
 };
 
 class CallbackSingletonWithLeakTrait : public CallbackSingleton {
  public:
   struct Trait : public CallbackTrait<CallbackSingletonWithLeakTrait> {
-    static const bool kRegisterAtExit = false;
+  static const bool kRegisterAtExit = false;
   };
 
   CallbackSingletonWithLeakTrait() : CallbackSingleton() { }
 
   static CallbackSingletonWithLeakTrait* GetInstance() {
-    return Singleton<CallbackSingletonWithLeakTrait, Trait>::get();
+  return Singleton<CallbackSingletonWithLeakTrait, Trait>::get();
   }
 };
 
@@ -94,17 +94,17 @@ class CallbackSingletonWithStaticTrait : public CallbackSingleton {
   CallbackSingletonWithStaticTrait() : CallbackSingleton() { }
 
   static CallbackSingletonWithStaticTrait* GetInstance() {
-    return Singleton<CallbackSingletonWithStaticTrait, Trait>::get();
+  return Singleton<CallbackSingletonWithStaticTrait, Trait>::get();
   }
 };
 
 struct CallbackSingletonWithStaticTrait::Trait
-    : public StaticMemorySingletonTraits<CallbackSingletonWithStaticTrait> {
+  : public StaticMemorySingletonTraits<CallbackSingletonWithStaticTrait> {
   static void Delete(CallbackSingletonWithStaticTrait* instance) {
-    if (instance->callback_)
-      (instance->callback_)();
-    StaticMemorySingletonTraits<CallbackSingletonWithStaticTrait>::Delete(
-        instance);
+  if (instance->callback_)
+    (instance->callback_)();
+  StaticMemorySingletonTraits<CallbackSingletonWithStaticTrait>::Delete(
+    instance);
   }
 };
 
@@ -114,8 +114,8 @@ class AlignedTestSingleton {
   AlignedTestSingleton() {}
   ~AlignedTestSingleton() {}
   static AlignedTestSingleton* GetInstance() {
-    return Singleton<AlignedTestSingleton,
-        StaticMemorySingletonTraits<AlignedTestSingleton> >::get();
+  return Singleton<AlignedTestSingleton,
+    StaticMemorySingletonTraits<AlignedTestSingleton> >::get();
   }
 
   Type type_;
@@ -136,7 +136,7 @@ CallbackFunc* GetLeakySingleton() {
 
 void DeleteLeakySingleton() {
   DefaultSingletonTraits<CallbackSingletonWithLeakTrait>::Delete(
-      CallbackSingletonWithLeakTrait::GetInstance());
+    CallbackSingletonWithLeakTrait::GetInstance());
 }
 
 void SingletonStatic(CallbackFunc CallOnQuit) {
@@ -154,40 +154,40 @@ class SingletonTest : public testing::Test {
   SingletonTest() {}
 
   virtual void SetUp() OVERRIDE {
-    non_leak_called_ = false;
-    leaky_called_ = false;
-    static_called_ = false;
+  non_leak_called_ = false;
+  leaky_called_ = false;
+  static_called_ = false;
   }
 
  protected:
   void VerifiesCallbacks() {
-    EXPECT_TRUE(non_leak_called_);
-    EXPECT_FALSE(leaky_called_);
-    EXPECT_TRUE(static_called_);
-    non_leak_called_ = false;
-    leaky_called_ = false;
-    static_called_ = false;
+  EXPECT_TRUE(non_leak_called_);
+  EXPECT_FALSE(leaky_called_);
+  EXPECT_TRUE(static_called_);
+  non_leak_called_ = false;
+  leaky_called_ = false;
+  static_called_ = false;
   }
 
   void VerifiesCallbacksNotCalled() {
-    EXPECT_FALSE(non_leak_called_);
-    EXPECT_FALSE(leaky_called_);
-    EXPECT_FALSE(static_called_);
-    non_leak_called_ = false;
-    leaky_called_ = false;
-    static_called_ = false;
+  EXPECT_FALSE(non_leak_called_);
+  EXPECT_FALSE(leaky_called_);
+  EXPECT_FALSE(static_called_);
+  non_leak_called_ = false;
+  leaky_called_ = false;
+  static_called_ = false;
   }
 
   static void CallbackNoLeak() {
-    non_leak_called_ = true;
+  non_leak_called_ = true;
   }
 
   static void CallbackLeak() {
-    leaky_called_ = true;
+  leaky_called_ = true;
   }
 
   static void CallbackStatic() {
-    static_called_ = true;
+  static_called_ = true;
   }
 
  private:
@@ -207,29 +207,29 @@ TEST_F(SingletonTest, Basic) {
   CallbackFunc* static_singleton;
 
   {
-    butil::ShadowingAtExitManager sem;
-    {
-      singleton_int = SingletonInt();
-    }
-    // Ensure POD type initialization.
-    EXPECT_EQ(*singleton_int, 0);
-    *singleton_int = 1;
+  butil::ShadowingAtExitManager sem;
+  {
+    singleton_int = SingletonInt();
+  }
+  // Ensure POD type initialization.
+  EXPECT_EQ(*singleton_int, 0);
+  *singleton_int = 1;
 
-    EXPECT_EQ(singleton_int, SingletonInt());
-    EXPECT_EQ(*singleton_int, 1);
+  EXPECT_EQ(singleton_int, SingletonInt());
+  EXPECT_EQ(*singleton_int, 1);
 
-    {
-      singleton_int_5 = SingletonInt5();
-    }
-    // Is default initialized to 5.
-    EXPECT_EQ(*singleton_int_5, 5);
+  {
+    singleton_int_5 = SingletonInt5();
+  }
+  // Is default initialized to 5.
+  EXPECT_EQ(*singleton_int_5, 5);
 
-    SingletonNoLeak(&CallbackNoLeak);
-    SingletonLeak(&CallbackLeak);
-    SingletonStatic(&CallbackStatic);
-    static_singleton = GetStaticSingleton();
-    leaky_singleton = GetLeakySingleton();
-    EXPECT_TRUE(leaky_singleton);
+  SingletonNoLeak(&CallbackNoLeak);
+  SingletonLeak(&CallbackLeak);
+  SingletonStatic(&CallbackStatic);
+  static_singleton = GetStaticSingleton();
+  leaky_singleton = GetLeakySingleton();
+  EXPECT_TRUE(leaky_singleton);
   }
 
   // Verify that only the expected callback has been called.
@@ -241,29 +241,29 @@ TEST_F(SingletonTest, Basic) {
   EXPECT_EQ(NULL, GetStaticSingleton());
 
   {
-    butil::ShadowingAtExitManager sem;
-    // Verifiy that the variables were reset.
-    {
-      singleton_int = SingletonInt();
-      EXPECT_EQ(*singleton_int, 0);
-    }
-    {
-      singleton_int_5 = SingletonInt5();
-      EXPECT_EQ(*singleton_int_5, 5);
-    }
-    {
-      // Resurrect the static singleton, and assert that it
-      // still points to the same (static) memory.
-      CallbackSingletonWithStaticTrait::Trait::Resurrect();
-      EXPECT_EQ(GetStaticSingleton(), static_singleton);
-    }
+  butil::ShadowingAtExitManager sem;
+  // Verifiy that the variables were reset.
+  {
+    singleton_int = SingletonInt();
+    EXPECT_EQ(*singleton_int, 0);
+  }
+  {
+    singleton_int_5 = SingletonInt5();
+    EXPECT_EQ(*singleton_int_5, 5);
+  }
+  {
+    // Resurrect the static singleton, and assert that it
+    // still points to the same (static) memory.
+    CallbackSingletonWithStaticTrait::Trait::Resurrect();
+    EXPECT_EQ(GetStaticSingleton(), static_singleton);
+  }
   }
   // The leaky singleton shouldn't leak since SingletonLeak has not been called.
   VerifiesCallbacksNotCalled();
 }
 
 #define EXPECT_ALIGNED(ptr, align) \
-    EXPECT_EQ(0u, reinterpret_cast<uintptr_t>(ptr) & (align - 1))
+  EXPECT_EQ(0u, reinterpret_cast<uintptr_t>(ptr) & (align - 1))
 
 TEST_F(SingletonTest, Alignment) {
   using butil::AlignedMemory;
@@ -272,13 +272,13 @@ TEST_F(SingletonTest, Alignment) {
   // requirements. By ordering this way, the linker will need to do some work to
   // ensure proper alignment of the static data.
   AlignedTestSingleton<int32_t>* align4 =
-      AlignedTestSingleton<int32_t>::GetInstance();
+    AlignedTestSingleton<int32_t>::GetInstance();
   AlignedTestSingleton<AlignedMemory<32, 32> >* align32 =
-      AlignedTestSingleton<AlignedMemory<32, 32> >::GetInstance();
+    AlignedTestSingleton<AlignedMemory<32, 32> >::GetInstance();
   AlignedTestSingleton<AlignedMemory<128, 128> >* align128 =
-      AlignedTestSingleton<AlignedMemory<128, 128> >::GetInstance();
+    AlignedTestSingleton<AlignedMemory<128, 128> >::GetInstance();
   AlignedTestSingleton<AlignedMemory<4096, 4096> >* align4096 =
-      AlignedTestSingleton<AlignedMemory<4096, 4096> >::GetInstance();
+    AlignedTestSingleton<AlignedMemory<4096, 4096> >::GetInstance();
 
   EXPECT_ALIGNED(align4, 4);
   EXPECT_ALIGNED(align32, 32);

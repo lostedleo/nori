@@ -47,7 +47,7 @@ extern int bthread_about_to_quit();
 // timer into *id.
 // Return 0 on success, errno otherwise.
 extern int bthread_timer_add(bthread_timer_t* id, timespec abstime,
-                             void (*on_timer)(void*), void* arg);
+               void (*on_timer)(void*), void* arg);
 
 // Unschedule the timer associated with `id'.
 // Returns: 0 - exist & not-run; 1 - still running; EINVAL - not exist.
@@ -65,7 +65,7 @@ extern int bthread_fd_wait(int fd, unsigned events);
 // or CLOCK_REALTIME reached `abstime' if abstime is not NULL.
 // Returns 0 on success, -1 otherwise and errno is set.
 extern int bthread_fd_timedwait(int fd, unsigned epoll_events,
-                                const timespec* abstime);
+                const timespec* abstime);
 
 // Close file descriptor `fd' and wake up all threads waiting on it.
 // User should call this function instead of close(2) if bthread_fd_wait,
@@ -77,7 +77,7 @@ extern int bthread_close(int fd);
 
 // Replacement of connect(2) in bthreads.
 extern int bthread_connect(int sockfd, const sockaddr* serv_addr,
-                           socklen_t addrlen);
+               socklen_t addrlen);
 
 // Add a startup function that each pthread worker will run at the beginning
 // To run code at the end, use butil::thread_atexit()
@@ -94,8 +94,8 @@ extern void bthread_stop_world();
 // return the data back to the creator in destructor. Without this arg, we
 // have to do an extra heap allocation to contain data and its creator.
 extern int bthread_key_create2(bthread_key_t* key,
-                               void (*destructor)(void* data, const void* dtor_arg),
-                               const void* dtor_arg);
+                 void (*destructor)(void* data, const void* dtor_arg),
+                 const void* dtor_arg);
 
 // CAUTION: functions marked with [RPC INTERNAL] are NOT supposed to be called
 // by RPC users.
@@ -116,14 +116,14 @@ extern int bthread_keytable_pool_destroy(bthread_keytable_pool_t*);
 // [RPC INTERNAL]
 // Put statistics of `pool' into `stat'.
 extern int bthread_keytable_pool_getstat(bthread_keytable_pool_t* pool,
-                                         bthread_keytable_pool_stat_t* stat);
+                     bthread_keytable_pool_stat_t* stat);
 
 // [RPC INTERNAL]
 // Reserve at most `nfree' keytables with `key' pointing to data created by
 // ctor(args).
 extern void bthread_keytable_pool_reserve(
-    bthread_keytable_pool_t* pool, size_t nfree,
-    bthread_key_t key, void* ctor(const void* args), const void* args);
+  bthread_keytable_pool_t* pool, size_t nfree,
+  bthread_key_t key, void* ctor(const void* args), const void* args);
 
 __END_DECLS
 

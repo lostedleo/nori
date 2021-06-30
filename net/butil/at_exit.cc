@@ -30,8 +30,8 @@ AtExitManager::AtExitManager() : next_manager_(g_top_manager) {
 
 AtExitManager::~AtExitManager() {
   if (!g_top_manager) {
-    NOTREACHED() << "Tried to ~AtExitManager without an AtExitManager";
-    return;
+  NOTREACHED() << "Tried to ~AtExitManager without an AtExitManager";
+  return;
   }
   DCHECK_EQ(this, g_top_manager);
 
@@ -43,8 +43,8 @@ AtExitManager::~AtExitManager() {
 void AtExitManager::RegisterCallback(AtExitCallbackType func, void* param) {
   DCHECK(func);
   if (!g_top_manager) {
-    NOTREACHED() << "Tried to RegisterCallback without an AtExitManager";
-    return;
+  NOTREACHED() << "Tried to RegisterCallback without an AtExitManager";
+  return;
   }
 
   AutoLock lock(g_top_manager->lock_);
@@ -54,16 +54,16 @@ void AtExitManager::RegisterCallback(AtExitCallbackType func, void* param) {
 // static
 void AtExitManager::ProcessCallbacksNow() {
   if (!g_top_manager) {
-    NOTREACHED() << "Tried to ProcessCallbacksNow without an AtExitManager";
-    return;
+  NOTREACHED() << "Tried to ProcessCallbacksNow without an AtExitManager";
+  return;
   }
 
   AutoLock lock(g_top_manager->lock_);
 
   while (!g_top_manager->stack_.empty()) {
-    Callback task = g_top_manager->stack_.top();
-    task.func(task.param);
-    g_top_manager->stack_.pop();
+  Callback task = g_top_manager->stack_.top();
+  task.func(task.param);
+  g_top_manager->stack_.pop();
   }
 }
 

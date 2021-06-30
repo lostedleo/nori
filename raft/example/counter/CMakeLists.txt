@@ -14,11 +14,11 @@ else()
 endif()
 
 if (LINK_TCMALLOC)
-  set(CMAKE_CXX_FLAGS "-DBRPC_ENABLE_CPU_PROFILER")
+  set(CMAKE_CPP_FLAGS "${CMAKE_CPP_FLAGS} -DBRPC_ENABLE_CPU_PROFILER")
   set (GPERFTOOLS_LIBRARIES gperftools)
 endif ()
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${CMAKE_CPP_FLAGS} -DNDEBUG -O2 -D__const__= -pipe -W -Wall -Wno-unused-parameter -fPIC -fno-omit-frame-pointer")
+set(CMAKE_CXX_FLAGS "${CMAKE_CPP_FLAGS}")
 
 add_executable(counter_client client.cpp ${PROTO_SRC} ${PROTO_HEADER})
 add_executable(counter_server server.cpp ${PROTO_SRC} ${PROTO_HEADER})

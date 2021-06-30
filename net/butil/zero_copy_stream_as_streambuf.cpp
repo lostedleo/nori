@@ -23,48 +23,48 @@
 namespace butil {
 
 BAIDU_CASSERT(sizeof(std::streambuf::char_type) == sizeof(char),
-              only_support_char);
+        only_support_char);
 
 int ZeroCopyStreamAsStreamBuf::overflow(int ch) {
-    if (ch == std::streambuf::traits_type::eof()) {
-        return ch;
-    }
-    void* block = NULL;
-    int size = 0;
-    if (_zero_copy_stream->Next(&block, &size)) {
-        setp((char*)block, (char*)block + size);
-        // if size == 0, this function will call overflow again.
-        return sputc(ch);
-    } else {
-        setp(NULL, NULL);
-        return std::streambuf::traits_type::eof();
-    }
+  if (ch == std::streambuf::traits_type::eof()) {
+    return ch;
+  }
+  void* block = NULL;
+  int size = 0;
+  if (_zero_copy_stream->Next(&block, &size)) {
+    setp((char*)block, (char*)block + size);
+    // if size == 0, this function will call overflow again.
+    return sputc(ch);
+  } else {
+    setp(NULL, NULL);
+    return std::streambuf::traits_type::eof();
+  }
 }
 
 int ZeroCopyStreamAsStreamBuf::sync() {
-    // data are already in IOBuf.
-    return 0;
+  // data are already in IOBuf.
+  return 0;
 }
 
 ZeroCopyStreamAsStreamBuf::~ZeroCopyStreamAsStreamBuf() {
-    shrink();
+  shrink();
 }
 
 void ZeroCopyStreamAsStreamBuf::shrink() {
-    if (pbase() != NULL) {
-        _zero_copy_stream->BackUp(epptr() - pptr());
-        setp(NULL, NULL);
-    }
+  if (pbase() != NULL) {
+    _zero_copy_stream->BackUp(epptr() - pptr());
+    setp(NULL, NULL);
+  }
 }
 
 std::streampos ZeroCopyStreamAsStreamBuf::seekoff(
-    std::streamoff off,
-    std::ios_base::seekdir way,
-    std::ios_base::openmode which) {
-    if (off == 0 && way == std::ios_base::cur) {
-        return _zero_copy_stream->ByteCount() - (epptr() - pptr());
-    }
-    return (std::streampos)(std::streamoff)-1;
+  std::streamoff off,
+  std::ios_base::seekdir way,
+  std::ios_base::openmode which) {
+  if (off == 0 && way == std::ios_base::cur) {
+    return _zero_copy_stream->ByteCount() - (epptr() - pptr());
+  }
+  return (std::streampos)(std::streamoff)-1;
 }
 
 

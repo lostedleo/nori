@@ -30,7 +30,7 @@ namespace butil {
 //   char input[] = "this is a test";
 //   CStringTokenizer t(input, input + strlen(input), " ");
 //   while (t.GetNext()) {
-//     printf("%s\n", t.token().c_str());
+//   printf("%s\n", t.token().c_str());
 //   }
 //
 // Output:
@@ -47,7 +47,7 @@ namespace butil {
 //   StringTokenizer t(input, ", ");
 //   t.set_quote_chars("\"");
 //   while (t.GetNext()) {
-//     printf("%s\n", t.token().c_str());
+//   printf("%s\n", t.token().c_str());
 //   }
 //
 // Output:
@@ -63,28 +63,28 @@ namespace butil {
 //   StringTokenizer t(input, "; =");
 //   t.set_options(StringTokenizer::RETURN_DELIMS);
 //   while (t.GetNext()) {
-//     if (t.token_is_delim()) {
-//       switch (*t.token_begin()) {
-//         case ';':
-//           next_is_option = true;
-//           break;
-//         case '=':
-//           next_is_value = true;
-//           break;
-//       }
-//     } else {
-//       const char* label;
-//       if (next_is_option) {
-//         label = "option-name";
-//         next_is_option = false;
-//       } else if (next_is_value) {
-//         label = "option-value";
-//         next_is_value = false;
-//       } else {
-//         label = "mime-type";
-//       }
-//       printf("%s: %s\n", label, t.token().c_str());
+//   if (t.token_is_delim()) {
+//     switch (*t.token_begin()) {
+//     case ';':
+//       next_is_option = true;
+//       break;
+//     case '=':
+//       next_is_value = true;
+//       break;
 //     }
+//   } else {
+//     const char* label;
+//     if (next_is_option) {
+//     label = "option-name";
+//     next_is_option = false;
+//     } else if (next_is_value) {
+//     label = "option-value";
+//     next_is_value = false;
+//     } else {
+//     label = "mime-type";
+//     }
+//     printf("%s: %s\n", label, t.token().c_str());
+//   }
 //   }
 //
 //
@@ -95,21 +95,21 @@ class StringTokenizerT {
 
   // Options that may be pass to set_options()
   enum {
-    // Specifies the delimiters should be returned as tokens
-    RETURN_DELIMS = 1 << 0,
+  // Specifies the delimiters should be returned as tokens
+  RETURN_DELIMS = 1 << 0,
   };
 
   // The string object must live longer than the tokenizer.  (In particular this
   // should not be constructed with a temporary.)
   StringTokenizerT(const str& string,
-                   const str& delims) {
-    Init(string.begin(), string.end(), delims);
+           const str& delims) {
+  Init(string.begin(), string.end(), delims);
   }
 
   StringTokenizerT(const_iterator string_begin,
-                   const_iterator string_end,
-                   const str& delims) {
-    Init(string_begin, string_end, delims);
+           const_iterator string_end,
+           const str& delims) {
+  Init(string_begin, string_end, delims);
   }
 
   // Set the options for this tokenizer.  By default, this is 0.
@@ -126,15 +126,15 @@ class StringTokenizerT {
   // returns false if the tokenizer is complete.  This method must be called
   // before calling any of the token* methods.
   bool GetNext() {
-    if (quotes_.empty() && options_ == 0)
-      return QuickGetNext();
-    else
-      return FullGetNext();
+  if (quotes_.empty() && options_ == 0)
+    return QuickGetNext();
+  else
+    return FullGetNext();
   }
 
   // Start iterating through tokens from the beginning of the string.
   void Reset() {
-    token_end_ = start_pos_;
+  token_end_ = start_pos_;
   }
 
   // Returns true if token is a delimiter.  When the tokenizer is constructed
@@ -148,95 +148,95 @@ class StringTokenizerT {
   const_iterator token_end() const { return token_end_; }
   str token() const { return str(token_begin_, token_end_); }
   butil::StringPiece token_piece() const {
-    return butil::StringPiece(&*token_begin_,
-                             std::distance(token_begin_, token_end_));
+  return butil::StringPiece(&*token_begin_,
+               std::distance(token_begin_, token_end_));
   }
 
  private:
   void Init(const_iterator string_begin,
-            const_iterator string_end,
-            const str& delims) {
-    start_pos_ = string_begin;
-    token_begin_ = string_begin;
-    token_end_ = string_begin;
-    end_ = string_end;
-    delims_ = delims;
-    options_ = 0;
-    token_is_delim_ = false;
+      const_iterator string_end,
+      const str& delims) {
+  start_pos_ = string_begin;
+  token_begin_ = string_begin;
+  token_end_ = string_begin;
+  end_ = string_end;
+  delims_ = delims;
+  options_ = 0;
+  token_is_delim_ = false;
   }
 
   // Implementation of GetNext() for when we have no quote characters. We have
   // two separate implementations because AdvanceOne() is a hot spot in large
   // text files with large tokens.
   bool QuickGetNext() {
-    token_is_delim_ = false;
-    for (;;) {
-      token_begin_ = token_end_;
-      if (token_end_ == end_)
-        return false;
-      ++token_end_;
-      if (delims_.find(*token_begin_) == str::npos)
-        break;
-      // else skip over delimiter.
-    }
-    while (token_end_ != end_ && delims_.find(*token_end_) == str::npos)
-      ++token_end_;
-    return true;
+  token_is_delim_ = false;
+  for (;;) {
+    token_begin_ = token_end_;
+    if (token_end_ == end_)
+    return false;
+    ++token_end_;
+    if (delims_.find(*token_begin_) == str::npos)
+    break;
+    // else skip over delimiter.
+  }
+  while (token_end_ != end_ && delims_.find(*token_end_) == str::npos)
+    ++token_end_;
+  return true;
   }
 
   // Implementation of GetNext() for when we have to take quotes into account.
   bool FullGetNext() {
-    AdvanceState state;
-    token_is_delim_ = false;
-    for (;;) {
-      token_begin_ = token_end_;
-      if (token_end_ == end_)
-        return false;
-      ++token_end_;
-      if (AdvanceOne(&state, *token_begin_))
-        break;
-      if (options_ & RETURN_DELIMS) {
-        token_is_delim_ = true;
-        return true;
-      }
-      // else skip over delimiter.
-    }
-    while (token_end_ != end_ && AdvanceOne(&state, *token_end_))
-      ++token_end_;
+  AdvanceState state;
+  token_is_delim_ = false;
+  for (;;) {
+    token_begin_ = token_end_;
+    if (token_end_ == end_)
+    return false;
+    ++token_end_;
+    if (AdvanceOne(&state, *token_begin_))
+    break;
+    if (options_ & RETURN_DELIMS) {
+    token_is_delim_ = true;
     return true;
+    }
+    // else skip over delimiter.
+  }
+  while (token_end_ != end_ && AdvanceOne(&state, *token_end_))
+    ++token_end_;
+  return true;
   }
 
   bool IsDelim(char_type c) const {
-    return delims_.find(c) != str::npos;
+  return delims_.find(c) != str::npos;
   }
 
   bool IsQuote(char_type c) const {
-    return quotes_.find(c) != str::npos;
+  return quotes_.find(c) != str::npos;
   }
 
   struct AdvanceState {
-    bool in_quote;
-    bool in_escape;
-    char_type quote_char;
-    AdvanceState() : in_quote(false), in_escape(false), quote_char('\0') {}
+  bool in_quote;
+  bool in_escape;
+  char_type quote_char;
+  AdvanceState() : in_quote(false), in_escape(false), quote_char('\0') {}
   };
 
   // Returns true if a delimiter was not hit.
   bool AdvanceOne(AdvanceState* state, char_type c) {
-    if (state->in_quote) {
-      if (state->in_escape) {
-        state->in_escape = false;
-      } else if (c == '\\') {
-        state->in_escape = true;
-      } else if (c == state->quote_char) {
-        state->in_quote = false;
-      }
-    } else {
-      if (IsDelim(c))
-        return false;
-      state->in_quote = IsQuote(state->quote_char = c);
+  if (state->in_quote) {
+    if (state->in_escape) {
+    state->in_escape = false;
+    } else if (c == '\\') {
+    state->in_escape = true;
+    } else if (c == state->quote_char) {
+    state->in_quote = false;
     }
-    return true;
+  } else {
+    if (IsDelim(c))
+    return false;
+    state->in_quote = IsQuote(state->quote_char = c);
+  }
+  return true;
   }
 
   const_iterator start_pos_;
@@ -250,9 +250,9 @@ class StringTokenizerT {
 };
 
 typedef StringTokenizerT<std::string, std::string::const_iterator>
-    StringTokenizer;
+  StringTokenizer;
 typedef StringTokenizerT<std::wstring, std::wstring::const_iterator>
-    WStringTokenizer;
+  WStringTokenizer;
 typedef StringTokenizerT<std::string, const char*> CStringTokenizer;
 
 }  // namespace butil

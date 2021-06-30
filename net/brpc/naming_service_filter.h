@@ -19,18 +19,18 @@
 #ifndef BRPC_NAMING_SERVICE_FILTER_H
 #define BRPC_NAMING_SERVICE_FILTER_H
 
-#include "brpc/naming_service.h"      // ServerNode
+#include "brpc/naming_service.h"    // ServerNode
 
 
 namespace brpc {
 
 class NamingServiceFilter {
 public:
-    virtual ~NamingServiceFilter() {}
+  virtual ~NamingServiceFilter() {}
 
-    // Return true to take this `server' as a candidate to issue RPC
-    // Return false to filter it out
-    virtual bool Accept(const ServerNode& server) const = 0;
+  // Return true to take this `server' as a candidate to issue RPC
+  // Return false to filter it out
+  virtual bool Accept(const ServerNode& server) const = 0;
 };
 
 } // namespace brpc

@@ -35,16 +35,16 @@ void ProcessNsheadRequest(InputMessageBase* msg);
 void ProcessNsheadResponse(InputMessageBase* msg);
 
 void SerializeNsheadRequest(butil::IOBuf* request_buf, Controller* controller,
-                            const google::protobuf::Message* request);
+              const google::protobuf::Message* request);
 
 void PackNsheadRequest(
-    butil::IOBuf* packet_buf,
-    SocketMessage**,
-    uint64_t correlation_id,
-    const google::protobuf::MethodDescriptor*,
-    Controller* controller,
-    const butil::IOBuf&,
-    const Authenticator*);
+  butil::IOBuf* packet_buf,
+  SocketMessage**,
+  uint64_t correlation_id,
+  const google::protobuf::MethodDescriptor*,
+  Controller* controller,
+  const butil::IOBuf&,
+  const Authenticator*);
 
 // Verify authentication information in nshead format
 bool VerifyNsheadRequest(const InputMessageBase *msg);

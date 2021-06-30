@@ -19,23 +19,23 @@
 #ifndef BRPC_COMPRESS_H
 #define BRPC_COMPRESS_H
 
-#include <google/protobuf/message.h>              // Message
-#include "butil/iobuf.h"                           // butil::IOBuf
-#include "brpc/options.pb.h"                     // CompressType
+#include <google/protobuf/message.h>        // Message
+#include "butil/iobuf.h"               // butil::IOBuf
+#include "brpc/options.pb.h"           // CompressType
 
 namespace brpc {
 
 struct CompressHandler {
-    // Compress serialized `msg' into `buf'.
-    // Returns true on success, false otherwise
-    bool (*Compress)(const google::protobuf::Message& msg, butil::IOBuf* buf);
+  // Compress serialized `msg' into `buf'.
+  // Returns true on success, false otherwise
+  bool (*Compress)(const google::protobuf::Message& msg, butil::IOBuf* buf);
 
-    // Parse decompressed `data' as `msg'.
-    // Returns true on success, false otherwise
-    bool (*Decompress)(const butil::IOBuf& data, google::protobuf::Message* msg);
+  // Parse decompressed `data' as `msg'.
+  // Returns true on success, false otherwise
+  bool (*Decompress)(const butil::IOBuf& data, google::protobuf::Message* msg);
 
-    // Name of the compression algorithm, must be string constant.
-    const char* name;
+  // Name of the compression algorithm, must be string constant.
+  const char* name;
 };
 
 // [NOT thread-safe] Register `handler' using key=`type'
@@ -51,14 +51,14 @@ void ListCompressHandler(std::vector<CompressHandler>* vec);
 // Parse decompressed `data' as `msg' using registered `compress_type'.
 // Returns true on success, false otherwise
 bool ParseFromCompressedData(const butil::IOBuf& data,
-                             google::protobuf::Message* msg,
-                             CompressType compress_type);
+               google::protobuf::Message* msg,
+               CompressType compress_type);
 
 // Compress serialized `msg' into `buf' using registered `compress_type'.
 // Returns true on success, false otherwise
 bool SerializeAsCompressedData(const google::protobuf::Message& msg,
-                               butil::IOBuf* buf,
-                               CompressType compress_type);
+                 butil::IOBuf* buf,
+                 CompressType compress_type);
 
 } // namespace brpc
 

@@ -18,15 +18,15 @@ class BUTIL_EXPORT CPU {
   CPU();
 
   enum IntelMicroArchitecture {
-    PENTIUM,
-    SSE,
-    SSE2,
-    SSE3,
-    SSSE3,
-    SSE41,
-    SSE42,
-    AVX,
-    MAX_INTEL_MICRO_ARCHITECTURE
+  PENTIUM,
+  SSE,
+  SSE2,
+  SSE3,
+  SSSE3,
+  SSE41,
+  SSE42,
+  AVX,
+  MAX_INTEL_MICRO_ARCHITECTURE
   };
 
   // Accessors for CPU information.
@@ -54,7 +54,7 @@ class BUTIL_EXPORT CPU {
   bool has_avx_hardware() const { return has_avx_hardware_; }
   bool has_aesni() const { return has_aesni_; }
   bool has_non_stop_time_stamp_counter() const {
-    return has_non_stop_time_stamp_counter_;
+  return has_non_stop_time_stamp_counter_;
   }
   IntelMicroArchitecture GetIntelMicroArchitecture() const;
   const std::string& cpu_brand() const { return cpu_brand_; }

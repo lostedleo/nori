@@ -4,7 +4,7 @@
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 // 
-//     http://www.apache.org/licenses/LICENSE-2.0
+//   http://www.apache.org/licenses/LICENSE-2.0
 // 
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -36,95 +36,95 @@ DEFINE_string(protocol, "http", "http or h2c");
 bvar::LatencyRecorder g_latency_recorder("client");
 
 static void* sender(void* arg) {
-    brpc::Channel* channel = static_cast<brpc::Channel*>(arg);
+  brpc::Channel* channel = static_cast<brpc::Channel*>(arg);
 
-    while (!brpc::IsAskedToQuit()) {
-        // We will receive response synchronously, safe to put variables
-        // on stack.
-        brpc::Controller cntl;
+  while (!brpc::IsAskedToQuit()) {
+    // We will receive response synchronously, safe to put variables
+    // on stack.
+    brpc::Controller cntl;
 
-        cntl.set_timeout_ms(FLAGS_timeout_ms/*milliseconds*/);
-        cntl.set_max_retry(FLAGS_max_retry);
-        cntl.http_request().uri() = FLAGS_url;
-        if (!FLAGS_data.empty()) {
-            cntl.http_request().set_method(brpc::HTTP_METHOD_POST);
-            cntl.request_attachment().append(FLAGS_data);
-        }
-
-        // Because `done'(last parameter) is NULL, this function waits until
-        // the response comes back or error occurs(including timedout).
-        channel->CallMethod(NULL, &cntl, NULL, NULL, NULL);
-        if (!cntl.Failed()) {
-            g_latency_recorder << cntl.latency_us();
-        } else {
-            CHECK(brpc::IsAskedToQuit() || !FLAGS_dont_fail)
-                << "error=" << cntl.ErrorText() << " latency=" << cntl.latency_us();
-            // We can't connect to the server, sleep a while. Notice that this
-            // is a specific sleeping to prevent this thread from spinning too
-            // fast. You should continue the business logic in a production 
-            // server rather than sleeping.
-            bthread_usleep(100000);
-        }
+    cntl.set_timeout_ms(FLAGS_timeout_ms/*milliseconds*/);
+    cntl.set_max_retry(FLAGS_max_retry);
+    cntl.http_request().uri() = FLAGS_url;
+    if (!FLAGS_data.empty()) {
+      cntl.http_request().set_method(brpc::HTTP_METHOD_POST);
+      cntl.request_attachment().append(FLAGS_data);
     }
-    return NULL;
+
+    // Because `done'(last parameter) is NULL, this function waits until
+    // the response comes back or error occurs(including timedout).
+    channel->CallMethod(NULL, &cntl, NULL, NULL, NULL);
+    if (!cntl.Failed()) {
+      g_latency_recorder << cntl.latency_us();
+    } else {
+      CHECK(brpc::IsAskedToQuit() || !FLAGS_dont_fail)
+        << "error=" << cntl.ErrorText() << " latency=" << cntl.latency_us();
+      // We can't connect to the server, sleep a while. Notice that this
+      // is a specific sleeping to prevent this thread from spinning too
+      // fast. You should continue the business logic in a production 
+      // server rather than sleeping.
+      bthread_usleep(100000);
+    }
+  }
+  return NULL;
 }
 
 int main(int argc, char* argv[]) {
-    // Parse gflags. We recommend you to use gflags as well.
-    google::ParseCommandLineFlags(&argc, &argv, true);
+  // Parse gflags. We recommend you to use gflags as well.
+  google::ParseCommandLineFlags(&argc, &argv, true);
 
-    // A Channel represents a communication line to a Server. Notice that 
-    // Channel is thread-safe and can be shared by all threads in your program.
-    brpc::Channel channel;
-    brpc::ChannelOptions options;
-    options.protocol = FLAGS_protocol;
-    options.connection_type = FLAGS_connection_type;
-    
-    // Initialize the channel, NULL means using default options. 
-    // options, see `brpc/channel.h'.
-    if (channel.Init(FLAGS_url.c_str(), FLAGS_load_balancer.c_str(), &options) != 0) {
-        LOG(ERROR) << "Fail to initialize channel";
-        return -1;
-    }
+  // A Channel represents a communication line to a Server. Notice that 
+  // Channel is thread-safe and can be shared by all threads in your program.
+  brpc::Channel channel;
+  brpc::ChannelOptions options;
+  options.protocol = FLAGS_protocol;
+  options.connection_type = FLAGS_connection_type;
+  
+  // Initialize the channel, NULL means using default options. 
+  // options, see `brpc/channel.h'.
+  if (channel.Init(FLAGS_url.c_str(), FLAGS_load_balancer.c_str(), &options) != 0) {
+    LOG(ERROR) << "Fail to initialize channel";
+    return -1;
+  }
 
-    std::vector<bthread_t> tids;
-    tids.resize(FLAGS_thread_num);
-    if (!FLAGS_use_bthread) {
-        for (int i = 0; i < FLAGS_thread_num; ++i) {
-            if (pthread_create(&tids[i], NULL, sender, &channel) != 0) {
-                LOG(ERROR) << "Fail to create pthread";
-                return -1;
-            }
-        }
-    } else {
-        for (int i = 0; i < FLAGS_thread_num; ++i) {
-            if (bthread_start_background(
-                    &tids[i], NULL, sender, &channel) != 0) {
-                LOG(ERROR) << "Fail to create bthread";
-                return -1;
-            }
-        }
-    }
-
-    if (FLAGS_dummy_port >= 0) {
-        brpc::StartDummyServerAt(FLAGS_dummy_port);
-    }
-
-    while (!brpc::IsAskedToQuit()) {
-        sleep(1);
-        LOG(INFO) << "Sending " << FLAGS_protocol << " requests at qps=" 
-                  << g_latency_recorder.qps(1)
-                  << " latency=" << g_latency_recorder.latency(1);
-    }
-
-    LOG(INFO) << "benchmark_http is going to quit";
+  std::vector<bthread_t> tids;
+  tids.resize(FLAGS_thread_num);
+  if (!FLAGS_use_bthread) {
     for (int i = 0; i < FLAGS_thread_num; ++i) {
-        if (!FLAGS_use_bthread) {
-            pthread_join(tids[i], NULL);
-        } else {
-            bthread_join(tids[i], NULL);
-        }
+      if (pthread_create(&tids[i], NULL, sender, &channel) != 0) {
+        LOG(ERROR) << "Fail to create pthread";
+        return -1;
+      }
     }
+  } else {
+    for (int i = 0; i < FLAGS_thread_num; ++i) {
+      if (bthread_start_background(
+          &tids[i], NULL, sender, &channel) != 0) {
+        LOG(ERROR) << "Fail to create bthread";
+        return -1;
+      }
+    }
+  }
 
-    return 0;
+  if (FLAGS_dummy_port >= 0) {
+    brpc::StartDummyServerAt(FLAGS_dummy_port);
+  }
+
+  while (!brpc::IsAskedToQuit()) {
+    sleep(1);
+    LOG(INFO) << "Sending " << FLAGS_protocol << " requests at qps=" 
+          << g_latency_recorder.qps(1)
+          << " latency=" << g_latency_recorder.latency(1);
+  }
+
+  LOG(INFO) << "benchmark_http is going to quit";
+  for (int i = 0; i < FLAGS_thread_num; ++i) {
+    if (!FLAGS_use_bthread) {
+      pthread_join(tids[i], NULL);
+    } else {
+      bthread_join(tids[i], NULL);
+    }
+  }
+
+  return 0;
 }

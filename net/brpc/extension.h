@@ -40,19 +40,19 @@ namespace brpc {
 template <typename T>
 class Extension {
 public:
-    static Extension<T>* instance();
+  static Extension<T>* instance();
 
-    int Register(const std::string& name, T* instance);
-    int RegisterOrDie(const std::string& name, T* instance);
-    T* Find(const char* name);
-    void List(std::ostream& os, char separator);
+  int Register(const std::string& name, T* instance);
+  int RegisterOrDie(const std::string& name, T* instance);
+  T* Find(const char* name);
+  void List(std::ostream& os, char separator);
 
 private:
 friend class butil::GetLeakySingleton<Extension<T> >;
-    Extension();
-    ~Extension();
-    butil::CaseIgnoredFlatMap<T*> _instance_map;
-    butil::Mutex _map_mutex;
+  Extension();
+  ~Extension();
+  butil::CaseIgnoredFlatMap<T*> _instance_map;
+  butil::Mutex _map_mutex;
 };
 
 } // namespace brpc

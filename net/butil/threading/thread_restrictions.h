@@ -93,13 +93,13 @@ class ThreadTestHelper;
 // Here's more about how the protection works:
 //
 // 1) If a thread should not be allowed to make IO calls, mark it:
-//      butil::ThreadRestrictions::SetIOAllowed(false);
-//    By default, threads *are* allowed to make IO calls.
-//    In Chrome browser code, IO calls should be proxied to the File thread.
+//    butil::ThreadRestrictions::SetIOAllowed(false);
+//  By default, threads *are* allowed to make IO calls.
+//  In Chrome browser code, IO calls should be proxied to the File thread.
 //
 // 2) If a function makes a call that will go out to disk, check whether the
-//    current thread is allowed:
-//      butil::ThreadRestrictions::AssertIOAllowed();
+//  current thread is allowed:
+//    butil::ThreadRestrictions::AssertIOAllowed();
 //
 //
 // Style tip: where should you put AssertIOAllowed checks?  It's best
@@ -115,27 +115,27 @@ class BUTIL_EXPORT ThreadRestrictions {
   // thread.  Doing this is almost certainly always incorrect.
   class BUTIL_EXPORT ScopedAllowIO {
    public:
-    ScopedAllowIO() { previous_value_ = SetIOAllowed(true); }
-    ~ScopedAllowIO() { SetIOAllowed(previous_value_); }
+  ScopedAllowIO() { previous_value_ = SetIOAllowed(true); }
+  ~ScopedAllowIO() { SetIOAllowed(previous_value_); }
    private:
-    // Whether IO is allowed when the ScopedAllowIO was constructed.
-    bool previous_value_;
+  // Whether IO is allowed when the ScopedAllowIO was constructed.
+  bool previous_value_;
 
-    DISALLOW_COPY_AND_ASSIGN(ScopedAllowIO);
+  DISALLOW_COPY_AND_ASSIGN(ScopedAllowIO);
   };
 
   // Constructing a ScopedAllowSingleton temporarily allows accessing for the
   // current thread.  Doing this is almost always incorrect.
   class BUTIL_EXPORT ScopedAllowSingleton {
    public:
-    ScopedAllowSingleton() { previous_value_ = SetSingletonAllowed(true); }
-    ~ScopedAllowSingleton() { SetSingletonAllowed(previous_value_); }
+  ScopedAllowSingleton() { previous_value_ = SetSingletonAllowed(true); }
+  ~ScopedAllowSingleton() { SetSingletonAllowed(previous_value_); }
    private:
-    // Whether singleton use is allowed when the ScopedAllowSingleton was
-    // constructed.
-    bool previous_value_;
+  // Whether singleton use is allowed when the ScopedAllowSingleton was
+  // constructed.
+  bool previous_value_;
 
-    DISALLOW_COPY_AND_ASSIGN(ScopedAllowSingleton);
+  DISALLOW_COPY_AND_ASSIGN(ScopedAllowSingleton);
   };
 
 #if ENABLE_THREAD_RESTRICTIONS
@@ -197,28 +197,28 @@ class BUTIL_EXPORT ThreadRestrictions {
 
   // END ALLOWED USAGE.
   // BEGIN USAGE THAT NEEDS TO BE FIXED.
-  friend class ::chromeos::AudioMixerAlsa;        // http://crbug.com/125206
+  friend class ::chromeos::AudioMixerAlsa;    // http://crbug.com/125206
   friend class ::chromeos::BlockingMethodCaller;  // http://crbug.com/125360
   friend class ::chromeos::system::StatisticsProviderImpl;  // http://crbug.com/125385
   friend class browser_sync::NonFrontendDataTypeController;  // http://crbug.com/19757
-  friend class browser_sync::UIModelWorker;       // http://crbug.com/19757
-  friend class chrome_browser_net::Predictor;     // http://crbug.com/78451
+  friend class browser_sync::UIModelWorker;     // http://crbug.com/19757
+  friend class chrome_browser_net::Predictor;   // http://crbug.com/78451
   friend class
-      content::BrowserGpuChannelHostFactory;      // http://crbug.com/125248
-  friend class content::GLHelper;                 // http://crbug.com/125415
-  friend class content::GpuChannelHost;           // http://crbug.com/125264
-  friend class content::TextInputClientMac;       // http://crbug.com/121917
-  friend class dbus::Bus;                         // http://crbug.com/125222
-  friend class disk_cache::BackendImpl;           // http://crbug.com/74623
-  friend class disk_cache::InFlightIO;            // http://crbug.com/74623
-  friend class media::AudioOutputController;      // http://crbug.com/120973
-  friend class net::FileStreamPosix;              // http://crbug.com/115067
-  friend class net::FileStreamWin;                // http://crbug.com/115067
+    content::BrowserGpuChannelHostFactory;    // http://crbug.com/125248
+  friend class content::GLHelper;         // http://crbug.com/125415
+  friend class content::GpuChannelHost;       // http://crbug.com/125264
+  friend class content::TextInputClientMac;     // http://crbug.com/121917
+  friend class dbus::Bus;             // http://crbug.com/125222
+  friend class disk_cache::BackendImpl;       // http://crbug.com/74623
+  friend class disk_cache::InFlightIO;      // http://crbug.com/74623
+  friend class media::AudioOutputController;    // http://crbug.com/120973
+  friend class net::FileStreamPosix;        // http://crbug.com/115067
+  friend class net::FileStreamWin;        // http://crbug.com/115067
   friend class net::internal::AddressTrackerLinux;  // http://crbug.com/125097
-  friend class ::AcceleratedPresenter;            // http://crbug.com/125391
-  friend class ::BrowserProcessImpl;              // http://crbug.com/125207
-  friend class ::MetricsService;                  // http://crbug.com/124954
-  friend class ::NativeBackendKWallet;            // http://crbug.com/125331
+  friend class ::AcceleratedPresenter;      // http://crbug.com/125391
+  friend class ::BrowserProcessImpl;        // http://crbug.com/125207
+  friend class ::MetricsService;          // http://crbug.com/124954
+  friend class ::NativeBackendKWallet;      // http://crbug.com/125331
   // END USAGE THAT NEEDS TO BE FIXED.
 
 #if ENABLE_THREAD_RESTRICTIONS
@@ -238,14 +238,14 @@ public:
   // another way. Talk to jam or brettw.
   class BUTIL_EXPORT ScopedAllowWait {
    public:
-    ScopedAllowWait() { previous_value_ = SetWaitAllowed(true); }
-    ~ScopedAllowWait() { SetWaitAllowed(previous_value_); }
+  ScopedAllowWait() { previous_value_ = SetWaitAllowed(true); }
+  ~ScopedAllowWait() { SetWaitAllowed(previous_value_); }
    private:
-    // Whether singleton use is allowed when the ScopedAllowWait was
-    // constructed.
-    bool previous_value_;
+  // Whether singleton use is allowed when the ScopedAllowWait was
+  // constructed.
+  bool previous_value_;
 
-    DISALLOW_COPY_AND_ASSIGN(ScopedAllowWait);
+  DISALLOW_COPY_AND_ASSIGN(ScopedAllowWait);
   };
 
 private:

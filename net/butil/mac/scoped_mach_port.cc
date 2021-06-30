@@ -17,14 +17,14 @@ void SendRightTraits::Free(mach_port_t port) {
 // static
 void ReceiveRightTraits::Free(mach_port_t port) {
   kern_return_t kr =
-      mach_port_mod_refs(mach_task_self(), port, MACH_PORT_RIGHT_RECEIVE, -1);
+    mach_port_mod_refs(mach_task_self(), port, MACH_PORT_RIGHT_RECEIVE, -1);
   LOG_IF(ERROR, kr != KERN_SUCCESS) << "Fail to call mach_port_mod_refs";
 }
 
 // static
 void PortSetTraits::Free(mach_port_t port) {
   kern_return_t kr =
-      mach_port_mod_refs(mach_task_self(), port, MACH_PORT_RIGHT_PORT_SET, -1);
+    mach_port_mod_refs(mach_task_self(), port, MACH_PORT_RIGHT_PORT_SET, -1);
   LOG_IF(ERROR, kr != KERN_SUCCESS) << "Fail to call mach_port_mod_refs";
 }
 

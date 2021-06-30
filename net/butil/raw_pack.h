@@ -42,52 +42,52 @@ namespace butil {
 //   butil::Unpacker(buf2).unpack32(a).unpack64(b).unpack32(c);
 class RawPacker {
 public:
-    // Notice: User must guarantee `stream' is as long as the packed data.
-    explicit RawPacker(void* stream) : _stream((char*)stream) {}
-    ~RawPacker() {}
+  // Notice: User must guarantee `stream' is as long as the packed data.
+  explicit RawPacker(void* stream) : _stream((char*)stream) {}
+  ~RawPacker() {}
 
-    // Not using operator<< because some values may be packed differently from
-    // its type.
-    RawPacker& pack32(uint32_t host_value) {
-        *(uint32_t*)_stream = HostToNet32(host_value);
-        _stream += 4;
-        return *this;
-    }
+  // Not using operator<< because some values may be packed differently from
+  // its type.
+  RawPacker& pack32(uint32_t host_value) {
+    *(uint32_t*)_stream = HostToNet32(host_value);
+    _stream += 4;
+    return *this;
+  }
 
-    RawPacker& pack64(uint64_t host_value) {
-        uint32_t *p = (uint32_t*)_stream;
-        p[0] = HostToNet32(host_value >> 32);
-        p[1] = HostToNet32(host_value & 0xFFFFFFFF);
-        _stream += 8;
-        return *this;
-    }
+  RawPacker& pack64(uint64_t host_value) {
+    uint32_t *p = (uint32_t*)_stream;
+    p[0] = HostToNet32(host_value >> 32);
+    p[1] = HostToNet32(host_value & 0xFFFFFFFF);
+    _stream += 8;
+    return *this;
+  }
 
 private:
-    char* _stream;
+  char* _stream;
 };
 
 // This utility class unpacks 32-bit and 64-bit integers from binary data
 // packed by RawPacker.
 class RawUnpacker {
 public:
-    explicit RawUnpacker(const void* stream) : _stream((const char*)stream) {}
-    ~RawUnpacker() {}
+  explicit RawUnpacker(const void* stream) : _stream((const char*)stream) {}
+  ~RawUnpacker() {}
 
-    RawUnpacker& unpack32(uint32_t & host_value) {
-        host_value = NetToHost32(*(const uint32_t*)_stream);
-        _stream += 4;
-        return *this;
-    }
+  RawUnpacker& unpack32(uint32_t & host_value) {
+    host_value = NetToHost32(*(const uint32_t*)_stream);
+    _stream += 4;
+    return *this;
+  }
 
-    RawUnpacker& unpack64(uint64_t & host_value) {
-        const uint32_t *p = (const uint32_t*)_stream;
-        host_value = (((uint64_t)NetToHost32(p[0])) << 32) | NetToHost32(p[1]);
-        _stream += 8;
-        return *this;
-    }
+  RawUnpacker& unpack64(uint64_t & host_value) {
+    const uint32_t *p = (const uint32_t*)_stream;
+    host_value = (((uint64_t)NetToHost32(p[0])) << 32) | NetToHost32(p[1]);
+    _stream += 8;
+    return *this;
+  }
 
 private:
-    const char* _stream;
+  const char* _stream;
 };
 
 }  // namespace butil

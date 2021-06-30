@@ -28,12 +28,12 @@ namespace brpc {
 
 class IndexService : public index, public Tabbed {
 public:
-    void default_method(::google::protobuf::RpcController* cntl_base,
-                        const ::brpc::IndexRequest* request,
-                        ::brpc::IndexResponse* response,
-                        ::google::protobuf::Closure* done);
+  void default_method(::google::protobuf::RpcController* cntl_base,
+            const ::brpc::IndexRequest* request,
+            ::brpc::IndexResponse* response,
+            ::google::protobuf::Closure* done);
 
-    void GetTabInfo(brpc::TabInfoList*) const;
+  void GetTabInfo(brpc::TabInfoList*) const;
 };
 
 } // namespace brpc

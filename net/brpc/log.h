@@ -21,10 +21,10 @@
 #include <inttypes.h>  // PRId64 PRIu64
 #include "bthread/errno.h"
 
-#define RPC_VLOG_LEVEL     99
-#define RPC_VLOG_IS_ON     VLOG_IS_ON(RPC_VLOG_LEVEL)
-#define RPC_VLOG           VLOG(RPC_VLOG_LEVEL)
-#define RPC_VPLOG          VPLOG(RPC_VLOG_LEVEL)
+#define RPC_VLOG_LEVEL   99
+#define RPC_VLOG_IS_ON   VLOG_IS_ON(RPC_VLOG_LEVEL)
+#define RPC_VLOG       VLOG(RPC_VLOG_LEVEL)
+#define RPC_VPLOG      VPLOG(RPC_VLOG_LEVEL)
 #define RPC_VLOG_IF(cond)  VLOG_IF(RPC_VLOG_LEVEL, (cond))
 #define RPC_VPLOG_IF(cond) VPLOG_IF(RPC_VLOG_LEVEL, (cond))
 

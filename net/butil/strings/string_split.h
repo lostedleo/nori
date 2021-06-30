@@ -22,22 +22,22 @@ namespace butil {
 // Every substring is trimmed of any leading or trailing white space.
 // NOTE: |c| must be in BMP (Basic Multilingual Plane)
 BUTIL_EXPORT void SplitString(const string16& str,
-                             char16 c,
-                             std::vector<string16>* r);
+               char16 c,
+               std::vector<string16>* r);
 BUTIL_EXPORT void SplitString(const butil::StringPiece16& str,
-                             char16 c,
-                             std::vector<butil::StringPiece16>* r);
+               char16 c,
+               std::vector<butil::StringPiece16>* r);
 
 // |str| should not be in a multi-byte encoding like Shift-JIS or GBK in which
 // the trailing byte of a multi-byte character can be in the ASCII range.
 // UTF-8, and other single/multi-byte ASCII-compatible encodings are OK.
 // Note: |c| must be in the ASCII range.
 BUTIL_EXPORT void SplitString(const std::string& str,
-                             char c,
-                             std::vector<std::string>* r);
+               char c,
+               std::vector<std::string>* r);
 BUTIL_EXPORT void SplitString(const butil::StringPiece& str,
-                             char c,
-                             std::vector<butil::StringPiece>* r);
+               char c,
+               std::vector<butil::StringPiece>* r);
 
 typedef std::vector<std::pair<std::string, std::string> > StringPairs;
 typedef std::vector<std::pair<butil::StringPiece, butil::StringPiece> > StringPiecePairs;
@@ -47,46 +47,46 @@ typedef std::vector<std::pair<butil::StringPiece, butil::StringPiece> > StringPi
 // only if each pair has a non-empty key and value. |key_value_pairs| will
 // include ("","") pairs for entries without |key_value_delimiter|.
 BUTIL_EXPORT bool SplitStringIntoKeyValuePairs(const std::string& line,
-                                              char key_value_delimiter,
-                                              char key_value_pair_delimiter,
-                                              StringPairs* key_value_pairs);
+                        char key_value_delimiter,
+                        char key_value_pair_delimiter,
+                        StringPairs* key_value_pairs);
 BUTIL_EXPORT bool SplitStringIntoKeyValuePairs(const butil::StringPiece& line,
-                                              char key_value_delimiter,
-                                              char key_value_pair_delimiter,
-                                              StringPiecePairs* key_value_pairs);
+                        char key_value_delimiter,
+                        char key_value_pair_delimiter,
+                        StringPiecePairs* key_value_pairs);
 
 // The same as SplitString, but use a substring delimiter instead of a char.
 BUTIL_EXPORT void SplitStringUsingSubstr(const string16& str,
-                                        const string16& s,
-                                        std::vector<string16>* r);
+                    const string16& s,
+                    std::vector<string16>* r);
 BUTIL_EXPORT void SplitStringUsingSubstr(const butil::StringPiece16& str,
-                                        const butil::StringPiece16& s,
-                                        std::vector<butil::StringPiece16>* r);
+                    const butil::StringPiece16& s,
+                    std::vector<butil::StringPiece16>* r);
 BUTIL_EXPORT void SplitStringUsingSubstr(const std::string& str,
-                                        const std::string& s,
-                                        std::vector<std::string>* r);
+                    const std::string& s,
+                    std::vector<std::string>* r);
 BUTIL_EXPORT void SplitStringUsingSubstr(const butil::StringPiece& str,
-                                        const butil::StringPiece& s,
-                                        std::vector<butil::StringPiece>* r);
+                    const butil::StringPiece& s,
+                    std::vector<butil::StringPiece>* r);
 
 // The same as SplitString, but don't trim white space.
 // NOTE: |c| must be in BMP (Basic Multilingual Plane)
 BUTIL_EXPORT void SplitStringDontTrim(const string16& str,
-                                     char16 c,
-                                     std::vector<string16>* r);
+                   char16 c,
+                   std::vector<string16>* r);
 BUTIL_EXPORT void SplitStringDontTrim(const butil::StringPiece16& str,
-                                     char16 c,
-                                     std::vector<butil::StringPiece16>* r);
+                   char16 c,
+                   std::vector<butil::StringPiece16>* r);
 // |str| should not be in a multi-byte encoding like Shift-JIS or GBK in which
 // the trailing byte of a multi-byte character can be in the ASCII range.
 // UTF-8, and other single/multi-byte ASCII-compatible encodings are OK.
 // Note: |c| must be in the ASCII range.
 BUTIL_EXPORT void SplitStringDontTrim(const std::string& str,
-                                     char c,
-                                     std::vector<std::string>* r);
+                   char c,
+                   std::vector<std::string>* r);
 BUTIL_EXPORT void SplitStringDontTrim(const butil::StringPiece& str,
-                                     char c,
-                                     std::vector<butil::StringPiece>* r);
+                   char c,
+                   std::vector<butil::StringPiece>* r);
 
 // WARNING: this uses whitespace as defined by the HTML5 spec. If you need
 // a function similar to this but want to trim all types of whitespace, then
@@ -97,13 +97,13 @@ BUTIL_EXPORT void SplitStringDontTrim(const butil::StringPiece& str,
 // characters defined by HTML 5). Each contiguous block of non-whitespace
 // characters is added to result.
 BUTIL_EXPORT void SplitStringAlongWhitespace(const string16& str,
-                                            std::vector<string16>* result);
+                      std::vector<string16>* result);
 BUTIL_EXPORT void SplitStringAlongWhitespace(const butil::StringPiece16& str,
-                                            std::vector<butil::StringPiece16>* result);
+                      std::vector<butil::StringPiece16>* result);
 BUTIL_EXPORT void SplitStringAlongWhitespace(const std::string& str,
-                                            std::vector<std::string>* result);
+                      std::vector<std::string>* result);
 BUTIL_EXPORT void SplitStringAlongWhitespace(const butil::StringPiece& str,
-                                            std::vector<butil::StringPiece>* result);
+                      std::vector<butil::StringPiece>* result);
 
 }  // namespace butil
 

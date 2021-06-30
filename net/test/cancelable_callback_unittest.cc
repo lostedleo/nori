@@ -28,7 +28,7 @@ void RefCountedParam(const scoped_refptr<TestRefCounted>& ref_counted) {}
 TEST(CancelableCallbackTest, Cancel) {
   int count = 0;
   CancelableClosure cancelable(
-      butil::Bind(&Increment, butil::Unretained(&count)));
+    butil::Bind(&Increment, butil::Unretained(&count)));
 
   butil::Closure callback = cancelable.callback();
   callback.Run();
@@ -49,7 +49,7 @@ TEST(CancelableCallbackTest, Cancel) {
 TEST(CancelableCallbackTest, MultipleCancel) {
   int count = 0;
   CancelableClosure cancelable(
-      butil::Bind(&Increment, butil::Unretained(&count)));
+    butil::Bind(&Increment, butil::Unretained(&count)));
 
   butil::Closure callback1 = cancelable.callback();
   butil::Closure callback2 = cancelable.callback();
@@ -76,12 +76,12 @@ TEST(CancelableCallbackTest, CallbackCanceledOnDestruction) {
   butil::Closure callback;
 
   {
-    CancelableClosure cancelable(
-        butil::Bind(&Increment, butil::Unretained(&count)));
+  CancelableClosure cancelable(
+    butil::Bind(&Increment, butil::Unretained(&count)));
 
-    callback = cancelable.callback();
-    callback.Run();
-    EXPECT_EQ(1, count);
+  callback = cancelable.callback();
+  callback.Run();
+  EXPECT_EQ(1, count);
   }
 
   callback.Run();
@@ -112,7 +112,7 @@ TEST(CancelableCallbackTest, CancelDropsCallback) {
 TEST(CancelableCallbackTest, Reset) {
   int count = 0;
   CancelableClosure cancelable(
-      butil::Bind(&Increment, butil::Unretained(&count)));
+    butil::Bind(&Increment, butil::Unretained(&count)));
 
   butil::Closure callback = cancelable.callback();
   callback.Run();
@@ -122,7 +122,7 @@ TEST(CancelableCallbackTest, Reset) {
   EXPECT_EQ(2, count);
 
   cancelable.Reset(
-      butil::Bind(&IncrementBy, butil::Unretained(&count), 3));
+    butil::Bind(&IncrementBy, butil::Unretained(&count), 3));
   EXPECT_FALSE(cancelable.IsCancelled());
 
   // The stale copy of the cancelable callback is non-null.
@@ -147,7 +147,7 @@ TEST(CancelableCallbackTest, IsNull) {
 
   int count = 0;
   cancelable.Reset(butil::Bind(&Increment,
-                              butil::Unretained(&count)));
+                butil::Unretained(&count)));
   EXPECT_FALSE(cancelable.IsCancelled());
 
   cancelable.Cancel();

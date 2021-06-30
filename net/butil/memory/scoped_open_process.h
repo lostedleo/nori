@@ -18,23 +18,23 @@ class ScopedOpenProcess {
 
   // Automatically close the process.
   ~ScopedOpenProcess() {
-    Close();
+  Close();
   }
 
   // Open a new process by pid. Closes any previously opened process (even if
   // opening the new one fails).
   bool Open(ProcessId pid) {
-    Close();
-    return OpenProcessHandle(pid, &handle_);
+  Close();
+  return OpenProcessHandle(pid, &handle_);
   }
 
   // Close the previously opened process.
   void Close() {
-    if (handle_ == kNullProcessHandle)
-      return;
+  if (handle_ == kNullProcessHandle)
+    return;
 
-    CloseProcessHandle(handle_);
-    handle_ = kNullProcessHandle;
+  CloseProcessHandle(handle_);
+  handle_ = kNullProcessHandle;
   }
 
   ProcessHandle handle() const { return handle_; }

@@ -31,8 +31,8 @@ const int VALUE_INDEX = 1;
 // statement like: map<string, string> my_map = N;
 // However, we can still emmulate this map in proto2 by writing:
 // message MapFieldEntry {
-//     required string key = 1;           // MUST be the first
-//     required string value = 2;         // MUST be the second
+//   required string key = 1;       // MUST be the first
+//   required string value = 2;     // MUST be the second
 // }
 // repeated MapFieldEntry my_map = N;
 // 
@@ -40,7 +40,7 @@ const int VALUE_INDEX = 1;
 // { "my_map": {"key1": value1, "key2": value2 } }
 // instead of:
 // { "my_map": [{"key": "key1", "value": value1},
-//              {"key": "key2", "value": value2}] }
+//        {"key": "key2", "value": value2}] }
 // In order to get the former one, the type of `key' field MUST be
 // string since JSON only supports string keys
 

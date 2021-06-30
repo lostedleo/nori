@@ -7,13 +7,13 @@
 // platform's conventions for pathnames.  It supports the following path
 // types:
 //
-//                   POSIX            Windows
-//                   ---------------  ----------------------------------
-// Fundamental type  char[]           wchar_t[]
-// Encoding          unspecified*     UTF-16
-// Separator         /                \, tolerant of /
-// Drive letters     no               case-insensitive A-Z followed by :
-// Alternate root    // (surprise!)   \\, for UNC paths
+//           POSIX      Windows
+//           ---------------  ----------------------------------
+// Fundamental type  char[]       wchar_t[]
+// Encoding      unspecified*   UTF-16
+// Separator     /        \, tolerant of /
+// Drive letters   no         case-insensitive A-Z followed by :
+// Alternate root  // (surprise!)   \\, for UNC paths
 //
 // * The encoding need not be specified on POSIX systems, although some
 //   POSIX-compliant systems do specify an encoding.  Mac OS X uses UTF-8.
@@ -77,27 +77,27 @@
 // ARCANE BITS OF PATH TRIVIA
 //
 //  - A double leading slash is actually part of the POSIX standard.  Systems
-//    are allowed to treat // as an alternate root, as Windows does for UNC
-//    (network share) paths.  Most POSIX systems don't do anything special
-//    with two leading slashes, but FilePath handles this case properly
-//    in case it ever comes across such a system.  FilePath needs this support
-//    for Windows UNC paths, anyway.
-//    References:
-//    The Open Group Base Specifications Issue 7, sections 3.266 ("Pathname")
-//    and 4.12 ("Pathname Resolution"), available at:
-//    http://www.opengroup.org/onlinepubs/9699919799/basedefs/V1_chap03.html#tag_03_266
-//    http://www.opengroup.org/onlinepubs/9699919799/basedefs/V1_chap04.html#tag_04_12
+//  are allowed to treat // as an alternate root, as Windows does for UNC
+//  (network share) paths.  Most POSIX systems don't do anything special
+//  with two leading slashes, but FilePath handles this case properly
+//  in case it ever comes across such a system.  FilePath needs this support
+//  for Windows UNC paths, anyway.
+//  References:
+//  The Open Group Base Specifications Issue 7, sections 3.266 ("Pathname")
+//  and 4.12 ("Pathname Resolution"), available at:
+//  http://www.opengroup.org/onlinepubs/9699919799/basedefs/V1_chap03.html#tag_03_266
+//  http://www.opengroup.org/onlinepubs/9699919799/basedefs/V1_chap04.html#tag_04_12
 //
 //  - Windows treats c:\\ the same way it treats \\.  This was intended to
-//    allow older applications that require drive letters to support UNC paths
-//    like \\server\share\path, by permitting c:\\server\share\path as an
-//    equivalent.  Since the OS treats these paths specially, FilePath needs
-//    to do the same.  Since Windows can use either / or \ as the separator,
-//    FilePath treats c://, c:\\, //, and \\ all equivalently.
-//    Reference:
-//    The Old New Thing, "Why is a drive letter permitted in front of UNC
-//    paths (sometimes)?", available at:
-//    http://blogs.msdn.com/oldnewthing/archive/2005/11/22/495740.aspx
+//  allow older applications that require drive letters to support UNC paths
+//  like \\server\share\path, by permitting c:\\server\share\path as an
+//  equivalent.  Since the OS treats these paths specially, FilePath needs
+//  to do the same.  Since Windows can use either / or \ as the separator,
+//  FilePath treats c://, c:\\, //, and \\ all equivalently.
+//  Reference:
+//  The Old New Thing, "Why is a drive letter permitted in front of UNC
+//  paths (sometimes)?", available at:
+//  http://blogs.msdn.com/oldnewthing/archive/2005/11/22/495740.aspx
 
 #ifndef BUTIL_FILES_FILE_PATH_H_
 #define BUTIL_FILES_FILE_PATH_H_
@@ -171,7 +171,7 @@ class BUTIL_EXPORT FilePath {
 
   // Required for some STL containers and operations
   bool operator<(const FilePath& that) const {
-    return path_ < that.path_;
+  return path_ < that.path_;
   }
 
   const StringType& value() const { return path_; }
@@ -259,25 +259,25 @@ class BUTIL_EXPORT FilePath {
   // extension.  Returns "" if BaseName() == "." or "..".
   // Examples:
   // path == "C:\pics\jojo.jpg" suffix == " (1)", returns "C:\pics\jojo (1).jpg"
-  // path == "jojo.jpg"         suffix == " (1)", returns "jojo (1).jpg"
-  // path == "C:\pics\jojo"     suffix == " (1)", returns "C:\pics\jojo (1)"
+  // path == "jojo.jpg"     suffix == " (1)", returns "jojo (1).jpg"
+  // path == "C:\pics\jojo"   suffix == " (1)", returns "C:\pics\jojo (1)"
   // path == "C:\pics.old\jojo" suffix == " (1)", returns "C:\pics.old\jojo (1)"
   FilePath InsertBeforeExtension(
-      const StringType& suffix) const WARN_UNUSED_RESULT;
+    const StringType& suffix) const WARN_UNUSED_RESULT;
   FilePath InsertBeforeExtensionASCII(
-      const butil::StringPiece& suffix) const WARN_UNUSED_RESULT;
+    const butil::StringPiece& suffix) const WARN_UNUSED_RESULT;
 
   // Adds |extension| to |file_name|. Returns the current FilePath if
   // |extension| is empty. Returns "" if BaseName() == "." or "..".
   FilePath AddExtension(
-      const StringType& extension) const WARN_UNUSED_RESULT;
+    const StringType& extension) const WARN_UNUSED_RESULT;
 
   // Replaces the extension of |file_name| with |extension|.  If |file_name|
   // does not have an extension, then |extension| is added.  If |extension| is
   // empty, then the extension is removed from |file_name|.
   // Returns "" if BaseName() == "." or "..".
   FilePath ReplaceExtension(
-      const StringType& extension) const WARN_UNUSED_RESULT;
+    const StringType& extension) const WARN_UNUSED_RESULT;
 
   // Returns true if the file path matches the specified extension. The test is
   // case insensitive. Don't forget the leading period if appropriate.
@@ -299,7 +299,7 @@ class BUTIL_EXPORT FilePath {
   // ASCII is a valid subset, regardless of the encoding, since many operating
   // system paths will always be ASCII.
   FilePath AppendASCII(const butil::StringPiece& component)
-      const WARN_UNUSED_RESULT;
+    const WARN_UNUSED_RESULT;
 
   // Returns true if this FilePath contains an absolute path.  On Windows, an
   // absolute path begins with either a drive letter specification followed by
@@ -381,14 +381,14 @@ class BUTIL_EXPORT FilePath {
   // CompareIgnoreCase() returns -1, 0 or 1 for less-than, equal-to and
   // greater-than respectively.
   static int CompareIgnoreCase(const StringType& string1,
-                               const StringType& string2);
+                 const StringType& string2);
   static bool CompareEqualIgnoreCase(const StringType& string1,
-                                     const StringType& string2) {
-    return CompareIgnoreCase(string1, string2) == 0;
+                   const StringType& string2) {
+  return CompareIgnoreCase(string1, string2) == 0;
   }
   static bool CompareLessIgnoreCase(const StringType& string1,
-                                    const StringType& string2) {
-    return CompareIgnoreCase(string1, string2) < 0;
+                  const StringType& string2) {
+  return CompareIgnoreCase(string1, string2) < 0;
   }
 
 #if defined(OS_MACOSX)
@@ -404,7 +404,7 @@ class BUTIL_EXPORT FilePath {
   // IMPORTANT: The input strings must be in the special HFS decomposed form!
   // (cf. above GetHFSDecomposedForm method)
   static int HFSFastUnicodeCompare(const StringType& string1,
-                                   const StringType& string2);
+                   const StringType& string2);
 #endif
 
 #if defined(OS_ANDROID)
@@ -452,7 +452,7 @@ namespace BUTIL_HASH_NAMESPACE {
 template<>
 struct hash<butil::FilePath> {
   size_t operator()(const butil::FilePath& f) const {
-    return hash<butil::FilePath::StringType>()(f.value());
+  return hash<butil::FilePath::StringType>()(f.value());
   }
 };
 

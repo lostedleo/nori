@@ -19,9 +19,9 @@ static void TestAtomicIncrement() {
   // 32-bit NoBarrier_AtomicIncrement doesn't do the wrong thing on 64-bit
   // machines.
   struct {
-    AtomicType prev_word;
-    AtomicType count;
-    AtomicType next_word;
+  AtomicType prev_word;
+  AtomicType count;
+  AtomicType next_word;
   } s;
 
   AtomicType prev_word_value, next_word_value;
@@ -92,7 +92,7 @@ static void TestCompareAndSwap() {
   // Use test value that has non-zero bits in both halves, more for testing
   // 64-bit implementation on 32-bit platforms.
   const AtomicType k_test_val = (static_cast<uint64_t>(1) <<
-                                 (NUM_BITS(AtomicType) - 2)) + 11;
+                 (NUM_BITS(AtomicType) - 2)) + 11;
   value = k_test_val;
   prev = butil::subtle::NoBarrier_CompareAndSwap(&value, 0, 5);
   EXPECT_EQ(k_test_val, value);
@@ -115,7 +115,7 @@ static void TestAtomicExchange() {
   // Use test value that has non-zero bits in both halves, more for testing
   // 64-bit implementation on 32-bit platforms.
   const AtomicType k_test_val = (static_cast<uint64_t>(1) <<
-                                 (NUM_BITS(AtomicType) - 2)) + 11;
+                 (NUM_BITS(AtomicType) - 2)) + 11;
   value = k_test_val;
   new_value = butil::subtle::NoBarrier_AtomicExchange(&value, k_test_val);
   EXPECT_EQ(k_test_val, value);
@@ -132,7 +132,7 @@ template <class AtomicType>
 static void TestAtomicIncrementBounds() {
   // Test at rollover boundary between int_max and int_min
   AtomicType test_val = (static_cast<uint64_t>(1) <<
-                         (NUM_BITS(AtomicType) - 1));
+             (NUM_BITS(AtomicType) - 1));
   AtomicType value = -1 ^ test_val;
   AtomicType new_value = butil::subtle::NoBarrier_AtomicIncrement(&value, 1);
   EXPECT_EQ(test_val, value);

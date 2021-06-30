@@ -36,11 +36,11 @@ void AnnotateSpan(const char* fmt, ...);
 // Use this macro to print log to /rpcz and tracing system.
 // If rpcz is not enabled, arguments to this macro is NOT evaluated, don't
 // have (critical) side effects in arguments.
-#define TRACEPRINTF(fmt, args...)                                       \
-    do {                                                                \
-        if (::brpc::CanAnnotateSpan()) {                          \
-            ::brpc::AnnotateSpan("[" __FILE__ ":" BAIDU_SYMBOLSTR(__LINE__) "] " fmt, ##args);           \
-        }                                                               \
-    } while (0)
+#define TRACEPRINTF(fmt, args...)                     \
+  do {                                \
+    if (::brpc::CanAnnotateSpan()) {              \
+      ::brpc::AnnotateSpan("[" __FILE__ ":" BAIDU_SYMBOLSTR(__LINE__) "] " fmt, ##args);       \
+    }                                 \
+  } while (0)
 
 #endif  // BRPC_TRACEPRINTF_H

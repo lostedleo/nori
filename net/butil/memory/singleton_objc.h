@@ -20,9 +20,9 @@
 // as needed:
 //
 //   struct FooSingletonTraits : public DefaultSingletonObjCTraits<Foo> {
-//     static Foo* New() {
-//       return [[Foo alloc] initWithName:@"selecty"];
-//     }
+//   static Foo* New() {
+//     return [[Foo alloc] initWithName:@"selecty"];
+//   }
 //   };
 //   ...
 //   Foo* widgetSingleton = SingletonObjC<Foo, FooSingletonTraits>::get();
@@ -40,11 +40,11 @@
 template<typename Type>
 struct DefaultSingletonObjCTraits : public DefaultSingletonTraits<Type> {
   static Type* New() {
-    return [[Type alloc] init];
+  return [[Type alloc] init];
   }
 
   static void Delete(Type* object) {
-    [object release];
+  [object release];
   }
 };
 
@@ -52,8 +52,8 @@ struct DefaultSingletonObjCTraits : public DefaultSingletonTraits<Type> {
 // default trait class.  This makes it straightforward for Objective-C++ code
 // to hold Objective-C objects as singletons.
 template<typename Type,
-         typename Traits = DefaultSingletonObjCTraits<Type>,
-         typename DifferentiatingType = Type>
+     typename Traits = DefaultSingletonObjCTraits<Type>,
+     typename DifferentiatingType = Type>
 class SingletonObjC : public Singleton<Type, Traits, DifferentiatingType> {
 };
 

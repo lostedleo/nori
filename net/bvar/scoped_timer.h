@@ -27,32 +27,32 @@
 //   bvar::Adder<int64_t> g_function1_spent;
 //   ...
 //   void function1() {
-//     // time cost by function1() will be sent to g_spent_time when
-//     // the function returns.
-//     bvar::ScopedTimer tm(g_function1_spent);
-//     ...
+//   // time cost by function1() will be sent to g_spent_time when
+//   // the function returns.
+//   bvar::ScopedTimer tm(g_function1_spent);
+//   ...
 //   }
 // To check how many microseconds the function spend in last second, you
 // can wrap the bvar within PerSecond and make it viewable from /vars
 //   bvar::PerSecond<bvar::Adder<int64_t> > g_function1_spent_second(
-//     "function1_spent_second", &g_function1_spent);
+//   "function1_spent_second", &g_function1_spent);
 namespace bvar{
 template <typename T>
 class ScopedTimer {
 public:
-    explicit ScopedTimer(T& bvar)
-        : _start_time(butil::cpuwide_time_us()), _bvar(&bvar) {}
+  explicit ScopedTimer(T& bvar)
+    : _start_time(butil::cpuwide_time_us()), _bvar(&bvar) {}
 
-    ~ScopedTimer() {
-        *_bvar << (butil::cpuwide_time_us() - _start_time);
-    }
+  ~ScopedTimer() {
+    *_bvar << (butil::cpuwide_time_us() - _start_time);
+  }
 
-    void reset() { _start_time = butil::cpuwide_time_us(); }
+  void reset() { _start_time = butil::cpuwide_time_us(); }
 
 private:
-    DISALLOW_COPY_AND_ASSIGN(ScopedTimer);
-    int64_t _start_time;
-    T* _bvar;
+  DISALLOW_COPY_AND_ASSIGN(ScopedTimer);
+  int64_t _start_time;
+  T* _bvar;
 };
 } // namespace bvar
 

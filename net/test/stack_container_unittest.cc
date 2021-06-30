@@ -17,14 +17,14 @@ namespace {
 class Dummy : public butil::RefCounted<Dummy> {
  public:
   explicit Dummy(int* alive) : alive_(alive) {
-    ++*alive_;
+  ++*alive_;
   }
 
  private:
   friend class butil::RefCounted<Dummy>;
 
   ~Dummy() {
-    --*alive_;
+  --*alive_;
   }
 
   int* const alive_;
@@ -40,21 +40,21 @@ TEST(StackContainer, Vector) {
   // The initial |stack_size| elements should appear in the stack buffer.
   EXPECT_EQ(static_cast<size_t>(stack_size), vect.container().capacity());
   for (int i = 0; i < stack_size; i++) {
-    vect.container().push_back(i);
-    EXPECT_EQ(stack_buffer, &vect.container()[0]);
-    EXPECT_TRUE(vect.stack_data().used_stack_buffer_);
+  vect.container().push_back(i);
+  EXPECT_EQ(stack_buffer, &vect.container()[0]);
+  EXPECT_TRUE(vect.stack_data().used_stack_buffer_);
   }
 
   // Adding more elements should push the array onto the heap.
   for (int i = 0; i < stack_size; i++) {
-    vect.container().push_back(i + stack_size);
-    EXPECT_NE(stack_buffer, &vect.container()[0]);
-    EXPECT_FALSE(vect.stack_data().used_stack_buffer_);
+  vect.container().push_back(i + stack_size);
+  EXPECT_NE(stack_buffer, &vect.container()[0]);
+  EXPECT_FALSE(vect.stack_data().used_stack_buffer_);
   }
 
   // The array should still be in order.
   for (int i = 0; i < stack_size * 2; i++)
-    EXPECT_EQ(i, vect.container()[i]);
+  EXPECT_EQ(i, vect.container()[i]);
 
   // Resize to smaller. Our STL implementation won't reallocate in this case,
   // otherwise it might use our stack buffer. We reserve right after the resize
@@ -71,7 +71,7 @@ TEST(StackContainer, Vector) {
   EXPECT_EQ(stack_buffer, &other.front());
   EXPECT_TRUE(vect.stack_data().used_stack_buffer_);
   for (int i = 0; i < stack_size; i++)
-    EXPECT_EQ(i, other[i]);
+  EXPECT_EQ(i, other[i]);
 }
 
 TEST(StackContainer, VectorDoubleDelete) {
@@ -112,12 +112,12 @@ class AlignedData {
 }  // anonymous namespace
 
 #define EXPECT_ALIGNED(ptr, align) \
-    EXPECT_EQ(0u, reinterpret_cast<uintptr_t>(ptr) & (align - 1))
+  EXPECT_EQ(0u, reinterpret_cast<uintptr_t>(ptr) & (align - 1))
 
 // stack alignment is buggy before gcc 4.6
 // https://gcc.gnu.org/bugzilla/show_bug.cgi?id=16660
-#if defined(COMPILER_GCC) &&                                    \
-    ( __GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 6))
+#if defined(COMPILER_GCC) &&                  \
+  ( __GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 6))
 #define GOOD_GCC_STACK_ALIGNMENT
 #endif
 
@@ -134,8 +134,8 @@ TEST(StackContainer, BufferAlignment) {
   aligned16->push_back(AlignedData<16>());
   EXPECT_ALIGNED(&aligned16[0], 16);
 
-#if !defined(__GNUC__) || defined(ARCH_CPU_X86_FAMILY) &&               \
-    defined(GOOD_GCC_STACK_ALIGNMENT)
+#if !defined(__GNUC__) || defined(ARCH_CPU_X86_FAMILY) &&         \
+  defined(GOOD_GCC_STACK_ALIGNMENT)
   // It seems that non-X86 gcc doesn't respect greater than 16 byte alignment.
   // See http://gcc.gnu.org/bugzilla/show_bug.cgi?id=33721 for details.
   // TODO(sbc):re-enable this if GCC starts respecting higher alignments.

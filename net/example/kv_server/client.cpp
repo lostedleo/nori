@@ -4,7 +4,7 @@
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-//     http://www.apache.org/licenses/LICENSE-2.0
+//   http://www.apache.org/licenses/LICENSE-2.0
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -67,42 +67,42 @@ static void* get(void* arg) {
   int start = (FLAGS_size / FLAGS_thread_num) * index;
   int end = (FLAGS_size / FLAGS_thread_num) * (index + 1);
   if (end >= FLAGS_size) {
-    end = FLAGS_size;
+  end = FLAGS_size;
   }
   while (!brpc::IsAskedToQuit()) {
-    // We will receive response synchronously, safe to put variables
-    // on stack.
-    push::GetRequest request;
-    push::GetResponse response;
-    brpc::Controller cntl;
+  // We will receive response synchronously, safe to put variables
+  // on stack.
+  push::GetRequest request;
+  push::GetResponse response;
+  brpc::Controller cntl;
 
-    for (int i = 0; i < FLAGS_batch_size; ++i) {
-      request.add_keys((*g_keys)[start++ % FLAGS_size]);
-    }
-    cntl.set_log_id(log_id++);  // set by user
-    if (FLAGS_protocol != "http" && FLAGS_protocol != "h2c") {
-      // Set attachment which is wired to network directly instead of
-      // being serialized into protobuf messages.
-      cntl.request_attachment().append(g_attachment);
-    } else {
-      cntl.http_request().set_content_type(FLAGS_http_content_type);
-    }
+  for (int i = 0; i < FLAGS_batch_size; ++i) {
+    request.add_keys((*g_keys)[start++ % FLAGS_size]);
+  }
+  cntl.set_log_id(log_id++);  // set by user
+  if (FLAGS_protocol != "http" && FLAGS_protocol != "h2c") {
+    // Set attachment which is wired to network directly instead of
+    // being serialized into protobuf messages.
+    cntl.request_attachment().append(g_attachment);
+  } else {
+    cntl.http_request().set_content_type(FLAGS_http_content_type);
+  }
 
-    // Because `done'(last parameter) is NULL, this function waits until
-    // the response comes back or error occurs(including timedout).
-    stub.Get(&cntl, &request, &response, NULL);
-    if (!cntl.Failed()) {
-      g_latency_recorder << cntl.latency_us();
-    } else {
-      g_error_count << 1;
-      CHECK(brpc::IsAskedToQuit() || !FLAGS_dont_fail)
-        << "error=" << cntl.ErrorText() << " latency=" << cntl.latency_us();
-      // We can't connect to the server, sleep a while. Notice that this
-      // is a specific sleeping to prevent this thread from spinning too
-      // fast. You should continue the business logic in a production
-      // server rather than sleeping.
-      bthread_usleep(50000);
-    }
+  // Because `done'(last parameter) is NULL, this function waits until
+  // the response comes back or error occurs(including timedout).
+  stub.Get(&cntl, &request, &response, NULL);
+  if (!cntl.Failed()) {
+    g_latency_recorder << cntl.latency_us();
+  } else {
+    g_error_count << 1;
+    CHECK(brpc::IsAskedToQuit() || !FLAGS_dont_fail)
+    << "error=" << cntl.ErrorText() << " latency=" << cntl.latency_us();
+    // We can't connect to the server, sleep a while. Notice that this
+    // is a specific sleeping to prevent this thread from spinning too
+    // fast. You should continue the business logic in a production
+    // server rather than sleeping.
+    bthread_usleep(50000);
+  }
   }
   return NULL;
 }
@@ -117,44 +117,44 @@ static void* set(void* arg) {
   int start = (FLAGS_size / FLAGS_thread_num) * index;
   int end = (FLAGS_size / FLAGS_thread_num) * (index + 1);
   if (end >= FLAGS_size) {
-    end = FLAGS_size;
+  end = FLAGS_size;
   }
   while (!brpc::IsAskedToQuit()) {
-    // We will receive response synchronously, safe to put variables
-    // on stack.
-    push::SetRequest request;
-    push::SetResponse response;
-    brpc::Controller cntl;
+  // We will receive response synchronously, safe to put variables
+  // on stack.
+  push::SetRequest request;
+  push::SetResponse response;
+  brpc::Controller cntl;
 
-    google::protobuf::Map<std::string, std::string>* key_values = request.mutable_key_values();
-    for (int i = 0; i < FLAGS_batch_size; ++i) {
-      (*key_values)[(*g_keys)[start % FLAGS_size]] =
-        (*g_values)[start % FLAGS_size];
-      start++;
-    }
-    cntl.set_log_id(log_id++);  // set by user
-    if (FLAGS_protocol != "http" && FLAGS_protocol != "h2c") {
-      // Set attachment which is wired to network directly instead of
-      // being serialized into protobuf messages.
-      cntl.request_attachment().append(g_attachment); } else {
-      cntl.http_request().set_content_type(FLAGS_http_content_type);
-    }
+  google::protobuf::Map<std::string, std::string>* key_values = request.mutable_key_values();
+  for (int i = 0; i < FLAGS_batch_size; ++i) {
+    (*key_values)[(*g_keys)[start % FLAGS_size]] =
+    (*g_values)[start % FLAGS_size];
+    start++;
+  }
+  cntl.set_log_id(log_id++);  // set by user
+  if (FLAGS_protocol != "http" && FLAGS_protocol != "h2c") {
+    // Set attachment which is wired to network directly instead of
+    // being serialized into protobuf messages.
+    cntl.request_attachment().append(g_attachment); } else {
+    cntl.http_request().set_content_type(FLAGS_http_content_type);
+  }
 
-    // Because `done'(last parameter) is NULL, this function waits until
-    // the response comes back or error occurs(including timedout).
-    stub.Set(&cntl, &request, &response, NULL);
-    if (!cntl.Failed()) {
-      g_latency_recorder << cntl.latency_us();
-    } else {
-      g_error_count << 1;
-      CHECK(brpc::IsAskedToQuit() || !FLAGS_dont_fail)
-        << "error=" << cntl.ErrorText() << " latency=" << cntl.latency_us();
-      // We can't connect to the server, sleep a while. Notice that this
-      // is a specific sleeping to prevent this thread from spinning too
-      // fast. You should continue the business logic in a production
-      // server rather than sleeping.
-      bthread_usleep(50000);
-    }
+  // Because `done'(last parameter) is NULL, this function waits until
+  // the response comes back or error occurs(including timedout).
+  stub.Set(&cntl, &request, &response, NULL);
+  if (!cntl.Failed()) {
+    g_latency_recorder << cntl.latency_us();
+  } else {
+    g_error_count << 1;
+    CHECK(brpc::IsAskedToQuit() || !FLAGS_dont_fail)
+    << "error=" << cntl.ErrorText() << " latency=" << cntl.latency_us();
+    // We can't connect to the server, sleep a while. Notice that this
+    // is a specific sleeping to prevent this thread from spinning too
+    // fast. You should continue the business logic in a production
+    // server rather than sleeping.
+    bthread_usleep(50000);
+  }
   }
   return NULL;
 }
@@ -163,26 +163,26 @@ bool get_key_values() {
   g_keys = new std::vector<std::string>();
   g_values = new std::vector<std::string>();
   if (FLAGS_data_file.empty()) {
-    std::string key, base64_key, value, base64_value;
-    for (int i = 0; i < FLAGS_size; ++i) {
-      key = butil::RandBytesAsString(FLAGS_key_size);
-      value = butil::RandBytesAsString(FLAGS_value_size);
-      butil::Base64Encode(key, &base64_key);
-      butil::Base64Encode(value, &base64_value);
-      g_keys->push_back(base64_key);
-      g_values->push_back(base64_value);
-    }
-    return true;
+  std::string key, base64_key, value, base64_value;
+  for (int i = 0; i < FLAGS_size; ++i) {
+    key = butil::RandBytesAsString(FLAGS_key_size);
+    value = butil::RandBytesAsString(FLAGS_value_size);
+    butil::Base64Encode(key, &base64_key);
+    butil::Base64Encode(value, &base64_value);
+    g_keys->push_back(base64_key);
+    g_values->push_back(base64_value);
+  }
+  return true;
   } else {
-    push::FileRead file_read(FLAGS_data_file.c_str());
-    int size = file_read.Read(FLAGS_offset, FLAGS_size, g_keys, g_values);
-    if (size != FLAGS_size) {
-      LOG(ERROR) << "get key_values error size:" << size << " expect size:"
-        << FLAGS_size;
-      delete g_keys;
-      delete g_values;
-      return false;
-    }
+  push::FileRead file_read(FLAGS_data_file.c_str());
+  int size = file_read.Read(FLAGS_offset, FLAGS_size, g_keys, g_values);
+  if (size != FLAGS_size) {
+    LOG(ERROR) << "get key_values error size:" << size << " expect size:"
+    << FLAGS_size;
+    delete g_keys;
+    delete g_values;
+    return false;
+  }
   }
   return true;
 }
@@ -203,60 +203,60 @@ int main(int argc, char* argv[]) {
   options.timeout_ms = FLAGS_timeout_ms;
   options.max_retry = FLAGS_max_retry;
   if (channel.Init(FLAGS_server.c_str(), FLAGS_load_balancer.c_str(), &options) != 0) {
-    LOG(ERROR) << "Fail to initialize channel";
-    return -1;
+  LOG(ERROR) << "Fail to initialize channel";
+  return -1;
   }
 
   if (FLAGS_attachment_size > 0) {
-    g_attachment.resize(FLAGS_attachment_size, 'a');
+  g_attachment.resize(FLAGS_attachment_size, 'a');
   }
 
   if (FLAGS_dummy_port >= 0) {
-    brpc::StartDummyServerAt(FLAGS_dummy_port);
+  brpc::StartDummyServerAt(FLAGS_dummy_port);
   }
 
   if (!get_key_values()) {
-    return -1;
+  return -1;
   }
 
   std::vector<bthread_t> tids;
   tids.resize(FLAGS_thread_num);
   void *(*func_ptr)(void*);
   if (FLAGS_set) {
-    func_ptr = set;
+  func_ptr = set;
   } else {
-    func_ptr = get;
+  func_ptr = get;
   }
 
   if (!FLAGS_use_bthread) {
-    for (int i = 0; i < FLAGS_thread_num; ++i) {
-      if (pthread_create(&tids[i], NULL, func_ptr, &channel) != 0) {
-        LOG(ERROR) << "Fail to create pthread";
-        return -1;
-      }
+  for (int i = 0; i < FLAGS_thread_num; ++i) {
+    if (pthread_create(&tids[i], NULL, func_ptr, &channel) != 0) {
+    LOG(ERROR) << "Fail to create pthread";
+    return -1;
     }
+  }
   } else {
-    for (int i = 0; i < FLAGS_thread_num; ++i) {
-      if (bthread_start_background(&tids[i], NULL, func_ptr, &channel) != 0) {
-        LOG(ERROR) << "Fail to create bthread";
-        return -1;
-      }
+  for (int i = 0; i < FLAGS_thread_num; ++i) {
+    if (bthread_start_background(&tids[i], NULL, func_ptr, &channel) != 0) {
+    LOG(ERROR) << "Fail to create bthread";
+    return -1;
     }
+  }
   }
 
   while (!brpc::IsAskedToQuit()) {
-    sleep(1);
-    LOG(INFO) << "Sending Request at qps=" << g_latency_recorder.qps(1) * FLAGS_batch_size
-      << " latency=" << g_latency_recorder.latency(1);
+  sleep(1);
+  LOG(INFO) << "Sending Request at qps=" << g_latency_recorder.qps(1) * FLAGS_batch_size
+    << " latency=" << g_latency_recorder.latency(1);
   }
 
   LOG(INFO) << "Client is going to quit";
   for (int i = 0; i < FLAGS_thread_num; ++i) {
-    if (!FLAGS_use_bthread) {
-      pthread_join(tids[i], NULL);
-    } else {
-      bthread_join(tids[i], NULL);
-    }
+  if (!FLAGS_use_bthread) {
+    pthread_join(tids[i], NULL);
+  } else {
+    bthread_join(tids[i], NULL);
+  }
   }
   delete g_keys;
   delete g_values;

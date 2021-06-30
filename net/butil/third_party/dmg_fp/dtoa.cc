@@ -343,7 +343,7 @@ extern int strtod_diglim;
 #ifdef IEEE_Arith
 #define Exp_shift  20
 #define Exp_shift1 20
-#define Exp_msk1    0x100000
+#define Exp_msk1  0x100000
 #define Exp_msk11   0x100000
 #define Exp_mask  0x7ff00000
 #define P 53
@@ -429,7 +429,7 @@ extern int strtod_diglim;
 #define Flt_Rounds 1
 #define Exp_shift  23
 #define Exp_shift1 7
-#define Exp_msk1    0x80
+#define Exp_msk1  0x80
 #define Exp_msk11   0x800000
 #define Exp_mask  0x7f80
 #define P 56
@@ -1313,7 +1313,7 @@ d2b
 #ifndef Sudden_Underflow
 		i =
 #endif
-		    b->wds = (x[1] = z) ? 2 : 1;
+		  b->wds = (x[1] = z) ? 2 : 1;
 		}
 	else {
 		k = lo0bits(&z);
@@ -1321,7 +1321,7 @@ d2b
 #ifndef Sudden_Underflow
 		i =
 #endif
-		    b->wds = 1;
+		  b->wds = 1;
 		k += 32;
 		}
 #else
@@ -2039,7 +2039,7 @@ gethex( CONST char **sp, U *rvp, int rounding, int sign)
 				}
 			else if (b->wds > k
 			 || ((n = nbits & kmask) !=0
-			     && hi0bits(x[k-1]) < 32-n)) {
+			   && hi0bits(x[k-1]) < 32-n)) {
 				rshift(b,1);
 				if (++e > Emax)
 					goto ovfl;
@@ -3284,7 +3284,7 @@ strtod
 #ifdef Avoid_Underflow
 			if (bc.scale && y <= 2*P*Exp_msk1) {
 				if (aadj <= 0x7fffffff) {
-                                    if ((z = (ULong)aadj) <= 0)
+                  if ((z = (ULong)aadj) <= 0)
 						z = 1;
 					aadj = z;
 					aadj1 = bc.dsign ? aadj : -aadj;
@@ -3694,7 +3694,7 @@ dtoa
 
 		i = bbits + be + (Bias + (P-1) - 1);
 		x = i > 32  ? word0(&u) << (64 - i) | word1(&u) >> (i - 32)
-			    : word1(&u) << (32 - i);
+			  : word1(&u) << (32 - i);
 		dval(&d2) = x;
 		word0(&d2) -= 31*Exp_msk1; /* adjust exponent */
 		i -= (Bias + (P-1) - 1) + 1;
@@ -3838,7 +3838,7 @@ dtoa
 			 */
 			dval(&eps) = 0.5/tens[ilim-1] - dval(&eps);
 			for(i = 0;;) {
-                                L = (Long)dval(&u);
+                L = (Long)dval(&u);
 				dval(&u) -= L;
 				*s++ = '0' + (int)L;
 				if (dval(&u) < dval(&eps))

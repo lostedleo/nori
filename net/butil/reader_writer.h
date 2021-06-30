@@ -20,7 +20,7 @@
 #ifndef BUTIL_READER_WRITER_H
 #define BUTIL_READER_WRITER_H
 
-#include <sys/uio.h>                             // iovec
+#include <sys/uio.h>               // iovec
 
 namespace butil {
 
@@ -28,24 +28,24 @@ namespace butil {
 // The simplest implementation is to embed a file descriptor and read from it.
 class IReader {
 public:
-    virtual ~IReader() {}
+  virtual ~IReader() {}
 
-    // Semantics of parameters and return value are same as readv(2) except that
-    // there's no `fd'.
-    virtual ssize_t ReadV(const iovec* iov, int iovcnt) = 0;
+  // Semantics of parameters and return value are same as readv(2) except that
+  // there's no `fd'.
+  virtual ssize_t ReadV(const iovec* iov, int iovcnt) = 0;
 };
 
 // Abstraction for writing data.
 // The simplest implementation is to embed a file descriptor and writev into it.
 class IWriter {
 public:
-    virtual ~IWriter() {}
+  virtual ~IWriter() {}
 
-    // Semantics of parameters and return value are same as writev(2) except that
-    // there's no `fd'.
-    // WriteV is required to submit data gathered by multiple appends in one 
-    // run and enable the possibility of atomic writes.
-    virtual ssize_t WriteV(const iovec* iov, int iovcnt) = 0;
+  // Semantics of parameters and return value are same as writev(2) except that
+  // there's no `fd'.
+  // WriteV is required to submit data gathered by multiple appends in one 
+  // run and enable the possibility of atomic writes.
+  virtual ssize_t WriteV(const iovec* iov, int iovcnt) = 0;
 };
 
 }  // namespace butil

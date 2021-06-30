@@ -27,10 +27,10 @@ namespace brpc {
 namespace policy {
 
 int RedisAuthenticator::GenerateCredential(std::string* auth_str) const {
-    butil::IOBuf buf;
-    brpc::RedisCommandFormat(&buf, "AUTH %s", passwd_.c_str());
-    *auth_str = buf.to_string();
-    return 0;
+  butil::IOBuf buf;
+  brpc::RedisCommandFormat(&buf, "AUTH %s", passwd_.c_str());
+  *auth_str = buf.to_string();
+  return 0;
 }
 
 }  // namespace policy

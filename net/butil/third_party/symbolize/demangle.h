@@ -5,13 +5,13 @@
 // modification, are permitted provided that the following conditions are
 // met:
 //
-//     * Redistributions of source code must retain the above copyright
+//   * Redistributions of source code must retain the above copyright
 // notice, this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above
+//   * Redistributions in binary form must reproduce the above
 // copyright notice, this list of conditions and the following disclaimer
 // in the documentation and/or other materials provided with the
 // distribution.
-//     * Neither the name of Google Inc. nor the names of its
+//   * Neither the name of Google Inc. nor the names of its
 // contributors may be used to endorse or promote products derived from
 // this software without specific prior written permission.
 //
@@ -49,17 +49,17 @@
 //
 // | Mangled Name  | The Demangler | abi::__cxa_demangle()
 // |---------------|---------------|-----------------------
-// | _Z1fv         | f()           | f()
-// | _Z1fi         | f()           | f(int)
-// | _Z3foo3bar    | foo()         | foo(bar)
-// | _Z1fIiEvi     | f<>()         | void f<int>(int)
-// | _ZN1N1fE      | N::f          | N::f
-// | _ZN3Foo3BarEv | Foo::Bar()    | Foo::Bar()
-// | _Zrm1XS_"     | operator%()   | operator%(X, X)
-// | _ZN3FooC1Ev   | Foo::Foo()    | Foo::Foo()
-// | _Z1fSs        | f()           | f(std::basic_string<char,
-// |               |               |   std::char_traits<char>,
-// |               |               |   std::allocator<char> >)
+// | _Z1fv     | f()       | f()
+// | _Z1fi     | f()       | f(int)
+// | _Z3foo3bar  | foo()     | foo(bar)
+// | _Z1fIiEvi   | f<>()     | void f<int>(int)
+// | _ZN1N1fE    | N::f      | N::f
+// | _ZN3Foo3BarEv | Foo::Bar()  | Foo::Bar()
+// | _Zrm1XS_"   | operator%()   | operator%(X, X)
+// | _ZN3FooC1Ev   | Foo::Foo()  | Foo::Foo()
+// | _Z1fSs    | f()       | f(std::basic_string<char,
+// |         |         |   std::char_traits<char>,
+// |         |         |   std::allocator<char> >)
 //
 // See the unit test for more examples.
 //

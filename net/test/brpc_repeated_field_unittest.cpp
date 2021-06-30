@@ -21,21 +21,21 @@
 
 class RepeatedFieldTest : public testing::Test {
 protected:
-    void SetUp() {}
-    void TearDown() {}
+  void SetUp() {}
+  void TearDown() {}
 };
 
 TEST_F(RepeatedFieldTest, empty_array) {
-    RepeatedMessage m;
-    std::string json;
+  RepeatedMessage m;
+  std::string json;
 
-    ASSERT_TRUE(json2pb::ProtoMessageToJson(m, &json));
-    std::cout << json << std::endl;
+  ASSERT_TRUE(json2pb::ProtoMessageToJson(m, &json));
+  std::cout << json << std::endl;
 
-    m.add_strings();
-    m.add_ints(1);
-    m.add_msgs();
-    json.clear();
-    ASSERT_TRUE(json2pb::ProtoMessageToJson(m, &json));
-    std::cout << json << std::endl;
+  m.add_strings();
+  m.add_ints(1);
+  m.add_msgs();
+  json.clear();
+  ASSERT_TRUE(json2pb::ProtoMessageToJson(m, &json));
+  std::cout << json << std::endl;
 }

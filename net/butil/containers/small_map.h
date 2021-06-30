@@ -24,30 +24,30 @@ namespace butil {
 // --------------------------------
 //
 //  - std::map should be the default if you're not sure, since it's the most
-//    difficult to mess up. Generally this is backed by a red-black tree. It
-//    will generate a lot of code (if you use a common key type like int or
-//    string the linker will probably emiminate the duplicates). It will
-//    do heap allocations for each element.
+//  difficult to mess up. Generally this is backed by a red-black tree. It
+//  will generate a lot of code (if you use a common key type like int or
+//  string the linker will probably emiminate the duplicates). It will
+//  do heap allocations for each element.
 //
 //  - If you only ever keep a couple of items and have very simple usage,
-//    consider whether a using a vector and brute-force searching it will be
-//    the most efficient. It's not a lot of generated code (less then a
-//    red-black tree if your key is "weird" and not eliminated as duplicate of
-//    something else) and will probably be faster and do fewer heap allocations
-//    than std::map if you have just a couple of items.
+//  consider whether a using a vector and brute-force searching it will be
+//  the most efficient. It's not a lot of generated code (less then a
+//  red-black tree if your key is "weird" and not eliminated as duplicate of
+//  something else) and will probably be faster and do fewer heap allocations
+//  than std::map if you have just a couple of items.
 //
 //  - butil::hash_map should be used if you need O(1) lookups. It may waste
-//    space in the hash table, and it can be easy to write correct-looking
-//    code with the default hash function being wrong or poorly-behaving.
+//  space in the hash table, and it can be easy to write correct-looking
+//  code with the default hash function being wrong or poorly-behaving.
 //
 //  - SmallMap combines the performance benefits of the brute-force-searched
-//    vector for small cases (no extra heap allocations), but can efficiently
-//    fall back if you end up adding many items. It will generate more code
-//    than std::map (at least 160 bytes for operator[]) which is bad if you
-//    have a "weird" key where map functions can't be
-//    duplicate-code-eliminated. If you have a one-off key and aren't in
-//    performance-critical code, this bloat may negate some of the benefits and
-//    you should consider on of the other options.
+//  vector for small cases (no extra heap allocations), but can efficiently
+//  fall back if you end up adding many items. It will generate more code
+//  than std::map (at least 160 bytes for operator[]) which is bad if you
+//  have a "weird" key where map functions can't be
+//  duplicate-code-eliminated. If you have a one-off key and aren't in
+//  performance-critical code, this bloat may negate some of the benefits and
+//  you should consider on of the other options.
 //
 // SmallMap will pick up the comparator from the underlying map type. In
 // std::map (and in MSVC additionally hash_map) only a "less" operator is
@@ -66,23 +66,23 @@ namespace butil {
 // -----
 //
 // NormalMap:  The map type to fall back to.  This also defines the key
-//             and value types for the SmallMap.
+//       and value types for the SmallMap.
 // kArraySize:  The size of the initial array of results. This will be
-//              allocated with the SmallMap object rather than separately on
-//              the heap. Once the map grows beyond this size, the map type
-//              will be used instead.
+//        allocated with the SmallMap object rather than separately on
+//        the heap. Once the map grows beyond this size, the map type
+//        will be used instead.
 // EqualKey:  A functor which tests two keys for equality.  If the wrapped
-//            map type has a "key_equal" member (hash_map does), then that will
-//            be used by default. If the wrapped map type has a strict weak
-//            ordering "key_compare" (std::map does), that will be used to
-//            implement equality by default.
+//      map type has a "key_equal" member (hash_map does), then that will
+//      be used by default. If the wrapped map type has a strict weak
+//      ordering "key_compare" (std::map does), that will be used to
+//      implement equality by default.
 // MapInit: A functor that takes a ManualConstructor<NormalMap>* and uses it to
-//          initialize the map. This functor will be called at most once per
-//          SmallMap, when the map exceeds the threshold of kArraySize and we
-//          are about to copy values from the array to the map. The functor
-//          *must* call one of the Init() methods provided by
-//          ManualConstructor, since after it runs we assume that the NormalMap
-//          has been initialized.
+//      initialize the map. This functor will be called at most once per
+//      SmallMap, when the map exceeds the threshold of kArraySize and we
+//      are about to copy values from the array to the map. The functor
+//      *must* call one of the Init() methods provided by
+//      ManualConstructor, since after it runs we assume that the NormalMap
+//      has been initialized.
 //
 // example:
 //   butil::SmallMap< std::map<string, int> > days;
@@ -103,7 +103,7 @@ template <typename NormalMap>
 class SmallMapDefaultInit {
  public:
   void operator()(ManualConstructor<NormalMap>* map) const {
-    map->Init();
+  map->Init();
   }
 };
 
@@ -134,12 +134,12 @@ template <typename M> const bool has_key_equal<M>::value;
 template <typename M, bool has_key_equal_value>
 struct select_equal_key {
   struct equal_key {
-    bool operator()(const typename M::key_type& left,
-                    const typename M::key_type& right) {
-      // Implements equality in terms of a strict weak ordering comparator.
-      typename M::key_compare comp;
-      return !comp(left, right) && !comp(right, left);
-    }
+  bool operator()(const typename M::key_type& left,
+          const typename M::key_type& right) {
+    // Implements equality in terms of a strict weak ordering comparator.
+    typename M::key_compare comp;
+    return !comp(left, right) && !comp(right, left);
+  }
   };
 };
 
@@ -152,17 +152,17 @@ struct select_equal_key {
 template <typename KeyType, typename ValueType>
 struct select_equal_key< std::map<KeyType, ValueType>, false> {
   struct equal_key {
-    bool operator()(const KeyType& left, const KeyType& right) {
-      return left == right;
-    }
+  bool operator()(const KeyType& left, const KeyType& right) {
+    return left == right;
+  }
   };
 };
 template <typename KeyType, typename ValueType>
 struct select_equal_key< butil::hash_map<KeyType, ValueType>, false> {
   struct equal_key {
-    bool operator()(const KeyType& left, const KeyType& right) {
-      return left == right;
-    }
+  bool operator()(const KeyType& left, const KeyType& right) {
+    return left == right;
+  }
   };
 };
 
@@ -176,12 +176,12 @@ struct select_equal_key<M, true> {
 }  // namespace internal
 
 template <typename NormalMap,
-          int kArraySize = 4,
-          typename EqualKey =
-              typename internal::select_equal_key<
-                  NormalMap,
-                  internal::has_key_equal<NormalMap>::value>::equal_key,
-          typename MapInit = internal::SmallMapDefaultInit<NormalMap> >
+      int kArraySize = 4,
+      typename EqualKey =
+        typename internal::select_equal_key<
+          NormalMap,
+          internal::has_key_equal<NormalMap>::value>::equal_key,
+      typename MapInit = internal::SmallMapDefaultInit<NormalMap> >
 class SmallMap {
   // We cannot rely on the compiler to reject array of size 0.  In
   // particular, gcc 2.95.3 does it but later versions allow 0-length
@@ -202,368 +202,368 @@ class SmallMap {
 
   // Allow copy-constructor and assignment, since STL allows them too.
   SmallMap(const SmallMap& src) {
-    // size_ and functor_ are initted in InitFrom()
-    InitFrom(src);
+  // size_ and functor_ are initted in InitFrom()
+  InitFrom(src);
   }
   void operator=(const SmallMap& src) {
-    if (&src == this) return;
+  if (&src == this) return;
 
-    // This is not optimal. If src and dest are both using the small
-    // array, we could skip the teardown and reconstruct. One problem
-    // to be resolved is that the value_type itself is pair<const K,
-    // V>, and const K is not assignable.
-    Destroy();
-    InitFrom(src);
+  // This is not optimal. If src and dest are both using the small
+  // array, we could skip the teardown and reconstruct. One problem
+  // to be resolved is that the value_type itself is pair<const K,
+  // V>, and const K is not assignable.
+  Destroy();
+  InitFrom(src);
   }
   ~SmallMap() {
-    Destroy();
+  Destroy();
   }
 
   class const_iterator;
 
   class iterator {
    public:
-    typedef typename NormalMap::iterator::iterator_category iterator_category;
-    typedef typename NormalMap::iterator::value_type value_type;
-    typedef typename NormalMap::iterator::difference_type difference_type;
-    typedef typename NormalMap::iterator::pointer pointer;
-    typedef typename NormalMap::iterator::reference reference;
+  typedef typename NormalMap::iterator::iterator_category iterator_category;
+  typedef typename NormalMap::iterator::value_type value_type;
+  typedef typename NormalMap::iterator::difference_type difference_type;
+  typedef typename NormalMap::iterator::pointer pointer;
+  typedef typename NormalMap::iterator::reference reference;
 
-    inline iterator(): array_iter_(NULL) {}
+  inline iterator(): array_iter_(NULL) {}
 
-    inline iterator& operator++() {
-      if (array_iter_ != NULL) {
-        ++array_iter_;
-      } else {
-        ++hash_iter_;
-      }
-      return *this;
+  inline iterator& operator++() {
+    if (array_iter_ != NULL) {
+    ++array_iter_;
+    } else {
+    ++hash_iter_;
     }
-    inline iterator operator++(int /*unused*/) {
-      iterator result(*this);
-      ++(*this);
-      return result;
+    return *this;
+  }
+  inline iterator operator++(int /*unused*/) {
+    iterator result(*this);
+    ++(*this);
+    return result;
+  }
+  inline iterator& operator--() {
+    if (array_iter_ != NULL) {
+    --array_iter_;
+    } else {
+    --hash_iter_;
     }
-    inline iterator& operator--() {
-      if (array_iter_ != NULL) {
-        --array_iter_;
-      } else {
-        --hash_iter_;
-      }
-      return *this;
+    return *this;
+  }
+  inline iterator operator--(int /*unused*/) {
+    iterator result(*this);
+    --(*this);
+    return result;
+  }
+  inline value_type* operator->() const {
+    if (array_iter_ != NULL) {
+    return array_iter_->get();
+    } else {
+    return hash_iter_.operator->();
     }
-    inline iterator operator--(int /*unused*/) {
-      iterator result(*this);
-      --(*this);
-      return result;
-    }
-    inline value_type* operator->() const {
-      if (array_iter_ != NULL) {
-        return array_iter_->get();
-      } else {
-        return hash_iter_.operator->();
-      }
-    }
+  }
 
-    inline value_type& operator*() const {
-      if (array_iter_ != NULL) {
-        return *array_iter_->get();
-      } else {
-        return *hash_iter_;
-      }
+  inline value_type& operator*() const {
+    if (array_iter_ != NULL) {
+    return *array_iter_->get();
+    } else {
+    return *hash_iter_;
     }
+  }
 
-    inline bool operator==(const iterator& other) const {
-      if (array_iter_ != NULL) {
-        return array_iter_ == other.array_iter_;
-      } else {
-        return other.array_iter_ == NULL && hash_iter_ == other.hash_iter_;
-      }
+  inline bool operator==(const iterator& other) const {
+    if (array_iter_ != NULL) {
+    return array_iter_ == other.array_iter_;
+    } else {
+    return other.array_iter_ == NULL && hash_iter_ == other.hash_iter_;
     }
+  }
 
-    inline bool operator!=(const iterator& other) const {
-      return !(*this == other);
-    }
+  inline bool operator!=(const iterator& other) const {
+    return !(*this == other);
+  }
 
-    bool operator==(const const_iterator& other) const;
-    bool operator!=(const const_iterator& other) const;
+  bool operator==(const const_iterator& other) const;
+  bool operator!=(const const_iterator& other) const;
 
    private:
-    friend class SmallMap;
-    friend class const_iterator;
-    inline explicit iterator(ManualConstructor<value_type>* init)
-      : array_iter_(init) {}
-    inline explicit iterator(const typename NormalMap::iterator& init)
-      : array_iter_(NULL), hash_iter_(init) {}
+  friend class SmallMap;
+  friend class const_iterator;
+  inline explicit iterator(ManualConstructor<value_type>* init)
+    : array_iter_(init) {}
+  inline explicit iterator(const typename NormalMap::iterator& init)
+    : array_iter_(NULL), hash_iter_(init) {}
 
-    ManualConstructor<value_type>* array_iter_;
-    typename NormalMap::iterator hash_iter_;
+  ManualConstructor<value_type>* array_iter_;
+  typename NormalMap::iterator hash_iter_;
   };
 
   class const_iterator {
    public:
-    typedef typename NormalMap::const_iterator::iterator_category
-        iterator_category;
-    typedef typename NormalMap::const_iterator::value_type value_type;
-    typedef typename NormalMap::const_iterator::difference_type difference_type;
-    typedef typename NormalMap::const_iterator::pointer pointer;
-    typedef typename NormalMap::const_iterator::reference reference;
+  typedef typename NormalMap::const_iterator::iterator_category
+    iterator_category;
+  typedef typename NormalMap::const_iterator::value_type value_type;
+  typedef typename NormalMap::const_iterator::difference_type difference_type;
+  typedef typename NormalMap::const_iterator::pointer pointer;
+  typedef typename NormalMap::const_iterator::reference reference;
 
-    inline const_iterator(): array_iter_(NULL) {}
-    // Non-explicit ctor lets us convert regular iterators to const iterators
-    inline const_iterator(const iterator& other)
-      : array_iter_(other.array_iter_), hash_iter_(other.hash_iter_) {}
+  inline const_iterator(): array_iter_(NULL) {}
+  // Non-explicit ctor lets us convert regular iterators to const iterators
+  inline const_iterator(const iterator& other)
+    : array_iter_(other.array_iter_), hash_iter_(other.hash_iter_) {}
 
-    inline const_iterator& operator++() {
-      if (array_iter_ != NULL) {
-        ++array_iter_;
-      } else {
-        ++hash_iter_;
-      }
-      return *this;
-    }
-    inline const_iterator operator++(int /*unused*/) {
-      const_iterator result(*this);
-      ++(*this);
-      return result;
-    }
-
-    inline const_iterator& operator--() {
-      if (array_iter_ != NULL) {
-        --array_iter_;
-      } else {
-        --hash_iter_;
-      }
-      return *this;
-    }
-    inline const_iterator operator--(int /*unused*/) {
-      const_iterator result(*this);
-      --(*this);
-      return result;
-    }
-
-    inline const value_type* operator->() const {
-      if (array_iter_ != NULL) {
-        return array_iter_->get();
-      } else {
-        return hash_iter_.operator->();
-      }
-    }
-
-    inline const value_type& operator*() const {
-      if (array_iter_ != NULL) {
-        return *array_iter_->get();
-      } else {
-        return *hash_iter_;
-      }
-    }
-
-    inline bool operator==(const const_iterator& other) const {
-      if (array_iter_ != NULL) {
-        return array_iter_ == other.array_iter_;
-      } else {
-        return other.array_iter_ == NULL && hash_iter_ == other.hash_iter_;
-      }
-    }
-
-    inline bool operator!=(const const_iterator& other) const {
-      return !(*this == other);
-    }
-
-   private:
-    friend class SmallMap;
-    inline explicit const_iterator(
-        const ManualConstructor<value_type>* init)
-      : array_iter_(init) {}
-    inline explicit const_iterator(
-        const typename NormalMap::const_iterator& init)
-      : array_iter_(NULL), hash_iter_(init) {}
-
-    const ManualConstructor<value_type>* array_iter_;
-    typename NormalMap::const_iterator hash_iter_;
-  };
-
-  iterator find(const key_type& key) {
-    key_equal compare;
-    if (size_ >= 0) {
-      for (int i = 0; i < size_; i++) {
-        if (compare(array_[i]->first, key)) {
-          return iterator(array_ + i);
-        }
-      }
-      return iterator(array_ + size_);
+  inline const_iterator& operator++() {
+    if (array_iter_ != NULL) {
+    ++array_iter_;
     } else {
-      return iterator(map()->find(key));
+    ++hash_iter_;
+    }
+    return *this;
+  }
+  inline const_iterator operator++(int /*unused*/) {
+    const_iterator result(*this);
+    ++(*this);
+    return result;
+  }
+
+  inline const_iterator& operator--() {
+    if (array_iter_ != NULL) {
+    --array_iter_;
+    } else {
+    --hash_iter_;
+    }
+    return *this;
+  }
+  inline const_iterator operator--(int /*unused*/) {
+    const_iterator result(*this);
+    --(*this);
+    return result;
+  }
+
+  inline const value_type* operator->() const {
+    if (array_iter_ != NULL) {
+    return array_iter_->get();
+    } else {
+    return hash_iter_.operator->();
     }
   }
 
-  const_iterator find(const key_type& key) const {
-    key_equal compare;
-    if (size_ >= 0) {
-      for (int i = 0; i < size_; i++) {
-        if (compare(array_[i]->first, key)) {
-          return const_iterator(array_ + i);
-        }
-      }
-      return const_iterator(array_ + size_);
+  inline const value_type& operator*() const {
+    if (array_iter_ != NULL) {
+    return *array_iter_->get();
     } else {
-      return const_iterator(map()->find(key));
+    return *hash_iter_;
     }
+  }
+
+  inline bool operator==(const const_iterator& other) const {
+    if (array_iter_ != NULL) {
+    return array_iter_ == other.array_iter_;
+    } else {
+    return other.array_iter_ == NULL && hash_iter_ == other.hash_iter_;
+    }
+  }
+
+  inline bool operator!=(const const_iterator& other) const {
+    return !(*this == other);
+  }
+
+   private:
+  friend class SmallMap;
+  inline explicit const_iterator(
+    const ManualConstructor<value_type>* init)
+    : array_iter_(init) {}
+  inline explicit const_iterator(
+    const typename NormalMap::const_iterator& init)
+    : array_iter_(NULL), hash_iter_(init) {}
+
+  const ManualConstructor<value_type>* array_iter_;
+  typename NormalMap::const_iterator hash_iter_;
+  };
+
+  iterator find(const key_type& key) {
+  key_equal compare;
+  if (size_ >= 0) {
+    for (int i = 0; i < size_; i++) {
+    if (compare(array_[i]->first, key)) {
+      return iterator(array_ + i);
+    }
+    }
+    return iterator(array_ + size_);
+  } else {
+    return iterator(map()->find(key));
+  }
+  }
+
+  const_iterator find(const key_type& key) const {
+  key_equal compare;
+  if (size_ >= 0) {
+    for (int i = 0; i < size_; i++) {
+    if (compare(array_[i]->first, key)) {
+      return const_iterator(array_ + i);
+    }
+    }
+    return const_iterator(array_ + size_);
+  } else {
+    return const_iterator(map()->find(key));
+  }
   }
 
   // Invalidates iterators.
   data_type& operator[](const key_type& key) {
-    key_equal compare;
+  key_equal compare;
 
-    if (size_ >= 0) {
-      // operator[] searches backwards, favoring recently-added
-      // elements.
-      for (int i = size_-1; i >= 0; --i) {
-        if (compare(array_[i]->first, key)) {
-          return array_[i]->second;
-        }
-      }
-      if (size_ == kArraySize) {
-        ConvertToRealMap();
-        return (*map_)[key];
-      } else {
-        array_[size_].Init(key, data_type());
-        return array_[size_++]->second;
-      }
-    } else {
-      return (*map_)[key];
+  if (size_ >= 0) {
+    // operator[] searches backwards, favoring recently-added
+    // elements.
+    for (int i = size_-1; i >= 0; --i) {
+    if (compare(array_[i]->first, key)) {
+      return array_[i]->second;
     }
+    }
+    if (size_ == kArraySize) {
+    ConvertToRealMap();
+    return (*map_)[key];
+    } else {
+    array_[size_].Init(key, data_type());
+    return array_[size_++]->second;
+    }
+  } else {
+    return (*map_)[key];
+  }
   }
 
   // Invalidates iterators.
   std::pair<iterator, bool> insert(const value_type& x) {
-    key_equal compare;
+  key_equal compare;
 
-    if (size_ >= 0) {
-      for (int i = 0; i < size_; i++) {
-        if (compare(array_[i]->first, x.first)) {
-          return std::make_pair(iterator(array_ + i), false);
-        }
-      }
-      if (size_ == kArraySize) {
-        ConvertToRealMap();  // Invalidates all iterators!
-        std::pair<typename NormalMap::iterator, bool> ret = map_->insert(x);
-        return std::make_pair(iterator(ret.first), ret.second);
-      } else {
-        array_[size_].Init(x);
-        return std::make_pair(iterator(array_ + size_++), true);
-      }
-    } else {
-      std::pair<typename NormalMap::iterator, bool> ret = map_->insert(x);
-      return std::make_pair(iterator(ret.first), ret.second);
+  if (size_ >= 0) {
+    for (int i = 0; i < size_; i++) {
+    if (compare(array_[i]->first, x.first)) {
+      return std::make_pair(iterator(array_ + i), false);
     }
+    }
+    if (size_ == kArraySize) {
+    ConvertToRealMap();  // Invalidates all iterators!
+    std::pair<typename NormalMap::iterator, bool> ret = map_->insert(x);
+    return std::make_pair(iterator(ret.first), ret.second);
+    } else {
+    array_[size_].Init(x);
+    return std::make_pair(iterator(array_ + size_++), true);
+    }
+  } else {
+    std::pair<typename NormalMap::iterator, bool> ret = map_->insert(x);
+    return std::make_pair(iterator(ret.first), ret.second);
+  }
   }
 
   // Invalidates iterators.
   template <class InputIterator>
   void insert(InputIterator f, InputIterator l) {
-    while (f != l) {
-      insert(*f);
-      ++f;
-    }
+  while (f != l) {
+    insert(*f);
+    ++f;
+  }
   }
 
   iterator begin() {
-    if (size_ >= 0) {
-      return iterator(array_);
-    } else {
-      return iterator(map_->begin());
-    }
+  if (size_ >= 0) {
+    return iterator(array_);
+  } else {
+    return iterator(map_->begin());
+  }
   }
   const_iterator begin() const {
-    if (size_ >= 0) {
-      return const_iterator(array_);
-    } else {
-      return const_iterator(map_->begin());
-    }
+  if (size_ >= 0) {
+    return const_iterator(array_);
+  } else {
+    return const_iterator(map_->begin());
+  }
   }
 
   iterator end() {
-    if (size_ >= 0) {
-      return iterator(array_ + size_);
-    } else {
-      return iterator(map_->end());
-    }
+  if (size_ >= 0) {
+    return iterator(array_ + size_);
+  } else {
+    return iterator(map_->end());
+  }
   }
   const_iterator end() const {
-    if (size_ >= 0) {
-      return const_iterator(array_ + size_);
-    } else {
-      return const_iterator(map_->end());
-    }
+  if (size_ >= 0) {
+    return const_iterator(array_ + size_);
+  } else {
+    return const_iterator(map_->end());
+  }
   }
 
   void clear() {
-    if (size_ >= 0) {
-      for (int i = 0; i < size_; i++) {
-        array_[i].Destroy();
-      }
-    } else {
-      map_.Destroy();
+  if (size_ >= 0) {
+    for (int i = 0; i < size_; i++) {
+    array_[i].Destroy();
     }
-    size_ = 0;
+  } else {
+    map_.Destroy();
+  }
+  size_ = 0;
   }
 
   // Invalidates iterators.
   void erase(const iterator& position) {
-    if (size_ >= 0) {
-      int i = position.array_iter_ - array_;
-      array_[i].Destroy();
-      --size_;
-      if (i != size_) {
-        array_[i].Init(*array_[size_]);
-        array_[size_].Destroy();
-      }
-    } else {
-      map_->erase(position.hash_iter_);
+  if (size_ >= 0) {
+    int i = position.array_iter_ - array_;
+    array_[i].Destroy();
+    --size_;
+    if (i != size_) {
+    array_[i].Init(*array_[size_]);
+    array_[size_].Destroy();
     }
+  } else {
+    map_->erase(position.hash_iter_);
+  }
   }
 
   size_t erase(const key_type& key) {
-    iterator iter = find(key);
-    if (iter == end()) return 0u;
-    erase(iter);
-    return 1u;
+  iterator iter = find(key);
+  if (iter == end()) return 0u;
+  erase(iter);
+  return 1u;
   }
 
   size_t count(const key_type& key) const {
-    return (find(key) == end()) ? 0 : 1;
+  return (find(key) == end()) ? 0 : 1;
   }
 
   size_t size() const {
-    if (size_ >= 0) {
-      return static_cast<size_t>(size_);
-    } else {
-      return map_->size();
-    }
+  if (size_ >= 0) {
+    return static_cast<size_t>(size_);
+  } else {
+    return map_->size();
+  }
   }
 
   bool empty() const {
-    if (size_ >= 0) {
-      return (size_ == 0);
-    } else {
-      return map_->empty();
-    }
+  if (size_ >= 0) {
+    return (size_ == 0);
+  } else {
+    return map_->empty();
+  }
   }
 
   // Returns true if we have fallen back to using the underlying map
   // representation.
   bool UsingFullMap() const {
-    return size_ < 0;
+  return size_ < 0;
   }
 
   inline NormalMap* map() {
-    CHECK(UsingFullMap());
-    return map_.get();
+  CHECK(UsingFullMap());
+  return map_.get();
   }
   inline const NormalMap* map() const {
-    CHECK(UsingFullMap());
-    return map_.get();
+  CHECK(UsingFullMap());
+  return map_.get();
   }
 
  private:
@@ -583,67 +583,67 @@ class SmallMap {
   //
   // TODO(brettw) remove this and use C++11 unions when we require C++11.
   union {
-    ManualConstructor<value_type> dummy_;
-    ManualConstructor<value_type> array_[kArraySize];
-    ManualConstructor<NormalMap> map_;
+  ManualConstructor<value_type> dummy_;
+  ManualConstructor<value_type> array_[kArraySize];
+  ManualConstructor<NormalMap> map_;
   };
 
   void ConvertToRealMap() {
-    // Move the current elements into a temporary array.
-    ManualConstructor<value_type> temp_array[kArraySize];
+  // Move the current elements into a temporary array.
+  ManualConstructor<value_type> temp_array[kArraySize];
 
-    for (int i = 0; i < kArraySize; i++) {
-      temp_array[i].Init(*array_[i]);
-      array_[i].Destroy();
-    }
+  for (int i = 0; i < kArraySize; i++) {
+    temp_array[i].Init(*array_[i]);
+    array_[i].Destroy();
+  }
 
-    // Initialize the map.
-    size_ = -1;
-    functor_(&map_);
+  // Initialize the map.
+  size_ = -1;
+  functor_(&map_);
 
-    // Insert elements into it.
-    for (int i = 0; i < kArraySize; i++) {
-      map_->insert(*temp_array[i]);
-      temp_array[i].Destroy();
-    }
+  // Insert elements into it.
+  for (int i = 0; i < kArraySize; i++) {
+    map_->insert(*temp_array[i]);
+    temp_array[i].Destroy();
+  }
   }
 
   // Helpers for constructors and destructors.
   void InitFrom(const SmallMap& src) {
-    functor_ = src.functor_;
-    size_ = src.size_;
-    if (src.size_ >= 0) {
-      for (int i = 0; i < size_; i++) {
-        array_[i].Init(*src.array_[i]);
-      }
-    } else {
-      functor_(&map_);
-      (*map_.get()) = (*src.map_.get());
+  functor_ = src.functor_;
+  size_ = src.size_;
+  if (src.size_ >= 0) {
+    for (int i = 0; i < size_; i++) {
+    array_[i].Init(*src.array_[i]);
     }
+  } else {
+    functor_(&map_);
+    (*map_.get()) = (*src.map_.get());
+  }
   }
   void Destroy() {
-    if (size_ >= 0) {
-      for (int i = 0; i < size_; i++) {
-        array_[i].Destroy();
-      }
-    } else {
-      map_.Destroy();
+  if (size_ >= 0) {
+    for (int i = 0; i < size_; i++) {
+    array_[i].Destroy();
     }
+  } else {
+    map_.Destroy();
+  }
   }
 };
 
 template <typename NormalMap, int kArraySize, typename EqualKey,
-          typename Functor>
+      typename Functor>
 inline bool SmallMap<NormalMap, kArraySize, EqualKey,
-                     Functor>::iterator::operator==(
-    const const_iterator& other) const {
+           Functor>::iterator::operator==(
+  const const_iterator& other) const {
   return other == *this;
 }
 template <typename NormalMap, int kArraySize, typename EqualKey,
-          typename Functor>
+      typename Functor>
 inline bool SmallMap<NormalMap, kArraySize, EqualKey,
-                     Functor>::iterator::operator!=(
-    const const_iterator& other) const {
+           Functor>::iterator::operator!=(
+  const const_iterator& other) const {
   return other != *this;
 }
 

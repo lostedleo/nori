@@ -26,13 +26,13 @@
 //
 //  template <typename T>
 //  class scoped_ptr {
-//     MOVE_ONLY_TYPE_FOR_CPP_03(scoped_ptr, RValue)
+//   MOVE_ONLY_TYPE_FOR_CPP_03(scoped_ptr, RValue)
 //   public:
-//    scoped_ptr(RValue& other) : ptr_(other.release()) { }
-//    scoped_ptr& operator=(RValue& other) {
-//      swap(other);
-//      return *this;
-//    }
+//  scoped_ptr(RValue& other) : ptr_(other.release()) { }
+//  scoped_ptr& operator=(RValue& other) {
+//    swap(other);
+//    return *this;
+//  }
 //  };
 //
 // Note that the constructor must NOT be marked explicit.
@@ -53,7 +53,7 @@
 //
 //   1) non-const references will not bind to r-values.
 //   2) C++ can apply one user-defined conversion when initializing a
-//      variable.
+//    variable.
 //
 // The first lets us disable the copy constructor and assignment operator
 // by declaring private version of them with a non-const reference parameter.
@@ -71,7 +71,7 @@
 //   * a private struct named "RValue"
 //   * a user-defined conversion "operator RValue()"
 //   * a "move constructor" and "move operator=" that take the RValue& as
-//     their sole parameter.
+//   their sole parameter.
 //
 // Only r-values will trigger this sequence and execute our "move constructor"
 // or "move operator=."  L-values will match the private copy constructor and
@@ -87,26 +87,26 @@
 //
 // Here's an example with comments explaining what gets triggered where:
 //
-//    class Foo {
-//      MOVE_ONLY_TYPE_FOR_CPP_03(Foo, RValue);
+//  class Foo {
+//    MOVE_ONLY_TYPE_FOR_CPP_03(Foo, RValue);
 //
-//     public:
-//       ... API ...
-//       Foo(RValue other);           // Move constructor.
-//       Foo& operator=(RValue rhs);  // Move operator=
-//    };
+//   public:
+//     ... API ...
+//     Foo(RValue other);       // Move constructor.
+//     Foo& operator=(RValue rhs);  // Move operator=
+//  };
 //
-//    Foo MakeFoo();  // Function that returns a Foo.
+//  Foo MakeFoo();  // Function that returns a Foo.
 //
-//    Foo f;
-//    Foo f_copy(f);  // ERROR: Foo(Foo&) is private in this context.
-//    Foo f_assign;
-//    f_assign = f;   // ERROR: operator=(Foo&) is private in this context.
+//  Foo f;
+//  Foo f_copy(f);  // ERROR: Foo(Foo&) is private in this context.
+//  Foo f_assign;
+//  f_assign = f;   // ERROR: operator=(Foo&) is private in this context.
 //
 //
-//    Foo f(MakeFoo());      // R-value so alternate conversion executed.
-//    Foo f_copy(f.Pass());  // R-value so alternate conversion executed.
-//    f = f_copy.Pass();     // R-value so alternate conversion executed.
+//  Foo f(MakeFoo());    // R-value so alternate conversion executed.
+//  Foo f_copy(f.Pass());  // R-value so alternate conversion executed.
+//  f = f_copy.Pass();   // R-value so alternate conversion executed.
 //
 //
 // IMPLEMENTATION SUBTLETIES WITH RValue
@@ -204,8 +204,8 @@
 #define MOVE_ONLY_TYPE_FOR_CPP_03(type, rvalue_type) \
  private: \
   struct rvalue_type { \
-    explicit rvalue_type(type* object) : object(object) {} \
-    type* object; \
+  explicit rvalue_type(type* object) : object(object) {} \
+  type* object; \
   }; \
   type(type&); \
   void operator=(type&); \

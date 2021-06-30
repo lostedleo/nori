@@ -20,9 +20,9 @@
 #ifndef BUTIL_THREAD_LOCAL_H
 #define BUTIL_THREAD_LOCAL_H
 
-#include <new>                      // std::nothrow
-#include <cstddef>                  // NULL
-#include "butil/macros.h"            
+#include <new>            // std::nothrow
+#include <cstddef>          // NULL
+#include "butil/macros.h"      
 
 #ifdef _MSC_VER
 #define BAIDU_THREAD_LOCAL __declspec(thread)
@@ -54,7 +54,7 @@ void thread_atexit_cancel(void (*fn)(void*), void* arg);
 // Delete the typed-T object whose address is `arg'. This is a common function
 // to thread_atexit.
 template <typename T> void delete_object(void* arg) {
-    delete static_cast<T*>(arg);
+  delete static_cast<T*>(arg);
 }
 
 }  // namespace butil

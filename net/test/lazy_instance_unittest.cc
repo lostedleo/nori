@@ -17,20 +17,20 @@ butil::StaticAtomicSequenceNumber destructed_seq_;
 class ConstructAndDestructLogger {
  public:
   ConstructAndDestructLogger() {
-    constructed_seq_.GetNext();
+  constructed_seq_.GetNext();
   }
   ~ConstructAndDestructLogger() {
-    destructed_seq_.GetNext();
+  destructed_seq_.GetNext();
   }
 };
 
 class SlowConstructor {
  public:
   SlowConstructor() : some_int_(0) {
-    // Sleep for 1 second to try to cause a race.
-    butil::PlatformThread::Sleep(butil::TimeDelta::FromSeconds(1));
-    ++constructed;
-    some_int_ = 12;
+  // Sleep for 1 second to try to cause a race.
+  butil::PlatformThread::Sleep(butil::TimeDelta::FromSeconds(1));
+  ++constructed;
+  some_int_ = 12;
   }
   int some_int() const { return some_int_; }
 
@@ -44,11 +44,11 @@ int SlowConstructor::constructed = 0;
 class SlowDelegate : public butil::DelegateSimpleThread::Delegate {
  public:
   explicit SlowDelegate(butil::LazyInstance<SlowConstructor>* lazy)
-      : lazy_(lazy) {}
+    : lazy_(lazy) {}
 
   virtual void Run() OVERRIDE {
-    EXPECT_EQ(12, lazy_->Get().some_int());
-    EXPECT_EQ(12, lazy_->Pointer()->some_int());
+  EXPECT_EQ(12, lazy_->Get().some_int());
+  EXPECT_EQ(12, lazy_->Pointer()->some_int());
   }
 
  private:
@@ -58,44 +58,44 @@ class SlowDelegate : public butil::DelegateSimpleThread::Delegate {
 }  // namespace
 
 static butil::LazyInstance<ConstructAndDestructLogger> lazy_logger =
-    LAZY_INSTANCE_INITIALIZER;
+  LAZY_INSTANCE_INITIALIZER;
 
 TEST(LazyInstanceTest, Basic) {
   {
-    butil::ShadowingAtExitManager shadow;
+  butil::ShadowingAtExitManager shadow;
 
-    EXPECT_EQ(0, constructed_seq_.GetNext());
-    EXPECT_EQ(0, destructed_seq_.GetNext());
+  EXPECT_EQ(0, constructed_seq_.GetNext());
+  EXPECT_EQ(0, destructed_seq_.GetNext());
 
-    lazy_logger.Get();
-    EXPECT_EQ(2, constructed_seq_.GetNext());
-    EXPECT_EQ(1, destructed_seq_.GetNext());
+  lazy_logger.Get();
+  EXPECT_EQ(2, constructed_seq_.GetNext());
+  EXPECT_EQ(1, destructed_seq_.GetNext());
 
-    lazy_logger.Pointer();
-    EXPECT_EQ(3, constructed_seq_.GetNext());
-    EXPECT_EQ(2, destructed_seq_.GetNext());
+  lazy_logger.Pointer();
+  EXPECT_EQ(3, constructed_seq_.GetNext());
+  EXPECT_EQ(2, destructed_seq_.GetNext());
   }
   EXPECT_EQ(4, constructed_seq_.GetNext());
   EXPECT_EQ(4, destructed_seq_.GetNext());
 }
 
 static butil::LazyInstance<SlowConstructor> lazy_slow =
-    LAZY_INSTANCE_INITIALIZER;
+  LAZY_INSTANCE_INITIALIZER;
 
 TEST(LazyInstanceTest, ConstructorThreadSafety) {
   {
-    butil::ShadowingAtExitManager shadow;
+  butil::ShadowingAtExitManager shadow;
 
-    SlowDelegate delegate(&lazy_slow);
-    EXPECT_EQ(0, SlowConstructor::constructed);
+  SlowDelegate delegate(&lazy_slow);
+  EXPECT_EQ(0, SlowConstructor::constructed);
 
-    butil::DelegateSimpleThreadPool pool("lazy_instance_cons", 5);
-    pool.AddWork(&delegate, 20);
-    EXPECT_EQ(0, SlowConstructor::constructed);
+  butil::DelegateSimpleThreadPool pool("lazy_instance_cons", 5);
+  pool.AddWork(&delegate, 20);
+  EXPECT_EQ(0, SlowConstructor::constructed);
 
-    pool.Start();
-    pool.JoinAll();
-    EXPECT_EQ(1, SlowConstructor::constructed);
+  pool.Start();
+  pool.JoinAll();
+  EXPECT_EQ(1, SlowConstructor::constructed);
   }
 }
 
@@ -109,7 +109,7 @@ class DeleteLogger {
   ~DeleteLogger() { *deleted_ = true; }
 
   void SetDeletedPtr(bool* deleted) {
-    deleted_ = deleted;
+  deleted_ = deleted;
   }
 
  private:
@@ -123,9 +123,9 @@ TEST(LazyInstanceTest, LeakyLazyInstance) {
   // when the AtExitManager finishes.
   bool deleted1 = false;
   {
-    butil::ShadowingAtExitManager shadow;
-    static butil::LazyInstance<DeleteLogger> test = LAZY_INSTANCE_INITIALIZER;
-    test.Get().SetDeletedPtr(&deleted1);
+  butil::ShadowingAtExitManager shadow;
+  static butil::LazyInstance<DeleteLogger> test = LAZY_INSTANCE_INITIALIZER;
+  test.Get().SetDeletedPtr(&deleted1);
   }
   EXPECT_TRUE(deleted1);
 
@@ -133,10 +133,10 @@ TEST(LazyInstanceTest, LeakyLazyInstance) {
   // when the AtExitManager finishes.
   bool deleted2 = false;
   {
-    butil::ShadowingAtExitManager shadow;
-    static butil::LazyInstance<DeleteLogger>::Leaky
-        test = LAZY_INSTANCE_INITIALIZER;
-    test.Get().SetDeletedPtr(&deleted2);
+  butil::ShadowingAtExitManager shadow;
+  static butil::LazyInstance<DeleteLogger>::Leaky
+    test = LAZY_INSTANCE_INITIALIZER;
+  test.Get().SetDeletedPtr(&deleted2);
   }
   EXPECT_FALSE(deleted2);
 }
@@ -154,7 +154,7 @@ class AlignedData {
 }  // anonymous namespace
 
 #define EXPECT_ALIGNED(ptr, align) \
-    EXPECT_EQ(0u, reinterpret_cast<uintptr_t>(ptr) & (align - 1))
+  EXPECT_EQ(0u, reinterpret_cast<uintptr_t>(ptr) & (align - 1))
 
 TEST(LazyInstanceTest, Alignment) {
   using butil::LazyInstance;

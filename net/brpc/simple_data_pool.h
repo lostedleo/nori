@@ -33,26 +33,26 @@ namespace brpc {
 // used by Server to reuse session-local data. 
 class SimpleDataPool {
 public:
-    struct Stat {
-        unsigned nfree;
-        unsigned ncreated;
-    };
+  struct Stat {
+    unsigned nfree;
+    unsigned ncreated;
+  };
 
-    explicit SimpleDataPool(const DataFactory* factory);
-    ~SimpleDataPool();
-    void Reset(const DataFactory* factory);
-    void Reserve(unsigned n);
-    void* Borrow();
-    void Return(void*);
-    Stat stat() const;
-    
+  explicit SimpleDataPool(const DataFactory* factory);
+  ~SimpleDataPool();
+  void Reset(const DataFactory* factory);
+  void Reserve(unsigned n);
+  void* Borrow();
+  void Return(void*);
+  Stat stat() const;
+  
 private:
-    butil::Mutex _mutex;
-    unsigned _capacity;
-    unsigned _size;
-    butil::atomic<unsigned> _ncreated;
-    void** _pool;
-    const DataFactory* _factory;
+  butil::Mutex _mutex;
+  unsigned _capacity;
+  unsigned _size;
+  butil::atomic<unsigned> _ncreated;
+  void** _pool;
+  const DataFactory* _factory;
 };
 
 } // namespace brpc

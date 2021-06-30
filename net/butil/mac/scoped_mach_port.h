@@ -17,7 +17,7 @@ namespace internal {
 
 struct SendRightTraits {
   static mach_port_t InvalidValue() {
-    return MACH_PORT_NULL;
+  return MACH_PORT_NULL;
   }
 
   static void Free(mach_port_t port);
@@ -25,7 +25,7 @@ struct SendRightTraits {
 
 struct ReceiveRightTraits {
   static mach_port_t InvalidValue() {
-    return MACH_PORT_NULL;
+  return MACH_PORT_NULL;
   }
 
   static void Free(mach_port_t port);
@@ -33,7 +33,7 @@ struct ReceiveRightTraits {
 
 struct PortSetTraits {
   static mach_port_t InvalidValue() {
-    return MACH_PORT_NULL;
+  return MACH_PORT_NULL;
   }
 
   static void Free(mach_port_t port);
@@ -46,14 +46,14 @@ struct PortSetTraits {
 // and then removes a reference to the right on destruction. If the reference
 // is the last one on the right, the right is deallocated.
 using ScopedMachSendRight =
-    ScopedGeneric<mach_port_t, internal::SendRightTraits>;
+  ScopedGeneric<mach_port_t, internal::SendRightTraits>;
 
 // A scoper for handling a Mach port's receive right. There is only one
 // receive right per port. This takes ownership of the receive right on
 // construction and then destroys the right on destruction, turning all
 // outstanding send rights into dead names.
 using ScopedMachReceiveRight =
-    ScopedGeneric<mach_port_t, internal::ReceiveRightTraits>;
+  ScopedGeneric<mach_port_t, internal::ReceiveRightTraits>;
 
 // A scoper for handling a Mach port set. A port set can have only one
 // reference. This takes ownership of that single reference on construction and

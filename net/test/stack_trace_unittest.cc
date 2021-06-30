@@ -45,12 +45,12 @@ TEST_F(StackTraceTest, MAYBE_OutputToStream) {
   size_t frames_found = 0;
   trace.Addresses(&frames_found);
   ASSERT_GE(frames_found, 5u) <<
-      "No stack frames found.  Skipping rest of test.";
+    "No stack frames found.  Skipping rest of test.";
 
   // Check if the output has symbol initialization warning.  If it does, fail.
   ASSERT_EQ(backtrace_message.find("Dumping unresolved backtrace"),
-            std::string::npos) <<
-      "Unable to resolve symbols.  Skipping rest of test.";
+      std::string::npos) <<
+    "Unable to resolve symbols.  Skipping rest of test.";
 
 #if defined(OS_MACOSX)
 #if 0
@@ -60,7 +60,7 @@ TEST_F(StackTraceTest, MAYBE_OutputToStream) {
   // in OS X.
   // See this thread:
   //
-  //    http://lists.apple.com/archives/darwin-dev/2009/Mar/msg00111.html
+  //  http://lists.apple.com/archives/darwin-dev/2009/Mar/msg00111.html
   //
   // Just check instead that we find our way back to the "start" symbol
   // which should be the first symbol in the trace.
@@ -69,8 +69,8 @@ TEST_F(StackTraceTest, MAYBE_OutputToStream) {
 
   // Expect to at least find main.
   EXPECT_TRUE(backtrace_message.find("start") != std::string::npos)
-      << "Expected to find start in backtrace:\n"
-      << backtrace_message;
+    << "Expected to find start in backtrace:\n"
+    << backtrace_message;
 
 #endif
 #elif defined(USE_SYMBOLIZE)
@@ -78,9 +78,9 @@ TEST_F(StackTraceTest, MAYBE_OutputToStream) {
   // above #if.
   // Expect a demangled symbol.
   EXPECT_TRUE(backtrace_message.find("testing::Test::Run()") !=
-              std::string::npos)
-      << "Expected a demangled symbol in backtrace:\n"
-      << backtrace_message;
+        std::string::npos)
+    << "Expected a demangled symbol in backtrace:\n"
+    << backtrace_message;
 
 #elif 0
   // This is the fall-through case; it used to cover Windows.
@@ -89,8 +89,8 @@ TEST_F(StackTraceTest, MAYBE_OutputToStream) {
 
   // Expect to at least find main.
   EXPECT_TRUE(backtrace_message.find("main") != std::string::npos)
-      << "Expected to find main in backtrace:\n"
-      << backtrace_message;
+    << "Expected to find main in backtrace:\n"
+    << backtrace_message;
 
 #if defined(OS_WIN)
 // MSVC doesn't allow the use of C99's __func__ within C++, so we fake it with
@@ -101,8 +101,8 @@ TEST_F(StackTraceTest, MAYBE_OutputToStream) {
   // Expect to find this function as well.
   // Note: This will fail if not linked with -rdynamic (aka -export_dynamic)
   EXPECT_TRUE(backtrace_message.find(__func__) != std::string::npos)
-      << "Expected to find " << __func__ << " in backtrace:\n"
-      << backtrace_message;
+    << "Expected to find " << __func__ << " in backtrace:\n"
+    << backtrace_message;
 
 #endif  // define(OS_MACOSX)
 }
@@ -142,30 +142,30 @@ TEST_F(StackTraceTest, itoa_r) {
 
   // Test edge cases.
   if (sizeof(intptr_t) == 4) {
-    EXPECT_EQ("ffffffff", itoa_r_wrapper(-1, 128, 16, 0));
-    EXPECT_EQ("-2147483648",
-              itoa_r_wrapper(std::numeric_limits<intptr_t>::min(), 128, 10, 0));
-    EXPECT_EQ("2147483647",
-              itoa_r_wrapper(std::numeric_limits<intptr_t>::max(), 128, 10, 0));
+  EXPECT_EQ("ffffffff", itoa_r_wrapper(-1, 128, 16, 0));
+  EXPECT_EQ("-2147483648",
+        itoa_r_wrapper(std::numeric_limits<intptr_t>::min(), 128, 10, 0));
+  EXPECT_EQ("2147483647",
+        itoa_r_wrapper(std::numeric_limits<intptr_t>::max(), 128, 10, 0));
 
-    EXPECT_EQ("80000000",
-              itoa_r_wrapper(std::numeric_limits<intptr_t>::min(), 128, 16, 0));
-    EXPECT_EQ("7fffffff",
-              itoa_r_wrapper(std::numeric_limits<intptr_t>::max(), 128, 16, 0));
+  EXPECT_EQ("80000000",
+        itoa_r_wrapper(std::numeric_limits<intptr_t>::min(), 128, 16, 0));
+  EXPECT_EQ("7fffffff",
+        itoa_r_wrapper(std::numeric_limits<intptr_t>::max(), 128, 16, 0));
   } else if (sizeof(intptr_t) == 8) {
-    EXPECT_EQ("ffffffffffffffff", itoa_r_wrapper(-1, 128, 16, 0));
-    EXPECT_EQ("-9223372036854775808",
-              itoa_r_wrapper(std::numeric_limits<intptr_t>::min(), 128, 10, 0));
-    EXPECT_EQ("9223372036854775807",
-              itoa_r_wrapper(std::numeric_limits<intptr_t>::max(), 128, 10, 0));
+  EXPECT_EQ("ffffffffffffffff", itoa_r_wrapper(-1, 128, 16, 0));
+  EXPECT_EQ("-9223372036854775808",
+        itoa_r_wrapper(std::numeric_limits<intptr_t>::min(), 128, 10, 0));
+  EXPECT_EQ("9223372036854775807",
+        itoa_r_wrapper(std::numeric_limits<intptr_t>::max(), 128, 10, 0));
 
-    EXPECT_EQ("8000000000000000",
-              itoa_r_wrapper(std::numeric_limits<intptr_t>::min(), 128, 16, 0));
-    EXPECT_EQ("7fffffffffffffff",
-              itoa_r_wrapper(std::numeric_limits<intptr_t>::max(), 128, 16, 0));
+  EXPECT_EQ("8000000000000000",
+        itoa_r_wrapper(std::numeric_limits<intptr_t>::min(), 128, 16, 0));
+  EXPECT_EQ("7fffffffffffffff",
+        itoa_r_wrapper(std::numeric_limits<intptr_t>::max(), 128, 16, 0));
   } else {
-    ADD_FAILURE() << "Missing test case for your size of intptr_t ("
-                  << sizeof(intptr_t) << ")";
+  ADD_FAILURE() << "Missing test case for your size of intptr_t ("
+          << sizeof(intptr_t) << ")";
   }
 
   // Test hex output.

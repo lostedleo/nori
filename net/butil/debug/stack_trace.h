@@ -98,10 +98,10 @@ namespace internal {
 // bytes. Output will be truncated as needed, and a NUL character is always
 // appended.
 BUTIL_EXPORT char *itoa_r(intptr_t i,
-                         char *buf,
-                         size_t sz,
-                         int base,
-                         size_t padding);
+             char *buf,
+             size_t sz,
+             int base,
+             size_t padding);
 #endif  // defined(OS_POSIX) && !defined(OS_ANDROID)
 
 }  // namespace internal

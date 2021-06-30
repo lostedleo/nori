@@ -54,15 +54,15 @@ BUTIL_EXPORT std::string DoubleToString(double value);
 // setting |*output| to the result of the conversion.  Returns true for
 // "perfect" conversions; returns false in the following cases:
 //  - Overflow. |*output| will be set to the maximum value supported
-//    by the data type.
+//  by the data type.
 //  - Underflow. |*output| will be set to the minimum value supported
-//    by the data type.
+//  by the data type.
 //  - Trailing characters in the string after parsing the number.  |*output|
-//    will be set to the value of the number that was parsed.
+//  will be set to the value of the number that was parsed.
 //  - Leading whitespace in the string before parsing the number. |*output| will
-//    be set to the value of the number that was parsed.
+//  be set to the value of the number that was parsed.
 //  - No characters parseable as a number at the beginning of the string.
-//    |*output| will be set to 0.
+//  |*output| will be set to 0.
 //  - Empty string.  |*output| will be set to 0.
 BUTIL_EXPORT bool StringToInt(const StringPiece& input, int* output);
 BUTIL_EXPORT bool StringToInt(const StringPiece16& input, int* output);
@@ -124,7 +124,7 @@ BUTIL_EXPORT bool HexStringToUInt64(const StringPiece& input, uint64_t* output);
 // error.  There is no overflow, but input.size() must be evenly divisible by 2.
 // Leading 0x or +/- are not allowed.
 BUTIL_EXPORT bool HexStringToBytes(const std::string& input,
-                                  std::vector<uint8_t>* output);
+                  std::vector<uint8_t>* output);
 
 }  // namespace butil
 

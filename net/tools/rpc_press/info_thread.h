@@ -4,7 +4,7 @@
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 // 
-//     http://www.apache.org/licenses/LICENSE-2.0
+//   http://www.apache.org/licenses/LICENSE-2.0
 // 
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -21,30 +21,30 @@
 namespace brpc {
 
 struct InfoThreadOptions {
-    bvar::LatencyRecorder* latency_recorder;
-    bvar::Adder<int64_t>* sent_count;
-    bvar::Adder<int64_t>* error_count;
+  bvar::LatencyRecorder* latency_recorder;
+  bvar::Adder<int64_t>* sent_count;
+  bvar::Adder<int64_t>* error_count;
 
-    InfoThreadOptions()
-        : latency_recorder(NULL)
-        , sent_count(NULL)
-        , error_count(NULL) {}
+  InfoThreadOptions()
+    : latency_recorder(NULL)
+    , sent_count(NULL)
+    , error_count(NULL) {}
 };
 
 class InfoThread {
 public:
-    InfoThread();
-    ~InfoThread();
-    void run();
-    bool start(const InfoThreadOptions&);
-    void stop();
-    
+  InfoThread();
+  ~InfoThread();
+  void run();
+  bool start(const InfoThreadOptions&);
+  void stop();
+  
 private:
-    bool _stop;
-    InfoThreadOptions _options;
-    pthread_mutex_t _mutex;
-    pthread_cond_t _cond;
-    pthread_t _tid;
+  bool _stop;
+  InfoThreadOptions _options;
+  pthread_mutex_t _mutex;
+  pthread_cond_t _cond;
+  pthread_t _tid;
 };
 
 } // namespace brpc

@@ -39,18 +39,18 @@
 # endif
 
 
-# define BT_LOOP_WHEN(expr, num_spins)                                  \
-    do {                                                                \
-        /*sched_yield may change errno*/                                \
-        const int saved_errno = errno;                                  \
-        for (int cnt = 0, saved_nspin = (num_spins); (expr); ++cnt) {   \
-            if (cnt < saved_nspin) {                                    \
-                cpu_relax();                                            \
-            } else {                                                    \
-                sched_yield();                                          \
-            }                                                           \
-        }                                                               \
-        errno = saved_errno;                                            \
-    } while (0)
+# define BT_LOOP_WHEN(expr, num_spins)                  \
+  do {                                \
+    /*sched_yield may change errno*/                \
+    const int saved_errno = errno;                  \
+    for (int cnt = 0, saved_nspin = (num_spins); (expr); ++cnt) {   \
+      if (cnt < saved_nspin) {                  \
+        cpu_relax();                      \
+      } else {                          \
+        sched_yield();                      \
+      }                               \
+    }                                 \
+    errno = saved_errno;                      \
+  } while (0)
 
 #endif // BTHREAD_PROCESSOR_H

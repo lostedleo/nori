@@ -9,12 +9,12 @@
 #include "butil/safe_strerror_posix.h"
 
 #define CHECK_PTHREAD_CALL(pthread_func_call) \
-    do { \
-      int ret = pthread_func_call; \
-      LOG_IF(FATAL, ret != 0)  \
-      << "Failed to call " # pthread_func_call \
-      << ": " << safe_strerror(ret);   \
-    } while (false)
+  do { \
+    int ret = pthread_func_call; \
+    LOG_IF(FATAL, ret != 0)  \
+    << "Failed to call " # pthread_func_call \
+    << ": " << safe_strerror(ret);   \
+  } while (false)
 
 namespace butil {
 
@@ -24,10 +24,10 @@ RWMutex::RWMutex() {
   CHECK_PTHREAD_CALL(pthread_rwlockattr_init(&raw_rwlock_attr_));
 #if defined(OS_LINUX)
   CHECK_PTHREAD_CALL(
-      pthread_rwlockattr_setkind_np(&raw_rwlock_attr_, PTHREAD_RWLOCK_PREFER_READER_NP));
+    pthread_rwlockattr_setkind_np(&raw_rwlock_attr_, PTHREAD_RWLOCK_PREFER_READER_NP));
 #elif defined(OS_MACOSX)
   CHECK_PTHREAD_CALL(
-      pthread_rwlockattr_setpshared(&raw_rwlock_attr_, PTHREAD_PROCESS_SHARED));
+    pthread_rwlockattr_setpshared(&raw_rwlock_attr_, PTHREAD_PROCESS_SHARED));
 #endif
 
   CHECK_PTHREAD_CALL(pthread_rwlock_init(&raw_rwlock_, &raw_rwlock_attr_));
@@ -45,10 +45,10 @@ void RWMutex::Lock() {
 bool RWMutex::TryLock() {
   int ret = pthread_rwlock_trywrlock(&raw_rwlock_);
   if (ret == EBUSY) {
-    return false;
+  return false;
   }
   LOG_IF(FATAL, ret != 0) << "pthread_rwlock_trylock failed: "
-                          << safe_strerror(ret);
+              << safe_strerror(ret);
   return true;
 }
 
@@ -63,10 +63,10 @@ void RWMutex::ReaderLock() {
 bool RWMutex::ReaderTryLock() {
   int ret = pthread_rwlock_tryrdlock(&raw_rwlock_);
   if (ret == EBUSY) {
-    return false;
+  return false;
   }
   LOG_IF(FATAL, ret != 0) << "pthread_rwlock_trylock failed: "
-                          << safe_strerror(ret);
+              << safe_strerror(ret);
   return true;
 }
 

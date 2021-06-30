@@ -84,7 +84,7 @@ bool RealPath(const FilePath& path, FilePath* real_path) {
   ThreadRestrictions::AssertIOAllowed();  // For realpath().
   FilePath::CharType buf[PATH_MAX];
   if (!realpath(path.value().c_str(), buf))
-    return false;
+  return false;
 
   *real_path = FilePath(buf);
   return true;
@@ -92,38 +92,38 @@ bool RealPath(const FilePath& path, FilePath* real_path) {
 
 // Helper for VerifyPathControlledByUser.
 bool VerifySpecificPathControlledByUser(const FilePath& path,
-                                        uid_t owner_uid,
-                                        const std::set<gid_t>& group_gids) {
+                    uid_t owner_uid,
+                    const std::set<gid_t>& group_gids) {
   stat_wrapper_t stat_info;
   if (CallLstat(path.value().c_str(), &stat_info) != 0) {
-    DPLOG(ERROR) << "Failed to get information on path "
-                 << path.value();
-    return false;
+  DPLOG(ERROR) << "Failed to get information on path "
+         << path.value();
+  return false;
   }
 
   if (S_ISLNK(stat_info.st_mode)) {
-    DLOG(ERROR) << "Path " << path.value()
-               << " is a symbolic link.";
-    return false;
+  DLOG(ERROR) << "Path " << path.value()
+         << " is a symbolic link.";
+  return false;
   }
 
   if (stat_info.st_uid != owner_uid) {
-    DLOG(ERROR) << "Path " << path.value()
-                << " is owned by the wrong user.";
-    return false;
+  DLOG(ERROR) << "Path " << path.value()
+        << " is owned by the wrong user.";
+  return false;
   }
 
   if ((stat_info.st_mode & S_IWGRP) &&
-      !ContainsKey(group_gids, stat_info.st_gid)) {
-    DLOG(ERROR) << "Path " << path.value()
-                << " is writable by an unprivileged group.";
-    return false;
+    !ContainsKey(group_gids, stat_info.st_gid)) {
+  DLOG(ERROR) << "Path " << path.value()
+        << " is writable by an unprivileged group.";
+  return false;
   }
 
   if (stat_info.st_mode & S_IWOTH) {
-    DLOG(ERROR) << "Path " << path.value()
-                << " is writable by any user.";
-    return false;
+  DLOG(ERROR) << "Path " << path.value()
+        << " is writable by any user.";
+  return false;
   }
 
   return true;
@@ -166,17 +166,17 @@ bool DetermineDevShmExecutable() {
 
   ScopedFD fd(CreateAndOpenFdForTemporaryFile(FilePath("/dev/shm"), &path));
   if (fd.is_valid()) {
-    DeleteFile(path, false);
-    long sysconf_result = sysconf(_SC_PAGESIZE);
-    CHECK_GE(sysconf_result, 0);
-    size_t pagesize = static_cast<size_t>(sysconf_result);
-    CHECK_GE(sizeof(pagesize), sizeof(sysconf_result));
-    void* mapping = mmap(NULL, pagesize, PROT_READ, MAP_SHARED, fd.get(), 0);
-    if (mapping != MAP_FAILED) {
-      if (mprotect(mapping, pagesize, PROT_READ | PROT_EXEC) == 0)
-        result = true;
-      munmap(mapping, pagesize);
-    }
+  DeleteFile(path, false);
+  long sysconf_result = sysconf(_SC_PAGESIZE);
+  CHECK_GE(sysconf_result, 0);
+  size_t pagesize = static_cast<size_t>(sysconf_result);
+  CHECK_GE(sizeof(pagesize), sizeof(sysconf_result));
+  void* mapping = mmap(NULL, pagesize, PROT_READ, MAP_SHARED, fd.get(), 0);
+  if (mapping != MAP_FAILED) {
+    if (mprotect(mapping, pagesize, PROT_READ | PROT_EXEC) == 0)
+    result = true;
+    munmap(mapping, pagesize);
+  }
   }
   return result;
 }
@@ -188,7 +188,7 @@ FilePath MakeAbsoluteFilePath(const FilePath& input) {
   ThreadRestrictions::AssertIOAllowed();
   char full_path[PATH_MAX];
   if (realpath(input.value().c_str(), full_path) == NULL)
-    return FilePath();
+  return FilePath();
   return FilePath(full_path);
 }
 
@@ -202,51 +202,51 @@ bool DeleteFile(const FilePath& path, bool recursive) {
   stat_wrapper_t file_info;
   int test = CallLstat(path_str, &file_info);
   if (test != 0) {
-    // The Windows version defines this condition as success.
-    bool ret = (errno == ENOENT || errno == ENOTDIR);
-    return ret;
+  // The Windows version defines this condition as success.
+  bool ret = (errno == ENOENT || errno == ENOTDIR);
+  return ret;
   }
   if (!S_ISDIR(file_info.st_mode))
-    return (unlink(path_str) == 0);
+  return (unlink(path_str) == 0);
   if (!recursive)
-    return (rmdir(path_str) == 0);
+  return (rmdir(path_str) == 0);
 
   bool success = true;
   std::stack<std::string> directories;
   directories.push(path.value());
   FileEnumerator traversal(path, true,
-      FileEnumerator::FILES | FileEnumerator::DIRECTORIES |
-      FileEnumerator::SHOW_SYM_LINKS);
+    FileEnumerator::FILES | FileEnumerator::DIRECTORIES |
+    FileEnumerator::SHOW_SYM_LINKS);
   for (FilePath current = traversal.Next(); success && !current.empty();
-       current = traversal.Next()) {
-    if (traversal.GetInfo().IsDirectory())
-      directories.push(current.value());
-    else
-      success = (unlink(current.value().c_str()) == 0);
+     current = traversal.Next()) {
+  if (traversal.GetInfo().IsDirectory())
+    directories.push(current.value());
+  else
+    success = (unlink(current.value().c_str()) == 0);
   }
 
   while (success && !directories.empty()) {
-    FilePath dir = FilePath(directories.top());
-    directories.pop();
-    success = (rmdir(dir.value().c_str()) == 0);
+  FilePath dir = FilePath(directories.top());
+  directories.pop();
+  success = (rmdir(dir.value().c_str()) == 0);
   }
   return success;
 }
 
 bool ReplaceFile(const FilePath& from_path,
-                 const FilePath& to_path,
-                 File::Error* error) {
+         const FilePath& to_path,
+         File::Error* error) {
   ThreadRestrictions::AssertIOAllowed();
   if (rename(from_path.value().c_str(), to_path.value().c_str()) == 0)
-    return true;
+  return true;
   if (error)
-    *error = File::OSErrorToFileError(errno);
+  *error = File::OSErrorToFileError(errno);
   return false;
 }
 
 bool CopyDirectory(const FilePath& from_path,
-                   const FilePath& to_path,
-                   bool recursive) {
+           const FilePath& to_path,
+           bool recursive) {
   ThreadRestrictions::AssertIOAllowed();
   // Some old callers of CopyDirectory want it to support wildcards.
   // After some discussion, we decided to fix those callers.
@@ -255,32 +255,32 @@ bool CopyDirectory(const FilePath& from_path,
   DCHECK(from_path.value().find('*') == std::string::npos);
 
   if (from_path.value().size() >= PATH_MAX) {
-    return false;
+  return false;
   }
 
   // This function does not properly handle destinations within the source
   FilePath real_to_path = to_path;
   if (PathExists(real_to_path)) {
-    real_to_path = MakeAbsoluteFilePath(real_to_path);
-    if (real_to_path.empty())
-      return false;
+  real_to_path = MakeAbsoluteFilePath(real_to_path);
+  if (real_to_path.empty())
+    return false;
   } else {
-    real_to_path = MakeAbsoluteFilePath(real_to_path.DirName());
-    if (real_to_path.empty())
-      return false;
+  real_to_path = MakeAbsoluteFilePath(real_to_path.DirName());
+  if (real_to_path.empty())
+    return false;
   }
   FilePath real_from_path = MakeAbsoluteFilePath(from_path);
   if (real_from_path.empty())
-    return false;
+  return false;
   if (real_to_path.value().size() >= real_from_path.value().size() &&
-      real_to_path.value().compare(0, real_from_path.value().size(),
-                                   real_from_path.value()) == 0) {
-    return false;
+    real_to_path.value().compare(0, real_from_path.value().size(),
+                   real_from_path.value()) == 0) {
+  return false;
   }
 
   int traverse_type = FileEnumerator::FILES | FileEnumerator::SHOW_SYM_LINKS;
   if (recursive)
-    traverse_type |= FileEnumerator::DIRECTORIES;
+  traverse_type |= FileEnumerator::DIRECTORIES;
   FileEnumerator traversal(from_path, recursive, traverse_type);
 
   // We have to mimic windows behavior here. |to_path| may not exist yet,
@@ -288,17 +288,17 @@ bool CopyDirectory(const FilePath& from_path,
   struct stat from_stat;
   FilePath current = from_path;
   if (stat(from_path.value().c_str(), &from_stat) < 0) {
-    DLOG(ERROR) << "CopyDirectory() couldn't stat source directory: "
-                << from_path.value() << " errno = " << errno;
-    return false;
+  DLOG(ERROR) << "CopyDirectory() couldn't stat source directory: "
+        << from_path.value() << " errno = " << errno;
+  return false;
   }
   struct stat to_path_stat;
   FilePath from_path_base = from_path;
   if (recursive && stat(to_path.value().c_str(), &to_path_stat) == 0 &&
-      S_ISDIR(to_path_stat.st_mode)) {
-    // If the destination already exists and is a directory, then the
-    // top level of source needs to be copied.
-    from_path_base = from_path.DirName();
+    S_ISDIR(to_path_stat.st_mode)) {
+  // If the destination already exists and is a directory, then the
+  // top level of source needs to be copied.
+  from_path_base = from_path.DirName();
   }
 
   // The Windows version of this function assumes that non-recursive calls
@@ -308,37 +308,37 @@ bool CopyDirectory(const FilePath& from_path,
 
   bool success = true;
   while (success && !current.empty()) {
-    // current is the source path, including from_path, so append
-    // the suffix after from_path to to_path to create the target_path.
-    FilePath target_path(to_path);
-    if (from_path_base != current) {
-      if (!from_path_base.AppendRelativePath(current, &target_path)) {
-        success = false;
-        break;
-      }
+  // current is the source path, including from_path, so append
+  // the suffix after from_path to to_path to create the target_path.
+  FilePath target_path(to_path);
+  if (from_path_base != current) {
+    if (!from_path_base.AppendRelativePath(current, &target_path)) {
+    success = false;
+    break;
     }
+  }
 
-    if (S_ISDIR(from_stat.st_mode)) {
-      if (mkdir(target_path.value().c_str(), from_stat.st_mode & 01777) != 0 &&
-          errno != EEXIST) {
-        DLOG(ERROR) << "CopyDirectory() couldn't create directory: "
-                    << target_path.value() << " errno = " << errno;
-        success = false;
-      }
-    } else if (S_ISREG(from_stat.st_mode)) {
-      if (!CopyFile(current, target_path)) {
-        DLOG(ERROR) << "CopyDirectory() couldn't create file: "
-                    << target_path.value();
-        success = false;
-      }
-    } else {
-      DLOG(WARNING) << "CopyDirectory() skipping non-regular file: "
-                    << current.value();
+  if (S_ISDIR(from_stat.st_mode)) {
+    if (mkdir(target_path.value().c_str(), from_stat.st_mode & 01777) != 0 &&
+      errno != EEXIST) {
+    DLOG(ERROR) << "CopyDirectory() couldn't create directory: "
+          << target_path.value() << " errno = " << errno;
+    success = false;
     }
+  } else if (S_ISREG(from_stat.st_mode)) {
+    if (!CopyFile(current, target_path)) {
+    DLOG(ERROR) << "CopyDirectory() couldn't create file: "
+          << target_path.value();
+    success = false;
+    }
+  } else {
+    DLOG(WARNING) << "CopyDirectory() skipping non-regular file: "
+          << current.value();
+  }
 
-    current = traversal.Next();
-    if (!current.empty())
-      from_stat = traversal.GetInfo().stat();
+  current = traversal.Next();
+  if (!current.empty())
+    from_stat = traversal.GetInfo().stat();
   }
 
   return success;
@@ -348,7 +348,7 @@ bool PathExists(const FilePath& path) {
   ThreadRestrictions::AssertIOAllowed();
 #if defined(OS_ANDROID)
   if (path.IsContentUri()) {
-    return ContentUriExists(path);
+  return ContentUriExists(path);
   }
 #endif
   return access(path.value().c_str(), F_OK) == 0;
@@ -363,28 +363,28 @@ bool DirectoryExists(const FilePath& path) {
   ThreadRestrictions::AssertIOAllowed();
   stat_wrapper_t file_info;
   if (CallStat(path.value().c_str(), &file_info) == 0)
-    return S_ISDIR(file_info.st_mode);
+  return S_ISDIR(file_info.st_mode);
   return false;
 }
 
 bool ReadFromFD(int fd, char* buffer, size_t bytes) {
   size_t total_read = 0;
   while (total_read < bytes) {
-    ssize_t bytes_read =
-        HANDLE_EINTR(read(fd, buffer + total_read, bytes - total_read));
-    if (bytes_read <= 0)
-      break;
-    total_read += bytes_read;
+  ssize_t bytes_read =
+    HANDLE_EINTR(read(fd, buffer + total_read, bytes - total_read));
+  if (bytes_read <= 0)
+    break;
+  total_read += bytes_read;
   }
   return total_read == bytes;
 }
 
 bool CreateSymbolicLink(const FilePath& target_path,
-                        const FilePath& symlink_path) {
+            const FilePath& symlink_path) {
   DCHECK(!symlink_path.empty());
   DCHECK(!target_path.empty());
   return ::symlink(target_path.value().c_str(),
-                   symlink_path.value().c_str()) != -1;
+           symlink_path.value().c_str()) != -1;
 }
 
 bool ReadSymbolicLink(const FilePath& symlink_path, FilePath* target_path) {
@@ -394,8 +394,8 @@ bool ReadSymbolicLink(const FilePath& symlink_path, FilePath* target_path) {
   ssize_t count = ::readlink(symlink_path.value().c_str(), buf, arraysize(buf));
 
   if (count <= 0) {
-    target_path->clear();
-    return false;
+  target_path->clear();
+  return false;
   }
 
   *target_path = FilePath(FilePath::StringType(buf, count));
@@ -410,28 +410,28 @@ bool GetPosixFilePermissions(const FilePath& path, int* mode) {
   // Uses stat(), because on symbolic link, lstat() does not return valid
   // permission bits in st_mode
   if (CallStat(path.value().c_str(), &file_info) != 0)
-    return false;
+  return false;
 
   *mode = file_info.st_mode & FILE_PERMISSION_MASK;
   return true;
 }
 
 bool SetPosixFilePermissions(const FilePath& path,
-                             int mode) {
+               int mode) {
   ThreadRestrictions::AssertIOAllowed();
   DCHECK((mode & ~FILE_PERMISSION_MASK) == 0);
 
   // Calls stat() so that we can preserve the higher bits like S_ISGID.
   stat_wrapper_t stat_buf;
   if (CallStat(path.value().c_str(), &stat_buf) != 0)
-    return false;
+  return false;
 
   // Clears the existing permission bits, and adds the new ones.
   mode_t updated_mode_bits = stat_buf.st_mode & ~FILE_PERMISSION_MASK;
   updated_mode_bits |= mode & FILE_PERMISSION_MASK;
 
   if (HANDLE_EINTR(chmod(path.value().c_str(), updated_mode_bits)) != 0)
-    return false;
+  return false;
 
   return true;
 }
@@ -441,9 +441,9 @@ bool SetPosixFilePermissions(const FilePath& path,
 bool GetTempDir(FilePath* path) {
   const char* tmp = getenv("TMPDIR");
   if (tmp) {
-    *path = FilePath(tmp);
+  *path = FilePath(tmp);
   } else {
-    *path = FilePath("/tmp");
+  *path = FilePath("/tmp");
   }
   return true;
 }
@@ -453,15 +453,15 @@ bool GetTempDir(FilePath* path) {
 FilePath GetHomeDir() {
 #if defined(OS_CHROMEOS)
   if (SysInfo::IsRunningOnChromeOS()) {
-    // On Chrome OS chrome::DIR_USER_DATA is overridden with a primary user
-    // homedir once it becomes available. Return / as the safe option.
-    return FilePath("/");
+  // On Chrome OS chrome::DIR_USER_DATA is overridden with a primary user
+  // homedir once it becomes available. Return / as the safe option.
+  return FilePath("/");
   }
 #endif
 
   const char* home_dir = getenv("HOME");
   if (home_dir && home_dir[0])
-    return FilePath(home_dir);
+  return FilePath(home_dir);
 
 #if defined(OS_ANDROID)
   DLOG(WARNING) << "OS_ANDROID: Home directory lookup not yet implemented.";
@@ -474,12 +474,12 @@ FilePath GetHomeDir() {
   // restriction here.
   home_dir = g_get_home_dir();
   if (home_dir && home_dir[0])
-    return FilePath(home_dir);
+  return FilePath(home_dir);
 #endif
 
   FilePath rv;
   if (GetTempDir(&rv))
-    return rv;
+  return rv;
 
   // Last resort.
   return FilePath("/tmp");
@@ -490,10 +490,10 @@ bool CreateTemporaryFile(FilePath* path) {
   ThreadRestrictions::AssertIOAllowed();  // For call to close().
   FilePath directory;
   if (!GetTempDir(&directory))
-    return false;
+  return false;
   int fd = CreateAndOpenFdForTemporaryFile(directory, path);
   if (fd < 0)
-    return false;
+  return false;
   close(fd);
   return true;
 }
@@ -501,11 +501,11 @@ bool CreateTemporaryFile(FilePath* path) {
 FILE* CreateAndOpenTemporaryFileInDir(const FilePath& dir, FilePath* path) {
   int fd = CreateAndOpenFdForTemporaryFile(dir, path);
   if (fd < 0)
-    return NULL;
+  return NULL;
 
   FILE* file = fdopen(fd, "a+");
   if (!file)
-    close(fd);
+  close(fd);
   return file;
 }
 
@@ -516,11 +516,11 @@ bool CreateTemporaryFileInDir(const FilePath& dir, FilePath* temp_file) {
 }
 
 static bool CreateTemporaryDirInDirImpl(const FilePath& base_dir,
-                                        const FilePath::StringType& name_tmpl,
-                                        FilePath* new_dir) {
+                    const FilePath::StringType& name_tmpl,
+                    FilePath* new_dir) {
   ThreadRestrictions::AssertIOAllowed();  // For call to mkdtemp().
   DCHECK(name_tmpl.find("XXXXXX") != FilePath::StringType::npos)
-      << "Directory name template must contain \"XXXXXX\".";
+    << "Directory name template must contain \"XXXXXX\".";
 
   FilePath sub_dir = base_dir.Append(name_tmpl);
   std::string sub_dir_string = sub_dir.value();
@@ -529,49 +529,49 @@ static bool CreateTemporaryDirInDirImpl(const FilePath& base_dir,
   char* buffer = const_cast<char*>(sub_dir_string.c_str());
   char* dtemp = mkdtemp(buffer);
   if (!dtemp) {
-    DPLOG(ERROR) << "mkdtemp";
-    return false;
+  DPLOG(ERROR) << "mkdtemp";
+  return false;
   }
   *new_dir = FilePath(dtemp);
   return true;
 }
 
 bool CreateTemporaryDirInDir(const FilePath& base_dir,
-                             const FilePath::StringType& prefix,
-                             FilePath* new_dir) {
+               const FilePath::StringType& prefix,
+               FilePath* new_dir) {
   FilePath::StringType mkdtemp_template = prefix;
   mkdtemp_template.append(FILE_PATH_LITERAL("XXXXXX"));
   return CreateTemporaryDirInDirImpl(base_dir, mkdtemp_template, new_dir);
 }
 
 bool CreateNewTempDirectory(const FilePath::StringType& prefix,
-                            FilePath* new_temp_path) {
+              FilePath* new_temp_path) {
   FilePath tmpdir;
   if (!GetTempDir(&tmpdir))
-    return false;
+  return false;
 
   return CreateTemporaryDirInDirImpl(tmpdir, TempFileName(), new_temp_path);
 }
 
 bool CreateDirectoryAndGetError(const FilePath& full_path,
-                                File::Error* error,
-                                bool create_parents) {
+                File::Error* error,
+                bool create_parents) {
   ThreadRestrictions::AssertIOAllowed();  // For call to mkdir().
   if (!create_parents) {
-    if (DirectoryExists(full_path)) {
-      return true;
-    }
-    if (mkdir(full_path.value().c_str(), 0755/*others can read the dir*/) == 0) {
-      return true;
-    }
-    const int saved_errno = errno;
-    if (DirectoryExists(full_path)) {
-      return true;
-    }
-    if (error) {
-      *error = File::OSErrorToFileError(saved_errno);
-    }
-    return false;
+  if (DirectoryExists(full_path)) {
+    return true;
+  }
+  if (mkdir(full_path.value().c_str(), 0755/*others can read the dir*/) == 0) {
+    return true;
+  }
+  const int saved_errno = errno;
+  if (DirectoryExists(full_path)) {
+    return true;
+  }
+  if (error) {
+    *error = File::OSErrorToFileError(saved_errno);
+  }
+  return false;
   }
   std::vector<FilePath> subpaths;
 
@@ -579,37 +579,37 @@ bool CreateDirectoryAndGetError(const FilePath& full_path,
   FilePath last_path = full_path;
   subpaths.push_back(full_path);
   for (FilePath path = full_path.DirName();
-       path.value() != last_path.value(); path = path.DirName()) {
-    subpaths.push_back(path);
-    last_path = path;
+     path.value() != last_path.value(); path = path.DirName()) {
+  subpaths.push_back(path);
+  last_path = path;
   }
 
   // Iterate through the parents and create the missing ones.
   for (std::vector<FilePath>::reverse_iterator i = subpaths.rbegin();
-       i != subpaths.rend(); ++i) {
-    if (DirectoryExists(*i))
-      continue;
-    // NOTE(gejun): permission bits of dir are different from file's
-    // -The write bit allows the affected user to create, rename, or delete
-    //  files within the directory, and modify the directory's attributes
-    // -The read bit allows the affected user to list the files within the 
-    //  directory
-    // -The execute bit allows the affected user to enter the directory, and 
-    //  access files and directories inside
-    // -The sticky bit states that files and directories within that directory
-    //  may only be deleted or renamed by their owner (or root)
-    if (mkdir(i->value().c_str(), 0755/*others can read the dir*/) == 0)
-      continue;
-    // Mkdir failed, but it might have failed with EEXIST, or some other error
-    // due to the the directory appearing out of thin air. This can occur if
-    // two processes are trying to create the same file system tree at the same
-    // time. Check to see if it exists and make sure it is a directory.
-    int saved_errno = errno;
-    if (!DirectoryExists(*i)) {
-      if (error)
-        *error = File::OSErrorToFileError(saved_errno);
-      return false;
-    }
+     i != subpaths.rend(); ++i) {
+  if (DirectoryExists(*i))
+    continue;
+  // NOTE(gejun): permission bits of dir are different from file's
+  // -The write bit allows the affected user to create, rename, or delete
+  //  files within the directory, and modify the directory's attributes
+  // -The read bit allows the affected user to list the files within the 
+  //  directory
+  // -The execute bit allows the affected user to enter the directory, and 
+  //  access files and directories inside
+  // -The sticky bit states that files and directories within that directory
+  //  may only be deleted or renamed by their owner (or root)
+  if (mkdir(i->value().c_str(), 0755/*others can read the dir*/) == 0)
+    continue;
+  // Mkdir failed, but it might have failed with EEXIST, or some other error
+  // due to the the directory appearing out of thin air. This can occur if
+  // two processes are trying to create the same file system tree at the same
+  // time. Check to see if it exists and make sure it is a directory.
+  int saved_errno = errno;
+  if (!DirectoryExists(*i)) {
+    if (error)
+    *error = File::OSErrorToFileError(saved_errno);
+    return false;
+  }
   }
   return true;
 }
@@ -617,14 +617,14 @@ bool CreateDirectoryAndGetError(const FilePath& full_path,
 bool NormalizeFilePath(const FilePath& path, FilePath* normalized_path) {
   FilePath real_path_result;
   if (!RealPath(path, &real_path_result))
-    return false;
+  return false;
 
   // To be consistant with windows, fail if |real_path_result| is a
   // directory.
   stat_wrapper_t file_info;
   if (CallStat(real_path_result.value().c_str(), &file_info) != 0 ||
-      S_ISDIR(file_info.st_mode))
-    return false;
+    S_ISDIR(file_info.st_mode))
+  return false;
 
   *normalized_path = real_path_result;
   return true;
@@ -637,26 +637,26 @@ bool IsLink(const FilePath& file_path) {
   // If we can't lstat the file, it's safe to assume that the file won't at
   // least be a 'followable' link.
   if (CallLstat(file_path.value().c_str(), &st) != 0)
-    return false;
+  return false;
 
   if (S_ISLNK(st.st_mode))
-    return true;
+  return true;
   else
-    return false;
+  return false;
 }
 
 bool GetFileInfo(const FilePath& file_path, File::Info* results) {
   stat_wrapper_t file_info;
 #if defined(OS_ANDROID)
   if (file_path.IsContentUri()) {
-    File file = OpenContentUriForRead(file_path);
-    if (!file.IsValid())
-      return false;
-    return file.GetInfo(results);
+  File file = OpenContentUriForRead(file_path);
+  if (!file.IsValid())
+    return false;
+  return file.GetInfo(results);
   } else {
 #endif  // defined(OS_ANDROID)
-    if (CallStat(file_path.value().c_str(), &file_info) != 0)
-      return false;
+  if (CallStat(file_path.value().c_str(), &file_info) != 0)
+    return false;
 #if defined(OS_ANDROID)
   }
 #endif  // defined(OS_ANDROID)
@@ -669,7 +669,7 @@ FILE* OpenFile(const FilePath& filename, const char* mode) {
   ThreadRestrictions::AssertIOAllowed();
   FILE* result = NULL;
   do {
-    result = fopen(filename.value().c_str(), mode);
+  result = fopen(filename.value().c_str(), mode);
   } while (!result && errno == EINTR);
   return result;
 }
@@ -679,7 +679,7 @@ FILE* OpenFile(const FilePath& filename, const char* mode) {
 FILE* FileToFILE(File file, const char* mode) {
   FILE* stream = fdopen(file.GetPlatformFile(), mode);
   if (stream)
-    file.TakePlatformFile();
+  file.TakePlatformFile();
   return stream;
 }
 #endif  // !defined(OS_NACL)
@@ -688,11 +688,11 @@ int ReadFile(const FilePath& filename, char* data, int max_size) {
   ThreadRestrictions::AssertIOAllowed();
   int fd = HANDLE_EINTR(open(filename.value().c_str(), O_RDONLY));
   if (fd < 0)
-    return -1;
+  return -1;
 
   ssize_t bytes_read = HANDLE_EINTR(read(fd, data, max_size));
   if (IGNORE_EINTR(close(fd)) < 0)
-    return -1;
+  return -1;
   return bytes_read;
 }
 
@@ -700,11 +700,11 @@ int WriteFile(const FilePath& filename, const char* data, int size) {
   ThreadRestrictions::AssertIOAllowed();
   int fd = HANDLE_EINTR(creat(filename.value().c_str(), 0644));
   if (fd < 0)
-    return -1;
+  return -1;
 
   int bytes_written = WriteFileDescriptor(fd, data, size);
   if (IGNORE_EINTR(close(fd)) < 0)
-    return -1;
+  return -1;
   return bytes_written;
 }
 
@@ -712,12 +712,12 @@ int WriteFileDescriptor(const int fd, const char* data, int size) {
   // Allow for partial writes.
   ssize_t bytes_written_total = 0;
   for (ssize_t bytes_written_partial = 0; bytes_written_total < size;
-       bytes_written_total += bytes_written_partial) {
-    bytes_written_partial =
-        HANDLE_EINTR(write(fd, data + bytes_written_total,
-                           size - bytes_written_total));
-    if (bytes_written_partial < 0)
-      return -1;
+     bytes_written_total += bytes_written_partial) {
+  bytes_written_partial =
+    HANDLE_EINTR(write(fd, data + bytes_written_total,
+               size - bytes_written_total));
+  if (bytes_written_partial < 0)
+    return -1;
   }
 
   return bytes_written_total;
@@ -727,11 +727,11 @@ int AppendToFile(const FilePath& filename, const char* data, int size) {
   ThreadRestrictions::AssertIOAllowed();
   int fd = HANDLE_EINTR(open(filename.value().c_str(), O_WRONLY | O_APPEND));
   if (fd < 0)
-    return -1;
+  return -1;
 
   int bytes_written = WriteFileDescriptor(fd, data, size);
   if (IGNORE_EINTR(close(fd)) < 0)
-    return -1;
+  return -1;
   return bytes_written;
 }
 
@@ -742,8 +742,8 @@ bool GetCurrentDirectory(FilePath* dir) {
 
   char system_buffer[PATH_MAX] = "";
   if (!getcwd(system_buffer, sizeof(system_buffer))) {
-    NOTREACHED();
-    return false;
+  NOTREACHED();
+  return false;
   }
   *dir = FilePath(system_buffer);
   return true;
@@ -757,13 +757,13 @@ bool SetCurrentDirectory(const FilePath& path) {
 }
 
 bool VerifyPathControlledByUser(const FilePath& base,
-                                const FilePath& path,
-                                uid_t owner_uid,
-                                const std::set<gid_t>& group_gids) {
+                const FilePath& path,
+                uid_t owner_uid,
+                const std::set<gid_t>& group_gids) {
   if (base != path && !base.IsParent(path)) {
-     DLOG(ERROR) << "|base| must be a subdirectory of |path|.  base = \""
-                 << base.value() << "\", path = \"" << path.value() << "\"";
-     return false;
+   DLOG(ERROR) << "|base| must be a subdirectory of |path|.  base = \""
+         << base.value() << "\", path = \"" << path.value() << "\"";
+   return false;
   }
 
   std::vector<FilePath::StringType> base_components;
@@ -774,23 +774,23 @@ bool VerifyPathControlledByUser(const FilePath& base,
 
   std::vector<FilePath::StringType>::const_iterator ib, ip;
   for (ib = base_components.begin(), ip = path_components.begin();
-       ib != base_components.end(); ++ib, ++ip) {
-    // |base| must be a subpath of |path|, so all components should match.
-    // If these CHECKs fail, look at the test that base is a parent of
-    // path at the top of this function.
-    DCHECK(ip != path_components.end());
-    DCHECK(*ip == *ib);
+     ib != base_components.end(); ++ib, ++ip) {
+  // |base| must be a subpath of |path|, so all components should match.
+  // If these CHECKs fail, look at the test that base is a parent of
+  // path at the top of this function.
+  DCHECK(ip != path_components.end());
+  DCHECK(*ip == *ib);
   }
 
   FilePath current_path = base;
   if (!VerifySpecificPathControlledByUser(current_path, owner_uid, group_gids))
-    return false;
+  return false;
 
   for (; ip != path_components.end(); ++ip) {
-    current_path = current_path.Append(*ip);
-    if (!VerifySpecificPathControlledByUser(
-            current_path, owner_uid, group_gids))
-      return false;
+  current_path = current_path.Append(*ip);
+  if (!VerifySpecificPathControlledByUser(
+      current_path, owner_uid, group_gids))
+    return false;
   }
   return true;
 }
@@ -802,8 +802,8 @@ bool VerifyPathControlledByAdmin(const FilePath& path) {
 
   // The name of the administrator group on mac os.
   const char* const kAdminGroupNames[] = {
-    "admin",
-    "wheel"
+  "admin",
+  "wheel"
   };
 
   // Reading the groups database may touch the file system.
@@ -811,18 +811,18 @@ bool VerifyPathControlledByAdmin(const FilePath& path) {
 
   std::set<gid_t> allowed_group_ids;
   for (int i = 0, ie = arraysize(kAdminGroupNames); i < ie; ++i) {
-    struct group *group_record = getgrnam(kAdminGroupNames[i]);
-    if (!group_record) {
-      DPLOG(ERROR) << "Could not get the group ID of group \""
-                   << kAdminGroupNames[i] << "\".";
-      continue;
-    }
+  struct group *group_record = getgrnam(kAdminGroupNames[i]);
+  if (!group_record) {
+    DPLOG(ERROR) << "Could not get the group ID of group \""
+           << kAdminGroupNames[i] << "\".";
+    continue;
+  }
 
-    allowed_group_ids.insert(group_record->gr_gid);
+  allowed_group_ids.insert(group_record->gr_gid);
   }
 
   return VerifyPathControlledByUser(
-      kFileSystemRoot, path, kRootUid, allowed_group_ids);
+    kFileSystemRoot, path, kRootUid, allowed_group_ids);
 }
 #endif  // defined(OS_MACOSX) && !defined(OS_IOS)
 
@@ -837,12 +837,12 @@ bool GetShmemTempDir(bool executable, FilePath* path) {
 #if defined(OS_LINUX)
   bool use_dev_shm = true;
   if (executable) {
-    static const bool s_dev_shm_executable = DetermineDevShmExecutable();
-    use_dev_shm = s_dev_shm_executable;
+  static const bool s_dev_shm_executable = DetermineDevShmExecutable();
+  use_dev_shm = s_dev_shm_executable;
   }
   if (use_dev_shm) {
-    *path = FilePath("/dev/shm");
-    return true;
+  *path = FilePath("/dev/shm");
+  return true;
   }
 #endif
   return GetTempDir(path);
@@ -859,20 +859,20 @@ bool MoveUnsafe(const FilePath& from_path, const FilePath& to_path) {
   // must be the same type, either both files, or both directories.
   stat_wrapper_t to_file_info;
   if (CallStat(to_path.value().c_str(), &to_file_info) == 0) {
-    stat_wrapper_t from_file_info;
-    if (CallStat(from_path.value().c_str(), &from_file_info) == 0) {
-      if (S_ISDIR(to_file_info.st_mode) != S_ISDIR(from_file_info.st_mode))
-        return false;
-    } else {
-      return false;
-    }
+  stat_wrapper_t from_file_info;
+  if (CallStat(from_path.value().c_str(), &from_file_info) == 0) {
+    if (S_ISDIR(to_file_info.st_mode) != S_ISDIR(from_file_info.st_mode))
+    return false;
+  } else {
+    return false;
+  }
   }
 
   if (rename(from_path.value().c_str(), to_path.value().c_str()) == 0)
-    return true;
+  return true;
 
   if (!CopyDirectory(from_path, to_path, true))
-    return false;
+  return false;
 
   DeleteFile(from_path, true);
   return true;
@@ -884,12 +884,12 @@ bool CopyFileUnsafe(const FilePath& from_path, const FilePath& to_path) {
   ThreadRestrictions::AssertIOAllowed();
   int infile = HANDLE_EINTR(open(from_path.value().c_str(), O_RDONLY));
   if (infile < 0)
-    return false;
+  return false;
 
   int outfile = HANDLE_EINTR(creat(to_path.value().c_str(), 0666));
   if (outfile < 0) {
-    close(infile);
-    return false;
+  close(infile);
+  return false;
   }
 
   const size_t kBufferSize = 32768;
@@ -897,32 +897,32 @@ bool CopyFileUnsafe(const FilePath& from_path, const FilePath& to_path) {
   bool result = true;
 
   while (result) {
-    ssize_t bytes_read = HANDLE_EINTR(read(infile, &buffer[0], buffer.size()));
-    if (bytes_read < 0) {
-      result = false;
-      break;
+  ssize_t bytes_read = HANDLE_EINTR(read(infile, &buffer[0], buffer.size()));
+  if (bytes_read < 0) {
+    result = false;
+    break;
+  }
+  if (bytes_read == 0)
+    break;
+  // Allow for partial writes
+  ssize_t bytes_written_per_read = 0;
+  do {
+    ssize_t bytes_written_partial = HANDLE_EINTR(write(
+      outfile,
+      &buffer[bytes_written_per_read],
+      bytes_read - bytes_written_per_read));
+    if (bytes_written_partial < 0) {
+    result = false;
+    break;
     }
-    if (bytes_read == 0)
-      break;
-    // Allow for partial writes
-    ssize_t bytes_written_per_read = 0;
-    do {
-      ssize_t bytes_written_partial = HANDLE_EINTR(write(
-          outfile,
-          &buffer[bytes_written_per_read],
-          bytes_read - bytes_written_per_read));
-      if (bytes_written_partial < 0) {
-        result = false;
-        break;
-      }
-      bytes_written_per_read += bytes_written_partial;
-    } while (bytes_written_per_read < bytes_read);
+    bytes_written_per_read += bytes_written_partial;
+  } while (bytes_written_per_read < bytes_read);
   }
 
   if (IGNORE_EINTR(close(infile)) < 0)
-    result = false;
+  result = false;
   if (IGNORE_EINTR(close(outfile)) < 0)
-    result = false;
+  result = false;
 
   return result;
 }

@@ -28,23 +28,23 @@ namespace brpc {
 namespace policy {
 
 ParseResult ParseEspMessage(
-        butil::IOBuf* source, 
-        Socket* socket, 
-        bool read_eof, 
-        const void *arg);
+    butil::IOBuf* source, 
+    Socket* socket, 
+    bool read_eof, 
+    const void *arg);
 
 void SerializeEspRequest(
-        butil::IOBuf* request_buf, 
-        Controller* controller,
-        const google::protobuf::Message* request);
+    butil::IOBuf* request_buf, 
+    Controller* controller,
+    const google::protobuf::Message* request);
 
 void PackEspRequest(butil::IOBuf* packet_buf,
-                    SocketMessage**,
-                    uint64_t correlation_id,
-                    const google::protobuf::MethodDescriptor*,
-                    Controller* controller,
-                    const butil::IOBuf&,
-                    const Authenticator*);
+          SocketMessage**,
+          uint64_t correlation_id,
+          const google::protobuf::MethodDescriptor*,
+          Controller* controller,
+          const butil::IOBuf&,
+          const Authenticator*);
 
 void ProcessEspResponse(InputMessageBase* msg);
 

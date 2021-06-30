@@ -26,40 +26,40 @@ PeriodicTask::~PeriodicTask() {
 }
 
 static void* PeriodicTaskThread(void* arg) {
-    PeriodicTask* task = static_cast<PeriodicTask*>(arg);
-    timespec abstime;
-    if (!task->OnTriggeringTask(&abstime)) { // end
-        task->OnDestroyingTask();
-        return NULL;
-    }
-    PeriodicTaskManager::StartTaskAt(task, abstime);
+  PeriodicTask* task = static_cast<PeriodicTask*>(arg);
+  timespec abstime;
+  if (!task->OnTriggeringTask(&abstime)) { // end
+    task->OnDestroyingTask();
     return NULL;
+  }
+  PeriodicTaskManager::StartTaskAt(task, abstime);
+  return NULL;
 }
 
 static void RunPeriodicTaskThread(void* arg) {
-    bthread_t th = 0;
-    int rc = bthread_start_background(
-        &th, &BTHREAD_ATTR_NORMAL, PeriodicTaskThread, arg);
-    if (rc != 0) {
-        LOG(ERROR) << "Fail to start PeriodicTaskThread";
-        static_cast<PeriodicTask*>(arg)->OnDestroyingTask();
-        return;
-    }
+  bthread_t th = 0;
+  int rc = bthread_start_background(
+    &th, &BTHREAD_ATTR_NORMAL, PeriodicTaskThread, arg);
+  if (rc != 0) {
+    LOG(ERROR) << "Fail to start PeriodicTaskThread";
+    static_cast<PeriodicTask*>(arg)->OnDestroyingTask();
+    return;
+  }
 }
 
 void PeriodicTaskManager::StartTaskAt(PeriodicTask* task, const timespec& abstime) {
-    if (task == NULL) {
-        LOG(ERROR) << "Param[task] is NULL";
-        return;
-    }
-    bthread_timer_t timer_id;
-    const int rc = bthread_timer_add(
-        &timer_id, abstime, RunPeriodicTaskThread, task);
-    if (rc != 0) {
-        LOG(ERROR) << "Fail to add timer for RunPerodicTaskThread";
-        task->OnDestroyingTask();
-        return;
-    }
+  if (task == NULL) {
+    LOG(ERROR) << "Param[task] is NULL";
+    return;
+  }
+  bthread_timer_t timer_id;
+  const int rc = bthread_timer_add(
+    &timer_id, abstime, RunPeriodicTaskThread, task);
+  if (rc != 0) {
+    LOG(ERROR) << "Fail to add timer for RunPerodicTaskThread";
+    task->OnDestroyingTask();
+    return;
+  }
 }
 
 } // namespace brpc

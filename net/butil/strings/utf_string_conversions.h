@@ -20,23 +20,23 @@ namespace butil {
 // return strings ignore this error and just return the best conversion
 // possible.
 BUTIL_EXPORT bool WideToUTF8(const wchar_t* src, size_t src_len,
-                            std::string* output);
+              std::string* output);
 BUTIL_EXPORT std::string WideToUTF8(const std::wstring& wide);
 BUTIL_EXPORT bool UTF8ToWide(const char* src, size_t src_len,
-                            std::wstring* output);
+              std::wstring* output);
 BUTIL_EXPORT std::wstring UTF8ToWide(const StringPiece& utf8);
 
 BUTIL_EXPORT bool WideToUTF16(const wchar_t* src, size_t src_len,
-                             string16* output);
+               string16* output);
 BUTIL_EXPORT string16 WideToUTF16(const std::wstring& wide);
 BUTIL_EXPORT bool UTF16ToWide(const char16* src, size_t src_len,
-                             std::wstring* output);
+               std::wstring* output);
 BUTIL_EXPORT std::wstring UTF16ToWide(const string16& utf16);
 
 BUTIL_EXPORT bool UTF8ToUTF16(const char* src, size_t src_len, string16* output);
 BUTIL_EXPORT string16 UTF8ToUTF16(const StringPiece& utf8);
 BUTIL_EXPORT bool UTF16ToUTF8(const char16* src, size_t src_len,
-                             std::string* output);
+               std::string* output);
 BUTIL_EXPORT std::string UTF16ToUTF8(const string16& utf16);
 
 // These convert an ASCII string, typically a hardcoded constant, to a

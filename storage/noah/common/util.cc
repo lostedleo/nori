@@ -47,7 +47,7 @@ bool GetIpAddress(std::string* strIp, const std::string& strEth) {
 
   if (AF_INET == protoFamily || AF_INET6 == protoFamily) {
     if (!inet_ntop(protoFamily,
-        &((struct sockaddr_in*)ifAddrStruct->ifa_addr)->sin_addr,
+        &((struct sockaddr_in*)ifAddrStruct->ifa_addr)->sin_addr, // NOLINT
         addressBuffer, 256)) {
       freeifaddrs(ifAddrStructOrig);
       return false;

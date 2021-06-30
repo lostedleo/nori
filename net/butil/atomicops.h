@@ -63,18 +63,18 @@ typedef intptr_t Atomic64;
 typedef intptr_t AtomicWord;
 
 // Atomically execute:
-//      result = *ptr;
-//      if (*ptr == old_value)
-//        *ptr = new_value;
-//      return result;
+//  result = *ptr;
+//  if (*ptr == old_value)
+//  *ptr = new_value;
+//  return result;
 //
 // I.e., replace "*ptr" with "new_value" if "*ptr" used to be "old_value".
 // Always return the old value of "*ptr"
 //
 // This routine implies no memory barriers.
 Atomic32 NoBarrier_CompareAndSwap(volatile Atomic32* ptr,
-                                  Atomic32 old_value,
-                                  Atomic32 new_value);
+                  Atomic32 old_value,
+                  Atomic32 new_value);
 
 // Atomically store new_value into *ptr, returning the previous value held in
 // *ptr.  This routine implies no memory barriers.
@@ -85,7 +85,7 @@ Atomic32 NoBarrier_AtomicExchange(volatile Atomic32* ptr, Atomic32 new_value);
 Atomic32 NoBarrier_AtomicIncrement(volatile Atomic32* ptr, Atomic32 increment);
 
 Atomic32 Barrier_AtomicIncrement(volatile Atomic32* ptr,
-                                 Atomic32 increment);
+                 Atomic32 increment);
 
 // These following lower-level operations are typically useful only to people
 // implementing higher-level synchronization operations like spinlocks,
@@ -97,11 +97,11 @@ Atomic32 Barrier_AtomicIncrement(volatile Atomic32* ptr,
 // semantics.   A MemoryBarrier() has "Barrier" semantics, but does no memory
 // access.
 Atomic32 Acquire_CompareAndSwap(volatile Atomic32* ptr,
-                                Atomic32 old_value,
-                                Atomic32 new_value);
+                Atomic32 old_value,
+                Atomic32 new_value);
 Atomic32 Release_CompareAndSwap(volatile Atomic32* ptr,
-                                Atomic32 old_value,
-                                Atomic32 new_value);
+                Atomic32 old_value,
+                Atomic32 new_value);
 
 void MemoryBarrier();
 void NoBarrier_Store(volatile Atomic32* ptr, Atomic32 value);
@@ -115,18 +115,18 @@ Atomic32 Release_Load(volatile const Atomic32* ptr);
 // 64-bit atomic operations (only available on 64-bit processors).
 #ifdef ARCH_CPU_64_BITS
 Atomic64 NoBarrier_CompareAndSwap(volatile Atomic64* ptr,
-                                  Atomic64 old_value,
-                                  Atomic64 new_value);
+                  Atomic64 old_value,
+                  Atomic64 new_value);
 Atomic64 NoBarrier_AtomicExchange(volatile Atomic64* ptr, Atomic64 new_value);
 Atomic64 NoBarrier_AtomicIncrement(volatile Atomic64* ptr, Atomic64 increment);
 Atomic64 Barrier_AtomicIncrement(volatile Atomic64* ptr, Atomic64 increment);
 
 Atomic64 Acquire_CompareAndSwap(volatile Atomic64* ptr,
-                                Atomic64 old_value,
-                                Atomic64 new_value);
+                Atomic64 old_value,
+                Atomic64 new_value);
 Atomic64 Release_CompareAndSwap(volatile Atomic64* ptr,
-                                Atomic64 old_value,
-                                Atomic64 new_value);
+                Atomic64 old_value,
+                Atomic64 new_value);
 void NoBarrier_Store(volatile Atomic64* ptr, Atomic64 value);
 void Acquire_Store(volatile Atomic64* ptr, Atomic64 value);
 void Release_Store(volatile Atomic64* ptr, Atomic64 value);
@@ -172,12 +172,12 @@ Atomic64 Release_Load(volatile const Atomic64* ptr);
 // https://gcc.gnu.org/gcc-4.7/cxx0x_status.html and
 // https://gcc.gnu.org/gcc-4.8/cxx0x_status.html for more details
 #if defined(__clang__) || \
-    !defined(__GNUC__) || \
-    (__GNUC__ * 10000 + __GNUC_MINOR__ * 100 >= 40800)
+  !defined(__GNUC__) || \
+  (__GNUC__ * 10000 + __GNUC_MINOR__ * 100 >= 40800)
 
 # include <atomic>
 
-#else 
+#else
 
 # if __GNUC__ * 10000 + __GNUC_MINOR__ * 100 >= 40500
 // gcc 4.5 renames cstdatomic to atomic
@@ -190,25 +190,25 @@ Atomic64 Release_Load(volatile const Atomic64* ptr);
 namespace std {
 
 BUTIL_FORCE_INLINE void atomic_thread_fence(memory_order v) {
-    switch (v) {
-    case memory_order_relaxed:
-        break;
-    case memory_order_consume:
-    case memory_order_acquire:
-    case memory_order_release:
-    case memory_order_acq_rel:
-        __asm__ __volatile__("" : : : "memory");
-        break;
-    case memory_order_seq_cst:
-        __asm__ __volatile__("mfence" : : : "memory");
-        break;
-    }
+  switch (v) {
+  case memory_order_relaxed:
+  break;
+  case memory_order_consume:
+  case memory_order_acquire:
+  case memory_order_release:
+  case memory_order_acq_rel:
+  __asm__ __volatile__("" : : : "memory");
+  break;
+  case memory_order_seq_cst:
+  __asm__ __volatile__("mfence" : : : "memory");
+  break;
+  }
 }
 
 BUTIL_FORCE_INLINE void atomic_signal_fence(memory_order v) {
-    if (v != memory_order_relaxed) {
-        __asm__ __volatile__("" : : : "memory");
-    }
+  if (v != memory_order_relaxed) {
+  __asm__ __volatile__("" : : : "memory");
+  }
 }
 
 }  // namespace std
@@ -227,18 +227,18 @@ using ::std::atomic_thread_fence;
 using ::std::atomic_signal_fence;
 template <typename T> class atomic : public ::std::atomic<T> {
 public:
-    atomic() {}
-    atomic(T v) : ::std::atomic<T>(v) {}
-    atomic& operator=(T v) {
-        this->store(v);
-        return *this;
-    }
+  atomic() {}
+  atomic(T v) : ::std::atomic<T>(v) {}
+  atomic& operator=(T v) {
+  this->store(v);
+  return *this;
+  }
 private:
-    DISALLOW_COPY_AND_ASSIGN(atomic);
-    // Make sure memory layout of std::atomic<T> and boost::atomic<T>
-    // are same so that different compilation units seeing different 
-    // definitions(enable C++11 or not) should be compatible.
-    BAIDU_CASSERT(sizeof(T) == sizeof(::std::atomic<T>), size_must_match);
+  DISALLOW_COPY_AND_ASSIGN(atomic);
+  // Make sure memory layout of std::atomic<T> and boost::atomic<T>
+  // are same so that different compilation units seeing different
+  // definitions(enable C++11 or not) should be compatible.
+  BAIDU_CASSERT(sizeof(T) == sizeof(::std::atomic<T>), size_must_match);
 };
 } // namespace butil
 #else
@@ -255,18 +255,18 @@ using ::boost::atomic_thread_fence;
 using ::boost::atomic_signal_fence;
 template <typename T> class atomic : public ::boost::atomic<T> {
 public:
-    atomic() {}
-    atomic(T v) : ::boost::atomic<T>(v) {}
-    atomic& operator=(T v) {
-        this->store(v);
-        return *this;
-    }
+  atomic() {}
+  atomic(T v) : ::boost::atomic<T>(v) {}
+  atomic& operator=(T v) {
+  this->store(v);
+  return *this;
+  }
 private:
-    DISALLOW_COPY_AND_ASSIGN(atomic);
-    // Make sure memory layout of std::atomic<T> and boost::atomic<T>
-    // are same so that different compilation units seeing different 
-    // definitions(enable C++11 or not) should be compatible.
-    BAIDU_CASSERT(sizeof(T) == sizeof(::boost::atomic<T>), size_must_match);
+  DISALLOW_COPY_AND_ASSIGN(atomic);
+  // Make sure memory layout of std::atomic<T> and boost::atomic<T>
+  // are same so that different compilation units seeing different
+  // definitions(enable C++11 or not) should be compatible.
+  BAIDU_CASSERT(sizeof(T) == sizeof(::boost::atomic<T>), size_must_match);
 };
 } // namespace butil
 #endif
@@ -283,37 +283,37 @@ private:
 
 namespace butil {
 template <typename T> struct static_atomic {
-    T val;
+  T val;
 
-    // NOTE: the memory_order parameters must be present.
-    T load(memory_order o) { return ref().load(o); }
-    void store(T v, memory_order o) { return ref().store(v, o); }
-    T exchange(T v, memory_order o) { return ref().exchange(v, o); }
-    bool compare_exchange_weak(T& e, T d, memory_order o)
-    { return ref().compare_exchange_weak(e, d, o); }
-    bool compare_exchange_weak(T& e, T d, memory_order so, memory_order fo)
-    { return ref().compare_exchange_weak(e, d, so, fo); }
-    bool compare_exchange_strong(T& e, T d, memory_order o)
-    { return ref().compare_exchange_strong(e, d, o); }
-    bool compare_exchange_strong(T& e, T d, memory_order so, memory_order fo)
-    { return ref().compare_exchange_strong(e, d, so, fo); }
-    T fetch_add(T v, memory_order o) { return ref().fetch_add(v, o); }
-    T fetch_sub(T v, memory_order o) { return ref().fetch_sub(v, o); }
-    T fetch_and(T v, memory_order o) { return ref().fetch_and(v, o); }
-    T fetch_or(T v, memory_order o) { return ref().fetch_or(v, o); }
-    T fetch_xor(T v, memory_order o) { return ref().fetch_xor(v, o); }
-    static_atomic& operator=(T v) {
-        store(v, memory_order_seq_cst);
-        return *this;
-    }
+  // NOTE: the memory_order parameters must be present.
+  T load(memory_order o) { return ref().load(o); }
+  void store(T v, memory_order o) { return ref().store(v, o); }
+  T exchange(T v, memory_order o) { return ref().exchange(v, o); }
+  bool compare_exchange_weak(T& e, T d, memory_order o)
+  { return ref().compare_exchange_weak(e, d, o); }
+  bool compare_exchange_weak(T& e, T d, memory_order so, memory_order fo)
+  { return ref().compare_exchange_weak(e, d, so, fo); }
+  bool compare_exchange_strong(T& e, T d, memory_order o)
+  { return ref().compare_exchange_strong(e, d, o); }
+  bool compare_exchange_strong(T& e, T d, memory_order so, memory_order fo)
+  { return ref().compare_exchange_strong(e, d, so, fo); }
+  T fetch_add(T v, memory_order o) { return ref().fetch_add(v, o); }
+  T fetch_sub(T v, memory_order o) { return ref().fetch_sub(v, o); }
+  T fetch_and(T v, memory_order o) { return ref().fetch_and(v, o); }
+  T fetch_or(T v, memory_order o) { return ref().fetch_or(v, o); }
+  T fetch_xor(T v, memory_order o) { return ref().fetch_xor(v, o); }
+  static_atomic& operator=(T v) {
+  store(v, memory_order_seq_cst);
+  return *this;
+  }
 private:
-    DISALLOW_ASSIGN(static_atomic);
-    BAIDU_CASSERT(sizeof(T) == sizeof(atomic<T>), size_must_match);
-    atomic<T>& ref() {
-        // Suppress strict-alias warnings.
-        atomic<T>* p = reinterpret_cast<atomic<T>*>(&val);
-        return *p;
-    }
+  DISALLOW_ASSIGN(static_atomic);
+  BAIDU_CASSERT(sizeof(T) == sizeof(atomic<T>), size_must_match);
+  atomic<T>& ref() {
+  // Suppress strict-alias warnings.
+  atomic<T>* p = reinterpret_cast<atomic<T>*>(&val);
+  return *p;
+  }
 };
 } // namespace butil
 

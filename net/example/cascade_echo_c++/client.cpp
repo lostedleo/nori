@@ -4,7 +4,7 @@
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 // 
-//     http://www.apache.org/licenses/LICENSE-2.0
+//   http://www.apache.org/licenses/LICENSE-2.0
 // 
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -41,104 +41,104 @@ DEFINE_int32(dummy_port, -1, "Launch dummy server at this port");
 bvar::LatencyRecorder g_latency_recorder("client");
 
 void* sender(void* arg) {
-    brpc::Channel* chan = (brpc::Channel*)arg;
-    // Normally, you should not call a Channel directly, but instead construct
-    // a stub Service wrapping it. stub can be shared by all threads as well.
-    example::EchoService_Stub stub(chan);
+  brpc::Channel* chan = (brpc::Channel*)arg;
+  // Normally, you should not call a Channel directly, but instead construct
+  // a stub Service wrapping it. stub can be shared by all threads as well.
+  example::EchoService_Stub stub(chan);
 
-    // Send a request and wait for the response every 1 second.
-    int log_id = 0;
-    while (!brpc::IsAskedToQuit()) {
-        // We will receive response synchronously, safe to put variables
-        // on stack.
-        example::EchoRequest request;
-        example::EchoResponse response;
-        brpc::Controller cntl;
+  // Send a request and wait for the response every 1 second.
+  int log_id = 0;
+  while (!brpc::IsAskedToQuit()) {
+    // We will receive response synchronously, safe to put variables
+    // on stack.
+    example::EchoRequest request;
+    example::EchoResponse response;
+    brpc::Controller cntl;
 
-        request.set_message("hello world");
-        if (FLAGS_depth > 0) {
-            request.set_depth(FLAGS_depth);
-        }
-
-        cntl.set_log_id(log_id ++);  // set by user
-        if (FLAGS_protocol != "http" && FLAGS_protocol != "h2c") {
-            // Set attachment which is wired to network directly instead of 
-            // being serialized into protobuf messages.
-            cntl.request_attachment().append(FLAGS_attachment);
-        }
-
-        // Because `done'(last parameter) is NULL, this function waits until
-        // the response comes back or error occurs(including timedout).
-        stub.Echo(&cntl, &request, &response, NULL);
-        if (cntl.Failed()) {
-            //LOG_EVERY_SECOND(WARNING) << "Fail to send EchoRequest, " << cntl.ErrorText();
-        } else {
-            g_latency_recorder << cntl.latency_us();
-        }
-        if (FLAGS_sleep_ms != 0) {
-            bthread_usleep(FLAGS_sleep_ms * 1000L);
-        }
+    request.set_message("hello world");
+    if (FLAGS_depth > 0) {
+      request.set_depth(FLAGS_depth);
     }
-    return NULL;
+
+    cntl.set_log_id(log_id ++);  // set by user
+    if (FLAGS_protocol != "http" && FLAGS_protocol != "h2c") {
+      // Set attachment which is wired to network directly instead of 
+      // being serialized into protobuf messages.
+      cntl.request_attachment().append(FLAGS_attachment);
+    }
+
+    // Because `done'(last parameter) is NULL, this function waits until
+    // the response comes back or error occurs(including timedout).
+    stub.Echo(&cntl, &request, &response, NULL);
+    if (cntl.Failed()) {
+      //LOG_EVERY_SECOND(WARNING) << "Fail to send EchoRequest, " << cntl.ErrorText();
+    } else {
+      g_latency_recorder << cntl.latency_us();
+    }
+    if (FLAGS_sleep_ms != 0) {
+      bthread_usleep(FLAGS_sleep_ms * 1000L);
+    }
+  }
+  return NULL;
 }
 
 int main(int argc, char* argv[]) {
-    // Parse gflags. We recommend you to use gflags as well.
-    google::SetUsageMessage("Send EchoRequest to server every second");
-    google::ParseCommandLineFlags(&argc, &argv, true);
+  // Parse gflags. We recommend you to use gflags as well.
+  google::SetUsageMessage("Send EchoRequest to server every second");
+  google::ParseCommandLineFlags(&argc, &argv, true);
 
-    // A Channel represents a communication line to a Server. Notice that 
-    // Channel is thread-safe and can be shared by all threads in your program.
-    brpc::Channel channel;
-    brpc::ChannelOptions options;
-    options.protocol = FLAGS_protocol;
-    options.connection_type = FLAGS_connection_type;
-    options.timeout_ms = FLAGS_timeout_ms/*milliseconds*/;
-    options.max_retry = FLAGS_max_retry;
-    
-    // Initialize the channel, NULL means using default options. 
-    // options, see `brpc/channel.h'.
-    if (channel.Init(FLAGS_server.c_str(), FLAGS_load_balancer.c_str(), &options) != 0) {
-        LOG(ERROR) << "Fail to initialize channel";
-        return -1;
-    }
+  // A Channel represents a communication line to a Server. Notice that 
+  // Channel is thread-safe and can be shared by all threads in your program.
+  brpc::Channel channel;
+  brpc::ChannelOptions options;
+  options.protocol = FLAGS_protocol;
+  options.connection_type = FLAGS_connection_type;
+  options.timeout_ms = FLAGS_timeout_ms/*milliseconds*/;
+  options.max_retry = FLAGS_max_retry;
+  
+  // Initialize the channel, NULL means using default options. 
+  // options, see `brpc/channel.h'.
+  if (channel.Init(FLAGS_server.c_str(), FLAGS_load_balancer.c_str(), &options) != 0) {
+    LOG(ERROR) << "Fail to initialize channel";
+    return -1;
+  }
 
-    std::vector<bthread_t> tids;
-    tids.resize(FLAGS_thread_num);
-    if (!FLAGS_use_bthread) {
-        for (int i = 0; i < FLAGS_thread_num; ++i) {
-            if (pthread_create(&tids[i], NULL, sender, &channel) != 0) {
-                LOG(ERROR) << "Fail to create pthread";
-                return -1;
-            }
-        }
-    } else {
-        for (int i = 0; i < FLAGS_thread_num; ++i) {
-            if (bthread_start_background(
-                    &tids[i], NULL, sender, &channel) != 0) {
-                LOG(ERROR) << "Fail to create bthread";
-                return -1;
-            }
-        }
-    }
-
-    if (FLAGS_dummy_port >= 0) {
-        brpc::StartDummyServerAt(FLAGS_dummy_port);
-    }
-
-    while (!brpc::IsAskedToQuit()) {
-        sleep(1);
-        LOG(INFO) << "Sending EchoRequest at qps=" << g_latency_recorder.qps(1)
-                  << " latency=" << g_latency_recorder.latency(1);
-    }
-
-    LOG(INFO) << "EchoClient is going to quit";
+  std::vector<bthread_t> tids;
+  tids.resize(FLAGS_thread_num);
+  if (!FLAGS_use_bthread) {
     for (int i = 0; i < FLAGS_thread_num; ++i) {
-        if (!FLAGS_use_bthread) {
-            pthread_join(tids[i], NULL);
-        } else {
-            bthread_join(tids[i], NULL);
-        }
+      if (pthread_create(&tids[i], NULL, sender, &channel) != 0) {
+        LOG(ERROR) << "Fail to create pthread";
+        return -1;
+      }
     }
-    return 0;
+  } else {
+    for (int i = 0; i < FLAGS_thread_num; ++i) {
+      if (bthread_start_background(
+          &tids[i], NULL, sender, &channel) != 0) {
+        LOG(ERROR) << "Fail to create bthread";
+        return -1;
+      }
+    }
+  }
+
+  if (FLAGS_dummy_port >= 0) {
+    brpc::StartDummyServerAt(FLAGS_dummy_port);
+  }
+
+  while (!brpc::IsAskedToQuit()) {
+    sleep(1);
+    LOG(INFO) << "Sending EchoRequest at qps=" << g_latency_recorder.qps(1)
+          << " latency=" << g_latency_recorder.latency(1);
+  }
+
+  LOG(INFO) << "EchoClient is going to quit";
+  for (int i = 0; i < FLAGS_thread_num; ++i) {
+    if (!FLAGS_use_bthread) {
+      pthread_join(tids[i], NULL);
+    } else {
+      bthread_join(tids[i], NULL);
+    }
+  }
+  return 0;
 }

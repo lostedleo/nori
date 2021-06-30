@@ -17,7 +17,7 @@ namespace butil {
 template <typename Dst, typename Src>
 inline bool IsValueInRangeForNumericType(Src value) {
   return internal::DstRangeRelationToSrcRange<Dst>(value) ==
-         internal::RANGE_VALID;
+     internal::RANGE_VALID;
 }
 
 // checked_cast<> is analogous to static_cast<> for numeric types,
@@ -36,22 +36,22 @@ template <typename Dst, typename Src>
 inline Dst saturated_cast(Src value) {
   // Optimization for floating point values, which already saturate.
   if (std::numeric_limits<Dst>::is_iec559)
-    return static_cast<Dst>(value);
+  return static_cast<Dst>(value);
 
   switch (internal::DstRangeRelationToSrcRange<Dst>(value)) {
-    case internal::RANGE_VALID:
-      return static_cast<Dst>(value);
+  case internal::RANGE_VALID:
+    return static_cast<Dst>(value);
 
-    case internal::RANGE_UNDERFLOW:
-      return std::numeric_limits<Dst>::min();
+  case internal::RANGE_UNDERFLOW:
+    return std::numeric_limits<Dst>::min();
 
-    case internal::RANGE_OVERFLOW:
-      return std::numeric_limits<Dst>::max();
+  case internal::RANGE_OVERFLOW:
+    return std::numeric_limits<Dst>::max();
 
-    // Should fail only on attempting to assign NaN to a saturated integer.
-    case internal::RANGE_INVALID:
-      CHECK(false);
-      return std::numeric_limits<Dst>::max();
+  // Should fail only on attempting to assign NaN to a saturated integer.
+  case internal::RANGE_INVALID:
+    CHECK(false);
+    return std::numeric_limits<Dst>::max();
   }
 
   NOTREACHED();

@@ -24,7 +24,7 @@ namespace butil {
 namespace files {
 class fd_guard : public ScopedFD {
 public:
-    operator int() const { return get(); }
+  operator int() const { return get(); }
 };
 }  // files
 }  // base

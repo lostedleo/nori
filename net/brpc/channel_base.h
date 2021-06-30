@@ -22,7 +22,7 @@
 #include <stdlib.h>
 #include <ostream>
 #include "butil/logging.h"
-#include <google/protobuf/service.h>            // google::protobuf::RpcChannel
+#include <google/protobuf/service.h>      // google::protobuf::RpcChannel
 #include "brpc/describable.h"
 
 // To brpc developers: This is a header included by user, don't depend
@@ -33,14 +33,14 @@ namespace brpc {
 
 // Base of all brpc channels.
 class ChannelBase : public google::protobuf::RpcChannel/*non-copyable*/,
-                    public Describable {
+          public Describable {
 public:
-    virtual int Weight() {
-        CHECK(false) << "Not implemented";
-        abort();
-    };
+  virtual int Weight() {
+    CHECK(false) << "Not implemented";
+    abort();
+  };
 
-    virtual int CheckHealth() = 0;
+  virtual int CheckHealth() = 0;
 };
 
 } // namespace brpc

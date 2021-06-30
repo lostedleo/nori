@@ -26,27 +26,27 @@ namespace brpc {
 
 // Contain the information for showing a tab.
 struct TabInfo {
-    std::string tab_name;
-    std::string path;
+  std::string tab_name;
+  std::string path;
 
-    bool valid() const { return !tab_name.empty() && !path.empty(); }
+  bool valid() const { return !tab_name.empty() && !path.empty(); }
 };
 
 // For appending TabInfo
 class TabInfoList {
 public:
-    TabInfoList() {}
-    TabInfo* add() {
-        _list.push_back(TabInfo());
-        return &_list[_list.size() - 1];
-    }
-    size_t size() const { return _list.size(); }
-    const TabInfo& operator[](size_t i) const { return _list[i]; }
-    void resize(size_t newsize) { _list.resize(newsize); }
+  TabInfoList() {}
+  TabInfo* add() {
+    _list.push_back(TabInfo());
+    return &_list[_list.size() - 1];
+  }
+  size_t size() const { return _list.size(); }
+  const TabInfo& operator[](size_t i) const { return _list[i]; }
+  void resize(size_t newsize) { _list.resize(newsize); }
 private:
-    TabInfoList(const TabInfoList&);
-    void operator=(const TabInfoList&);
-    std::vector<TabInfo> _list;
+  TabInfoList(const TabInfoList&);
+  void operator=(const TabInfoList&);
+  std::vector<TabInfo> _list;
 };
 
 // Inherit this class to show the service with one or more tabs.
@@ -55,31 +55,31 @@ private:
 //   #include <brpc/builtin/common.h>
 //   ...
 //   void MySerivce::GetTabInfo(brpc::TabInfoList* info_list) const {
-//     brpc::TabInfo* info = info_list->add();
-//     info->tab_name = "my_tab";
-//     info->path = "/MyService/MyMethod";
+//   brpc::TabInfo* info = info_list->add();
+//   info->tab_name = "my_tab";
+//   info->path = "/MyService/MyMethod";
 //   }
 //   void MyService::MyMethod(::google::protobuf::RpcController* controller,
-//                            const XXXRequest* request,
-//                            XXXResponse* response,
-//                            ::google::protobuf::Closure* done) {
-//     ...
-//     if (use_html) {
-//       os << "<!DOCTYPE html><html><head>\n"
-//          << "<script language=\"javascript\" type=\"text/javascript\" src=\"/js/jquery_min\"></script>\n"
-//          << brpc::TabsHead() << "</head><body>";
-//       cntl->server()->PrintTabsBody(os, "my_tab");
-//     }
-//     ...
-//     if (use_html) {
-//       os << "</body></html>";
-//     }
+//              const XXXRequest* request,
+//              XXXResponse* response,
+//              ::google::protobuf::Closure* done) {
+//   ...
+//   if (use_html) {
+//     os << "<!DOCTYPE html><html><head>\n"
+//      << "<script language=\"javascript\" type=\"text/javascript\" src=\"/js/jquery_min\"></script>\n"
+//      << brpc::TabsHead() << "</head><body>";
+//     cntl->server()->PrintTabsBody(os, "my_tab");
+//   }
+//   ...
+//   if (use_html) {
+//     os << "</body></html>";
+//   }
 //   }
 // Note: don't forget the jquery.
 class Tabbed {
 public:
-    virtual ~Tabbed() = default;
-    virtual void GetTabInfo(TabInfoList* info_list) const = 0;
+  virtual ~Tabbed() = default;
+  virtual void GetTabInfo(TabInfoList* info_list) const = 0;
 };
 
 } // namespace brpc

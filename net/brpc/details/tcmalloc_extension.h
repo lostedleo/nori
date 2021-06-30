@@ -5,13 +5,13 @@
 // modification, are permitted provided that the following conditions are
 // met:
 // 
-//     * Redistributions of source code must retain the above copyright
+//   * Redistributions of source code must retain the above copyright
 // notice, this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above
+//   * Redistributions in binary form must reproduce the above
 // copyright notice, this list of conditions and the following disclaimer
 // in the documentation and/or other materials provided with the
 // distribution.
-//     * Neither the name of Google Inc. nor the names of its
+//   * Neither the name of Google Inc. nor the names of its
 // contributors may be used to endorse or promote products derived from
 // this software without specific prior written permission.
 // 
@@ -87,7 +87,7 @@ class PERFTOOLS_DLL_DECL MallocExtension {
   virtual bool VerifyArrayNewMemory(void* p);
   virtual bool VerifyMallocMemory(void* p);
   virtual bool MallocMemoryStats(int* blocks, size_t* total,
-                                 int histogram[kMallocHistogramSize]);
+                 int histogram[kMallocHistogramSize]);
 
   // Get a human readable description of the current state of the malloc
   // data structures.  The state is stored as a null-terminated string
@@ -100,9 +100,9 @@ class PERFTOOLS_DLL_DECL MallocExtension {
   // is equivalent to the output of the heap profiler and can
   // therefore be passed to "pprof".
   // NOTE: by default, tcmalloc does not do any heap sampling, and this
-  //       function will always return an empty sample.  To get useful
-  //       data from GetHeapSample, you must also set the environment
-  //       variable TCMALLOC_SAMPLE_PARAMETER to a value such as 524288.
+  //     function will always return an empty sample.  To get useful
+  //     data from GetHeapSample, you must also set the environment
+  //     variable TCMALLOC_SAMPLE_PARAMETER to a value such as 524288.
   virtual void GetHeapSample(MallocExtensionWriter* writer);
 
   // Outputs to "writer" the stack traces that caused growth in the
@@ -127,42 +127,42 @@ class PERFTOOLS_DLL_DECL MallocExtension {
   // generic
   // -------
   // "generic.current_allocated_bytes"
-  //      Number of bytes currently allocated by application
-  //      This property is not writable.
+  //    Number of bytes currently allocated by application
+  //    This property is not writable.
   //
   // "generic.heap_size"
-  //      Number of bytes in the heap ==
-  //            current_allocated_bytes +
-  //            fragmentation +
-  //            freed memory regions
-  //      This property is not writable.
+  //    Number of bytes in the heap ==
+  //      current_allocated_bytes +
+  //      fragmentation +
+  //      freed memory regions
+  //    This property is not writable.
   //
   // tcmalloc
   // --------
   // "tcmalloc.max_total_thread_cache_bytes"
-  //      Upper limit on total number of bytes stored across all
-  //      per-thread caches.  Default: 16MB.
+  //    Upper limit on total number of bytes stored across all
+  //    per-thread caches.  Default: 16MB.
   //
   // "tcmalloc.current_total_thread_cache_bytes"
-  //      Number of bytes used across all thread caches.
-  //      This property is not writable.
+  //    Number of bytes used across all thread caches.
+  //    This property is not writable.
   //
   // "tcmalloc.pageheap_free_bytes"
-  //      Number of bytes in free, mapped pages in page heap.  These
-  //      bytes can be used to fulfill allocation requests.  They
-  //      always count towards virtual memory usage, and unless the
-  //      underlying memory is swapped out by the OS, they also count
-  //      towards physical memory usage.  This property is not writable.
+  //    Number of bytes in free, mapped pages in page heap.  These
+  //    bytes can be used to fulfill allocation requests.  They
+  //    always count towards virtual memory usage, and unless the
+  //    underlying memory is swapped out by the OS, they also count
+  //    towards physical memory usage.  This property is not writable.
   //
   // "tcmalloc.pageheap_unmapped_bytes"
-  //        Number of bytes in free, unmapped pages in page heap.
-  //        These are bytes that have been released back to the OS,
-  //        possibly by one of the MallocExtension "Release" calls.
-  //        They can be used to fulfill allocation requests, but
-  //        typically incur a page fault.  They always count towards
-  //        virtual memory usage, and depending on the OS, typically
-  //        do not count towards physical memory usage.  This property
-  //        is not writable.
+  //    Number of bytes in free, unmapped pages in page heap.
+  //    These are bytes that have been released back to the OS,
+  //    possibly by one of the MallocExtension "Release" calls.
+  //    They can be used to fulfill allocation requests, but
+  //    typically incur a page fault.  They always count towards
+  //    virtual memory usage, and depending on the OS, typically
+  //    do not count towards physical memory usage.  This property
+  //    is not writable.
   // -------------------------------------------------------------------
 
   // Get the named "property"'s value.  Returns true if the property
@@ -249,10 +249,10 @@ class PERFTOOLS_DLL_DECL MallocExtension {
   // Returns detailed information about malloc's freelists. For each list,
   // return a FreeListInfo:
   struct FreeListInfo {
-    size_t min_object_size;
-    size_t max_object_size;
-    size_t total_bytes_free;
-    const char* type;
+  size_t min_object_size;
+  size_t max_object_size;
+  size_t total_bytes_free;
+  const char* type;
   };
   // Each item in the vector refers to a different freelist. The lists
   // are identified by the range of allocations that objects in the
@@ -264,23 +264,23 @@ class PERFTOOLS_DLL_DECL MallocExtension {
   // Currently supported types are:
   //
   // "tcmalloc.page{_unmapped}" - tcmalloc's page heap. An entry for each size
-  //          class in the page heap is returned. Bytes in "page_unmapped"
-  //          are no longer backed by physical memory and do not count against
-  //          the resident size of a process.
+  //      class in the page heap is returned. Bytes in "page_unmapped"
+  //      are no longer backed by physical memory and do not count against
+  //      the resident size of a process.
   //
   // "tcmalloc.large{_unmapped}" - tcmalloc's list of objects larger
-  //          than the largest page heap size class. Only one "large"
-  //          entry is returned. There is no upper-bound on the size
-  //          of objects in the large free list; this call returns
-  //          kint64max for max_object_size.  Bytes in
-  //          "large_unmapped" are no longer backed by physical memory
-  //          and do not count against the resident size of a process.
+  //      than the largest page heap size class. Only one "large"
+  //      entry is returned. There is no upper-bound on the size
+  //      of objects in the large free list; this call returns
+  //      kint64max for max_object_size.  Bytes in
+  //      "large_unmapped" are no longer backed by physical memory
+  //      and do not count against the resident size of a process.
   //
   // "tcmalloc.central" - tcmalloc's central free-list. One entry per
-  //          size-class is returned. Never unmapped.
+  //      size-class is returned. Never unmapped.
   //
   // "debug.free_queue" - free objects queued by the debug allocator
-  //                      and not returned to tcmalloc.
+  //            and not returned to tcmalloc.
   //
   // "tcmalloc.thread" - tcmalloc's per-thread caches. Never unmapped.
   virtual void GetFreeListSizes(std::vector<FreeListInfo>* v);
@@ -292,10 +292,10 @@ class PERFTOOLS_DLL_DECL MallocExtension {
   //
   // The state is stored as a sequence of adjacent entries
   // in the returned array.  Each entry has the following form:
-  //    uintptr_t count;        // Number of objects with following trace
-  //    uintptr_t size;         // Total size of objects with following trace
-  //    uintptr_t depth;        // Number of PC values in stack trace
-  //    void*     stack[depth]; // PC values that form the stack trace
+  //  uintptr_t count;    // Number of objects with following trace
+  //  uintptr_t size;     // Total size of objects with following trace
+  //  uintptr_t depth;    // Number of PC values in stack trace
+  //  void*   stack[depth]; // PC values that form the stack trace
   //
   // The list of entries is terminated by a "count" of 0.
   //

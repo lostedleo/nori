@@ -16,7 +16,7 @@ class TrivialThread : public PlatformThread::Delegate {
   TrivialThread() : did_run_(false) {}
 
   virtual void ThreadMain() OVERRIDE {
-    did_run_ = true;
+  did_run_ = true;
   }
 
   bool did_run() const { return did_run_; }
@@ -42,13 +42,13 @@ TEST(PlatformThreadTest, TrivialTimesTen) {
   PlatformThreadHandle handle[arraysize(thread)];
 
   for (size_t n = 0; n < arraysize(thread); n++)
-    ASSERT_FALSE(thread[n].did_run());
+  ASSERT_FALSE(thread[n].did_run());
   for (size_t n = 0; n < arraysize(thread); n++)
-    ASSERT_TRUE(PlatformThread::Create(0, &thread[n], &handle[n]));
+  ASSERT_TRUE(PlatformThread::Create(0, &thread[n], &handle[n]));
   for (size_t n = 0; n < arraysize(thread); n++)
-    PlatformThread::Join(handle[n]);
+  PlatformThread::Join(handle[n]);
   for (size_t n = 0; n < arraysize(thread); n++)
-    ASSERT_TRUE(thread[n].did_run());
+  ASSERT_TRUE(thread[n].did_run());
 }
 
 // Tests of basic thread functions ---------------------------------------------
@@ -58,14 +58,14 @@ class FunctionTestThread : public TrivialThread {
   FunctionTestThread() : thread_id_(0) {}
 
   virtual void ThreadMain() OVERRIDE {
-    thread_id_ = PlatformThread::CurrentId();
-    PlatformThread::YieldCurrentThread();
-    PlatformThread::Sleep(TimeDelta::FromMilliseconds(50));
+  thread_id_ = PlatformThread::CurrentId();
+  PlatformThread::YieldCurrentThread();
+  PlatformThread::Sleep(TimeDelta::FromMilliseconds(50));
 
-    // Make sure that the thread ID is the same across calls.
-    EXPECT_EQ(thread_id_, PlatformThread::CurrentId());
+  // Make sure that the thread ID is the same across calls.
+  EXPECT_EQ(thread_id_, PlatformThread::CurrentId());
 
-    TrivialThread::ThreadMain();
+  TrivialThread::ThreadMain();
   }
 
   PlatformThreadId thread_id() const { return thread_id_; }
@@ -99,19 +99,19 @@ TEST(PlatformThreadTest, FunctionTimesTen) {
   PlatformThreadHandle handle[arraysize(thread)];
 
   for (size_t n = 0; n < arraysize(thread); n++)
-    ASSERT_FALSE(thread[n].did_run());
+  ASSERT_FALSE(thread[n].did_run());
   for (size_t n = 0; n < arraysize(thread); n++)
-    ASSERT_TRUE(PlatformThread::Create(0, &thread[n], &handle[n]));
+  ASSERT_TRUE(PlatformThread::Create(0, &thread[n], &handle[n]));
   for (size_t n = 0; n < arraysize(thread); n++)
-    PlatformThread::Join(handle[n]);
+  PlatformThread::Join(handle[n]);
   for (size_t n = 0; n < arraysize(thread); n++) {
-    ASSERT_TRUE(thread[n].did_run());
-    EXPECT_NE(thread[n].thread_id(), main_thread_id);
+  ASSERT_TRUE(thread[n].did_run());
+  EXPECT_NE(thread[n].thread_id(), main_thread_id);
 
-    // Make sure no two threads get the same ID.
-    for (size_t i = 0; i < n; ++i) {
-      EXPECT_NE(thread[i].thread_id(), thread[n].thread_id());
-    }
+  // Make sure no two threads get the same ID.
+  for (size_t i = 0; i < n; ++i) {
+    EXPECT_NE(thread[i].thread_id(), thread[n].thread_id());
+  }
   }
 
   // Make sure that the thread ID is the same across calls.

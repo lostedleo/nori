@@ -33,19 +33,19 @@
 //   // My class is logically attached to a single thread.  We cache a pointer
 //   // on the thread it was created on, so we can implement current().
 //   MyClass::MyClass() {
-//     DCHECK(Singleton<ThreadLocalPointer<MyClass> >::get()->Get() == NULL);
-//     Singleton<ThreadLocalPointer<MyClass> >::get()->Set(this);
+//   DCHECK(Singleton<ThreadLocalPointer<MyClass> >::get()->Get() == NULL);
+//   Singleton<ThreadLocalPointer<MyClass> >::get()->Set(this);
 //   }
 //
 //   MyClass::~MyClass() {
-//     DCHECK(Singleton<ThreadLocalPointer<MyClass> >::get()->Get() != NULL);
-//     Singleton<ThreadLocalPointer<MyClass> >::get()->Set(NULL);
+//   DCHECK(Singleton<ThreadLocalPointer<MyClass> >::get()->Get() != NULL);
+//   Singleton<ThreadLocalPointer<MyClass> >::get()->Set(NULL);
 //   }
 //
 //   // Return the current MyClass associated with the calling thread, can be
 //   // NULL if there isn't a MyClass associated.
 //   MyClass* MyClass::current() {
-//     return Singleton<ThreadLocalPointer<MyClass> >::get()->Get();
+//   return Singleton<ThreadLocalPointer<MyClass> >::get()->Get();
 //   }
 
 #ifndef BUTIL_THREADING_THREAD_LOCAL_H_
@@ -84,21 +84,21 @@ template <typename Type>
 class ThreadLocalPointer {
  public:
   ThreadLocalPointer() : slot_() {
-    internal::ThreadLocalPlatform::AllocateSlot(&slot_);
+  internal::ThreadLocalPlatform::AllocateSlot(&slot_);
   }
 
   ~ThreadLocalPointer() {
-    internal::ThreadLocalPlatform::FreeSlot(slot_);
+  internal::ThreadLocalPlatform::FreeSlot(slot_);
   }
 
   Type* Get() {
-    return static_cast<Type*>(
-        internal::ThreadLocalPlatform::GetValueFromSlot(slot_));
+  return static_cast<Type*>(
+    internal::ThreadLocalPlatform::GetValueFromSlot(slot_));
   }
 
   void Set(Type* ptr) {
-    internal::ThreadLocalPlatform::SetValueInSlot(
-        slot_, const_cast<void*>(static_cast<const void*>(ptr)));
+  internal::ThreadLocalPlatform::SetValueInSlot(
+    slot_, const_cast<void*>(static_cast<const void*>(ptr)));
   }
 
  private:
@@ -115,11 +115,11 @@ class ThreadLocalBoolean {
   ~ThreadLocalBoolean() {}
 
   bool Get() {
-    return tlp_.Get() != NULL;
+  return tlp_.Get() != NULL;
   }
 
   void Set(bool val) {
-    tlp_.Set(val ? this : NULL);
+  tlp_.Set(val ? this : NULL);
   }
 
  private:

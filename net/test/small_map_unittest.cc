@@ -61,8 +61,8 @@ TEST(SmallMap, General) {
 
   iter = m.begin();
   for (int i = 0; i < 5; i++) {
-    EXPECT_TRUE(iter != m.end());
-    ++iter;
+  EXPECT_TRUE(iter != m.end());
+  ++iter;
   }
   EXPECT_TRUE(iter == m.end());
 
@@ -77,17 +77,17 @@ TEST(SmallMap, PostFixIteratorIncrement) {
   m[2] = 3;
 
   {
-    SmallMap<hash_map<int, int> >::iterator iter(m.begin());
-    SmallMap<hash_map<int, int> >::iterator last(iter++);
-    ++last;
-    EXPECT_TRUE(last == iter);
+  SmallMap<hash_map<int, int> >::iterator iter(m.begin());
+  SmallMap<hash_map<int, int> >::iterator last(iter++);
+  ++last;
+  EXPECT_TRUE(last == iter);
   }
 
   {
-    SmallMap<hash_map<int, int> >::const_iterator iter(m.begin());
-    SmallMap<hash_map<int, int> >::const_iterator last(iter++);
-    ++last;
-    EXPECT_TRUE(last == iter);
+  SmallMap<hash_map<int, int> >::const_iterator iter(m.begin());
+  SmallMap<hash_map<int, int> >::const_iterator last(iter++);
+  ++last;
+  EXPECT_TRUE(last == iter);
   }
 }
 
@@ -96,28 +96,28 @@ TEST(SmallMap, CopyConstructor) {
   SmallMap<hash_map<int, int> > src;
 
   {
-    SmallMap<hash_map<int, int> > m(src);
-    EXPECT_TRUE(m.empty());
+  SmallMap<hash_map<int, int> > m(src);
+  EXPECT_TRUE(m.empty());
   }
 
   src[0] = 5;
 
   {
-    SmallMap<hash_map<int, int> > m(src);
-    EXPECT_FALSE(m.empty());
-    EXPECT_EQ(m.size(), 1u);
+  SmallMap<hash_map<int, int> > m(src);
+  EXPECT_FALSE(m.empty());
+  EXPECT_EQ(m.size(), 1u);
   }
 
   src[9] = 2;
 
   {
-    SmallMap<hash_map<int, int> > m(src);
-    EXPECT_FALSE(m.empty());
-    EXPECT_EQ(m.size(), 2u);
+  SmallMap<hash_map<int, int> > m(src);
+  EXPECT_FALSE(m.empty());
+  EXPECT_EQ(m.size(), 2u);
 
-    EXPECT_EQ(m[9], 2);
-    EXPECT_EQ(m[0], 5);
-    EXPECT_FALSE(m.UsingFullMap());
+  EXPECT_EQ(m[9], 2);
+  EXPECT_EQ(m[0], 5);
+  EXPECT_FALSE(m.UsingFullMap());
   }
 
   src[8] = 23;
@@ -125,33 +125,33 @@ TEST(SmallMap, CopyConstructor) {
   src[-5] = 6;
 
   {
-    SmallMap<hash_map<int, int> > m(src);
-    EXPECT_EQ(m[   9],  2);
-    EXPECT_EQ(m[   0],  5);
-    EXPECT_EQ(m[1234], 90);
-    EXPECT_EQ(m[   8], 23);
-    EXPECT_EQ(m[  -5],  6);
-    EXPECT_EQ(m.size(), 5u);
-    EXPECT_FALSE(m.empty());
-    EXPECT_TRUE(m.UsingFullMap());
+  SmallMap<hash_map<int, int> > m(src);
+  EXPECT_EQ(m[   9],  2);
+  EXPECT_EQ(m[   0],  5);
+  EXPECT_EQ(m[1234], 90);
+  EXPECT_EQ(m[   8], 23);
+  EXPECT_EQ(m[  -5],  6);
+  EXPECT_EQ(m.size(), 5u);
+  EXPECT_FALSE(m.empty());
+  EXPECT_TRUE(m.UsingFullMap());
   }
 }
 
 template<class inner>
 static bool SmallMapIsSubset(SmallMap<inner> const& a,
-                             SmallMap<inner> const& b) {
+               SmallMap<inner> const& b) {
   typename SmallMap<inner>::const_iterator it;
   for (it = a.begin(); it != a.end(); ++it) {
-    typename SmallMap<inner>::const_iterator it_in_b = b.find(it->first);
-    if (it_in_b == b.end() || it_in_b->second != it->second)
-      return false;
+  typename SmallMap<inner>::const_iterator it_in_b = b.find(it->first);
+  if (it_in_b == b.end() || it_in_b->second != it->second)
+    return false;
   }
   return true;
 }
 
 template<class inner>
 static bool SmallMapEqual(SmallMap<inner> const& a,
-                          SmallMap<inner> const& b) {
+              SmallMap<inner> const& b) {
   return SmallMapIsSubset(a, b) && SmallMapIsSubset(b, a);
 }
 
@@ -177,24 +177,24 @@ TEST(SmallMap, AssignmentOperator) {
   dest_small = src_small;
   EXPECT_TRUE(SmallMapEqual(dest_small, src_small));
   EXPECT_EQ(dest_small.UsingFullMap(),
-            src_small.UsingFullMap());
+      src_small.UsingFullMap());
 
   SmallMap<hash_map<int, int> > dest_large;
   dest_large = src_large;
   EXPECT_TRUE(SmallMapEqual(dest_large, src_large));
   EXPECT_EQ(dest_large.UsingFullMap(),
-            src_large.UsingFullMap());
+      src_large.UsingFullMap());
 
   // Assignments which assign from full to small, and vice versa.
   dest_small = src_large;
   EXPECT_TRUE(SmallMapEqual(dest_small, src_large));
   EXPECT_EQ(dest_small.UsingFullMap(),
-            src_large.UsingFullMap());
+      src_large.UsingFullMap());
 
   dest_large = src_small;
   EXPECT_TRUE(SmallMapEqual(dest_large, src_small));
   EXPECT_EQ(dest_large.UsingFullMap(),
-            src_small.UsingFullMap());
+      src_small.UsingFullMap());
 
   // Double check that SmallMapEqual works:
   dest_large[42] = 666;
@@ -206,54 +206,54 @@ TEST(SmallMap, Insert) {
 
   // loop through the transition from small map to map.
   for (int i = 1; i <= 10; ++i) {
-    VLOG(1) << "Iteration " << i;
-    // insert an element
-    std::pair<SmallMap<hash_map<int, int> >::iterator,
-        bool> ret;
-    ret = sm.insert(std::make_pair(i, 100*i));
-    EXPECT_TRUE(ret.second);
-    EXPECT_TRUE(ret.first == sm.find(i));
-    EXPECT_EQ(ret.first->first, i);
-    EXPECT_EQ(ret.first->second, 100*i);
+  VLOG(1) << "Iteration " << i;
+  // insert an element
+  std::pair<SmallMap<hash_map<int, int> >::iterator,
+    bool> ret;
+  ret = sm.insert(std::make_pair(i, 100*i));
+  EXPECT_TRUE(ret.second);
+  EXPECT_TRUE(ret.first == sm.find(i));
+  EXPECT_EQ(ret.first->first, i);
+  EXPECT_EQ(ret.first->second, 100*i);
 
-    // try to insert it again with different value, fails, but we still get an
-    // iterator back with the original value.
-    ret = sm.insert(std::make_pair(i, -i));
-    EXPECT_FALSE(ret.second);
-    EXPECT_TRUE(ret.first == sm.find(i));
-    EXPECT_EQ(ret.first->first, i);
-    EXPECT_EQ(ret.first->second, 100*i);
+  // try to insert it again with different value, fails, but we still get an
+  // iterator back with the original value.
+  ret = sm.insert(std::make_pair(i, -i));
+  EXPECT_FALSE(ret.second);
+  EXPECT_TRUE(ret.first == sm.find(i));
+  EXPECT_EQ(ret.first->first, i);
+  EXPECT_EQ(ret.first->second, 100*i);
 
-    // check the state of the map.
-    for (int j = 1; j <= i; ++j) {
-      SmallMap<hash_map<int, int> >::iterator it = sm.find(j);
-      EXPECT_TRUE(it != sm.end());
-      EXPECT_EQ(it->first, j);
-      EXPECT_EQ(it->second, j * 100);
-    }
-    EXPECT_EQ(sm.size(), static_cast<size_t>(i));
-    EXPECT_FALSE(sm.empty());
+  // check the state of the map.
+  for (int j = 1; j <= i; ++j) {
+    SmallMap<hash_map<int, int> >::iterator it = sm.find(j);
+    EXPECT_TRUE(it != sm.end());
+    EXPECT_EQ(it->first, j);
+    EXPECT_EQ(it->second, j * 100);
+  }
+  EXPECT_EQ(sm.size(), static_cast<size_t>(i));
+  EXPECT_FALSE(sm.empty());
   }
 }
 
 TEST(SmallMap, InsertRange) {
   // loop through the transition from small map to map.
   for (int elements = 0; elements <= 10; ++elements) {
-    VLOG(1) << "Elements " << elements;
-    hash_map<int, int> normal_map;
-    for (int i = 1; i <= elements; ++i) {
-      normal_map.insert(std::make_pair(i, 100*i));
-    }
+  VLOG(1) << "Elements " << elements;
+  hash_map<int, int> normal_map;
+  for (int i = 1; i <= elements; ++i) {
+    normal_map.insert(std::make_pair(i, 100*i));
+  }
 
-    SmallMap<hash_map<int, int> > sm;
-    sm.insert(normal_map.begin(), normal_map.end());
-    EXPECT_EQ(normal_map.size(), sm.size());
-    for (int i = 1; i <= elements; ++i) {
-      VLOG(1) << "Iteration " << i;
-      EXPECT_TRUE(sm.find(i) != sm.end());
-      EXPECT_EQ(sm.find(i)->first, i);
-      EXPECT_EQ(sm.find(i)->second, 100*i);
-    }
+  SmallMap<hash_map<int, int> > sm;
+  sm.insert(normal_map.begin(), normal_map.end());
+  EXPECT_EQ(normal_map.size(), sm.size());
+  for (int i = 1; i <= elements; ++i) {
+    VLOG(1) << "Iteration " << i;
+    EXPECT_TRUE(sm.find(i) != sm.end());
+    EXPECT_EQ(sm.find(i)->first, i);
+    EXPECT_EQ(sm.find(i)->second, 100*i);
+  }
   }
 }
 
@@ -345,7 +345,7 @@ TEST(SmallMap, NonHashMap) {
   EXPECT_FALSE(m.UsingFullMap());
 
   SmallMap<std::map<int, int>, 4, std::equal_to<int> >::iterator iter(
-      m.begin());
+    m.begin());
   ASSERT_TRUE(iter != m.end());
   EXPECT_EQ(iter->first, 9);
   EXPECT_EQ(iter->second, 2);
@@ -416,8 +416,8 @@ class hash_map_add_item : public hash_map<int, int> {
  public:
   hash_map_add_item() : hash_map<int, int>() {}
   explicit hash_map_add_item(const std::pair<int, int>& item)
-      : hash_map<int, int>() {
-    insert(item);
+    : hash_map<int, int>() {
+  insert(item);
   }
 };
 
@@ -428,11 +428,11 @@ void InitMap(ManualConstructor<hash_map_add_item>* map_ctor) {
 class hash_map_add_item_initializer {
  public:
   explicit hash_map_add_item_initializer(int item_to_add)
-      : item_(item_to_add) {}
+    : item_(item_to_add) {}
   hash_map_add_item_initializer()
-      : item_(0) {}
+    : item_(0) {}
   void operator()(ManualConstructor<hash_map_add_item>* map_ctor) const {
-    map_ctor->Init(std::make_pair(item_, item_));
+  map_ctor->Init(std::make_pair(item_, item_));
   }
 
   int item_;
@@ -442,7 +442,7 @@ class hash_map_add_item_initializer {
 
 TEST(SmallMap, SubclassInitializationWithFunctionPointer) {
   SmallMap<hash_map_add_item, 4, std::equal_to<int>,
-      void (*)(ManualConstructor<hash_map_add_item>*)> m(InitMap);
+    void (*)(ManualConstructor<hash_map_add_item>*)> m(InitMap);
 
   EXPECT_TRUE(m.empty());
 
@@ -462,7 +462,7 @@ TEST(SmallMap, SubclassInitializationWithFunctionPointer) {
 
 TEST(SmallMap, SubclassInitializationWithFunctionObject) {
   SmallMap<hash_map_add_item, 4, std::equal_to<int>,
-      hash_map_add_item_initializer> m(hash_map_add_item_initializer(-1));
+    hash_map_add_item_initializer> m(hash_map_add_item_initializer(-1));
 
   EXPECT_TRUE(m.empty());
 

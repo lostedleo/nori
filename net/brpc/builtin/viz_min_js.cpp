@@ -27,12 +27,12 @@ namespace brpc {
 static pthread_once_t s_viz_min_buf_once = PTHREAD_ONCE_INIT; 
 static butil::IOBuf* s_viz_min_buf = NULL;
 static void InitVizMinBuf() {
-    s_viz_min_buf = new butil::IOBuf;
-    s_viz_min_buf->append(viz_min_js());
+  s_viz_min_buf = new butil::IOBuf;
+  s_viz_min_buf->append(viz_min_js());
 }
 const butil::IOBuf& viz_min_js_iobuf() {
-    pthread_once(&s_viz_min_buf_once, InitVizMinBuf);
-    return *s_viz_min_buf;
+  pthread_once(&s_viz_min_buf_once, InitVizMinBuf);
+  return *s_viz_min_buf;
 }
 
 // viz.js is huge. We separate the creation of gzip version from uncompress
@@ -40,14 +40,14 @@ const butil::IOBuf& viz_min_js_iobuf() {
 static pthread_once_t s_viz_min_buf_gzip_once = PTHREAD_ONCE_INIT; 
 static butil::IOBuf* s_viz_min_buf_gzip = NULL;
 static void InitVizMinBufGzip() {
-    butil::IOBuf viz_min;
-    viz_min.append(viz_min_js());
-    s_viz_min_buf_gzip = new butil::IOBuf;
-    CHECK(policy::GzipCompress(viz_min, s_viz_min_buf_gzip, NULL));
+  butil::IOBuf viz_min;
+  viz_min.append(viz_min_js());
+  s_viz_min_buf_gzip = new butil::IOBuf;
+  CHECK(policy::GzipCompress(viz_min, s_viz_min_buf_gzip, NULL));
 }
 const butil::IOBuf& viz_min_js_iobuf_gzip() {
-    pthread_once(&s_viz_min_buf_gzip_once, InitVizMinBufGzip);
-    return *s_viz_min_buf_gzip;
+  pthread_once(&s_viz_min_buf_gzip_once, InitVizMinBufGzip);
+  return *s_viz_min_buf_gzip;
 }
 
 const char* viz_min_js() {

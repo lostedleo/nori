@@ -19,7 +19,7 @@ static subtle::Atomic32 CurrentThread() {
   // truncating conversion, but any loss-of-information just increases the
   // chance of a fault negative, not a false positive.
   const subtle::Atomic32 atomic_thread_id =
-      static_cast<subtle::Atomic32>(current_thread_id);
+    static_cast<subtle::Atomic32>(current_thread_id);
 
   return atomic_thread_id;
 }
@@ -31,12 +31,12 @@ void ThreadCollisionWarner::EnterSelf() {
   subtle::Atomic32 current_thread_id = CurrentThread();
 
   int previous_value = subtle::NoBarrier_CompareAndSwap(&valid_thread_id_,
-                                                        0,
-                                                        current_thread_id);
+                            0,
+                            current_thread_id);
   if (previous_value != 0 && previous_value != current_thread_id) {
-    // gotcha! a thread is trying to use the same class and that is
-    // not current thread.
-    asserter_->warn();
+  // gotcha! a thread is trying to use the same class and that is
+  // not current thread.
+  asserter_->warn();
   }
 
   subtle::NoBarrier_AtomicIncrement(&counter_, 1);
@@ -46,10 +46,10 @@ void ThreadCollisionWarner::Enter() {
   subtle::Atomic32 current_thread_id = CurrentThread();
 
   if (subtle::NoBarrier_CompareAndSwap(&valid_thread_id_,
-                                       0,
-                                       current_thread_id) != 0) {
-    // gotcha! another thread is trying to use the same class.
-    asserter_->warn();
+                     0,
+                     current_thread_id) != 0) {
+  // gotcha! another thread is trying to use the same class.
+  asserter_->warn();
   }
 
   subtle::NoBarrier_AtomicIncrement(&counter_, 1);
@@ -57,7 +57,7 @@ void ThreadCollisionWarner::Enter() {
 
 void ThreadCollisionWarner::Leave() {
   if (subtle::Barrier_AtomicIncrement(&counter_, -1) == 0) {
-    subtle::NoBarrier_Store(&valid_thread_id_, 0);
+  subtle::NoBarrier_Store(&valid_thread_id_, 0);
   }
 }
 

@@ -11,9 +11,9 @@ namespace butil {
 // ReadUnicodeCharacter --------------------------------------------------------
 
 bool ReadUnicodeCharacter(const char* src,
-                          int32_t src_len,
-                          int32_t* char_index,
-                          uint32_t* code_point_out) {
+              int32_t src_len,
+              int32_t* char_index,
+              uint32_t* code_point_out) {
   // U8_NEXT expects to be able to use -1 to signal an error, so we must
   // use a signed type for code_point.  But this function returns false
   // on error anyway, so code_point_out is unsigned.
@@ -30,24 +30,24 @@ bool ReadUnicodeCharacter(const char* src,
 }
 
 bool ReadUnicodeCharacter(const char16* src,
-                          int32_t src_len,
-                          int32_t* char_index,
-                          uint32_t* code_point) {
+              int32_t src_len,
+              int32_t* char_index,
+              uint32_t* code_point) {
   if (CBU16_IS_SURROGATE(src[*char_index])) {
-    if (!CBU16_IS_SURROGATE_LEAD(src[*char_index]) ||
-        *char_index + 1 >= src_len ||
-        !CBU16_IS_TRAIL(src[*char_index + 1])) {
-      // Invalid surrogate pair.
-      return false;
-    }
+  if (!CBU16_IS_SURROGATE_LEAD(src[*char_index]) ||
+    *char_index + 1 >= src_len ||
+    !CBU16_IS_TRAIL(src[*char_index + 1])) {
+    // Invalid surrogate pair.
+    return false;
+  }
 
-    // Valid surrogate pair.
-    *code_point = CBU16_GET_SUPPLEMENTARY(src[*char_index],
-                                          src[*char_index + 1]);
-    (*char_index)++;
+  // Valid surrogate pair.
+  *code_point = CBU16_GET_SUPPLEMENTARY(src[*char_index],
+                      src[*char_index + 1]);
+  (*char_index)++;
   } else {
-    // Not a surrogate, just one 16-bit word.
-    *code_point = src[*char_index];
+  // Not a surrogate, just one 16-bit word.
+  *code_point = src[*char_index];
   }
 
   return IsValidCodepoint(*code_point);
@@ -55,9 +55,9 @@ bool ReadUnicodeCharacter(const char16* src,
 
 #if defined(WCHAR_T_IS_UTF32)
 bool ReadUnicodeCharacter(const wchar_t* src,
-                          int32_t src_len,
-                          int32_t* char_index,
-                          uint32_t* code_point) {
+              int32_t src_len,
+              int32_t* char_index,
+              uint32_t* code_point) {
   // Conversion is easy since the source is 32-bit.
   *code_point = src[*char_index];
 
@@ -70,9 +70,9 @@ bool ReadUnicodeCharacter(const wchar_t* src,
 
 size_t WriteUnicodeCharacter(uint32_t code_point, std::string* output) {
   if (code_point <= 0x7f) {
-    // Fast path the common case of one byte.
-    output->push_back(code_point);
-    return 1;
+  // Fast path the common case of one byte.
+  output->push_back(code_point);
+  return 1;
   }
 
 
@@ -91,9 +91,9 @@ size_t WriteUnicodeCharacter(uint32_t code_point, std::string* output) {
 
 size_t WriteUnicodeCharacter(uint32_t code_point, string16* output) {
   if (CBU16_LENGTH(code_point) == 1) {
-    // Thie code point is in the Basic Multilingual Plane (BMP).
-    output->push_back(static_cast<char16>(code_point));
-    return 1;
+  // Thie code point is in the Basic Multilingual Plane (BMP).
+  output->push_back(static_cast<char16>(code_point));
+  return 1;
   }
   // Non-BMP characters use a double-character encoding.
   size_t char_offset = output->length();
@@ -106,17 +106,17 @@ size_t WriteUnicodeCharacter(uint32_t code_point, string16* output) {
 
 template<typename CHAR>
 void PrepareForUTF8Output(const CHAR* src,
-                          size_t src_len,
-                          std::string* output) {
+              size_t src_len,
+              std::string* output) {
   output->clear();
   if (src_len == 0)
-    return;
+  return;
   if (src[0] < 0x80) {
-    // Assume that the entire input will be ASCII.
-    output->reserve(src_len);
+  // Assume that the entire input will be ASCII.
+  output->reserve(src_len);
   } else {
-    // Assume that the entire input is non-ASCII and will have 3 bytes per char.
-    output->reserve(src_len * 3);
+  // Assume that the entire input is non-ASCII and will have 3 bytes per char.
+  output->reserve(src_len * 3);
   }
 }
 
@@ -126,18 +126,18 @@ template void PrepareForUTF8Output(const char16*, size_t, std::string*);
 
 template<typename STRING>
 void PrepareForUTF16Or32Output(const char* src,
-                               size_t src_len,
-                               STRING* output) {
+                 size_t src_len,
+                 STRING* output) {
   output->clear();
   if (src_len == 0)
-    return;
+  return;
   if (static_cast<unsigned char>(src[0]) < 0x80) {
-    // Assume the input is all ASCII, which means 1:1 correspondence.
-    output->reserve(src_len);
+  // Assume the input is all ASCII, which means 1:1 correspondence.
+  output->reserve(src_len);
   } else {
-    // Otherwise assume that the UTF-8 sequences will have 2 bytes for each
-    // character.
-    output->reserve(src_len / 2);
+  // Otherwise assume that the UTF-8 sequences will have 2 bytes for each
+  // character.
+  output->reserve(src_len / 2);
   }
 }
 

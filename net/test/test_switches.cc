@@ -14,13 +14,13 @@ const char switches::kTestLauncherBatchLimit[] = "test-launcher-batch-limit";
 // Sets defaults desirable for the continuous integration bots, e.g. parallel
 // test execution and test retries.
 const char switches::kTestLauncherBotMode[] =
-    "test-launcher-bot-mode";
+  "test-launcher-bot-mode";
 
 // Makes it possible to debug the launcher itself. By default the launcher
 // automatically switches to single process mode when it detects presence
 // of debugger.
 const char switches::kTestLauncherDebugLauncher[] =
-    "test-launcher-debug-launcher";
+  "test-launcher-debug-launcher";
 
 // Path to file containing test filter (one pattern per line).
 const char switches::kTestLauncherFilterFile[] = "test-launcher-filter-file";
@@ -36,21 +36,21 @@ const char switches::kTestLauncherRetryLimit[] = "test-launcher-retry-limit";
 
 // Path to test results file with all the info from the test launcher.
 const char switches::kTestLauncherSummaryOutput[] =
-    "test-launcher-summary-output";
+  "test-launcher-summary-output";
 
 // Flag controlling when test stdio is displayed as part of the launcher's
 // standard output.
 const char switches::kTestLauncherPrintTestStdio[] =
-    "test-launcher-print-test-stdio";
+  "test-launcher-print-test-stdio";
 
 // Index of the test shard to run, starting from 0 (first shard) to total shards
 // minus one (last shard).
 const char switches::kTestLauncherShardIndex[] =
-    "test-launcher-shard-index";
+  "test-launcher-shard-index";
 
 // Total number of shards. Must be the same for all shards.
 const char switches::kTestLauncherTotalShards[] =
-    "test-launcher-total-shards";
+  "test-launcher-total-shards";
 
 // Time (in milliseconds) that the tests should wait before timing out.
 const char switches::kTestLauncherTimeout[] = "test-launcher-timeout";

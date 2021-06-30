@@ -16,41 +16,41 @@ class FsyncTest : public testing::Test {
 };
 
 TEST_F(FsyncTest, benchmark_append) {
-    butil::fd_guard fd(::open("fsync.data", O_RDWR | O_CREAT | O_TRUNC, 0644));
-    ASSERT_NE(-1, fd);
-    char buf[1024];
-    butil::Timer timer;
-    const size_t N = 1000;
-    timer.start();
-    for (size_t i = 0; i < N; ++i) {
-        int left = 1024;
-        while (left > 0) {
-            ssize_t nw = write(fd, buf, left);
-            ASSERT_NE(-1, nw);
-            left -= nw;
-        }
-        fsync(fd);
+  butil::fd_guard fd(::open("fsync.data", O_RDWR | O_CREAT | O_TRUNC, 0644));
+  ASSERT_NE(-1, fd);
+  char buf[1024];
+  butil::Timer timer;
+  const size_t N = 1000;
+  timer.start();
+  for (size_t i = 0; i < N; ++i) {
+    int left = 1024;
+    while (left > 0) {
+      ssize_t nw = write(fd, buf, left);
+      ASSERT_NE(-1, nw);
+      left -= nw;
     }
-    timer.stop();
-    LOG(INFO) << "fsync takes " << timer.u_elapsed();
-    timer.start();
-    fd.reset(-1);
-    fd.reset(::open("fsync.data", O_RDWR | O_CREAT | O_TRUNC, 0644));
-    for (size_t i = 0; i < N; ++i) {
-        int left = 1024;
-        while (left > 0) {
-            ssize_t nw = write(fd, buf, left);
-            ASSERT_NE(-1, nw);
-            left -= nw;
-        }
+    fsync(fd);
+  }
+  timer.stop();
+  LOG(INFO) << "fsync takes " << timer.u_elapsed();
+  timer.start();
+  fd.reset(-1);
+  fd.reset(::open("fsync.data", O_RDWR | O_CREAT | O_TRUNC, 0644));
+  for (size_t i = 0; i < N; ++i) {
+    int left = 1024;
+    while (left > 0) {
+      ssize_t nw = write(fd, buf, left);
+      ASSERT_NE(-1, nw);
+      left -= nw;
+    }
 #ifdef __APPLE__
-        fcntl(fd, F_FULLFSYNC);
+    fcntl(fd, F_FULLFSYNC);
 #else
-        fdatasync(fd);
+    fdatasync(fd);
 #endif
-    }
-    timer.stop();
-    LOG(INFO) << "fdatasync takes " << timer.u_elapsed();
+  }
+  timer.stop();
+  LOG(INFO) << "fdatasync takes " << timer.u_elapsed();
 }
 
 TEST_F(FsyncTest, benchmark_randomly_write) {

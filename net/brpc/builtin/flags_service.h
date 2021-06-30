@@ -27,15 +27,15 @@ namespace brpc {
 
 class FlagsService : public flags, public Tabbed {
 public:
-    void default_method(::google::protobuf::RpcController* cntl_base,
-                        const ::brpc::FlagsRequest* request,
-                        ::brpc::FlagsResponse* response,
-                        ::google::protobuf::Closure* done);
+  void default_method(::google::protobuf::RpcController* cntl_base,
+            const ::brpc::FlagsRequest* request,
+            ::brpc::FlagsResponse* response,
+            ::google::protobuf::Closure* done);
 
-    void GetTabInfo(TabInfoList* info_list) const;
+  void GetTabInfo(TabInfoList* info_list) const;
 
 private:
-    void set_value_page(Controller* cntl, ::google::protobuf::Closure* done);
+  void set_value_page(Controller* cntl, ::google::protobuf::Closure* done);
 
 };
 

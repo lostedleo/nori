@@ -36,46 +36,46 @@ namespace butil {
 class DirReaderUnix {
  public:
   explicit DirReaderUnix(const char* directory_path)
-      : fd_(open(directory_path, O_RDONLY | O_DIRECTORY)),
-        dir_(NULL),current_(NULL) {
-      dir_ = fdopendir(fd_);
+    : fd_(open(directory_path, O_RDONLY | O_DIRECTORY)),
+    dir_(NULL),current_(NULL) {
+    dir_ = fdopendir(fd_);
   }
 
   ~DirReaderUnix() {
-    if (fd_ >= 0) {
-      if (IGNORE_EINTR(close(fd_)))
-        RAW_LOG(ERROR, "Failed to close directory handle");
-    }
-    if(NULL != dir_){
-        closedir(dir_);
-    }
+  if (fd_ >= 0) {
+    if (IGNORE_EINTR(close(fd_)))
+    RAW_LOG(ERROR, "Failed to close directory handle");
+  }
+  if(NULL != dir_){
+    closedir(dir_);
+  }
   }
 
   bool IsValid() const {
-    return fd_ >= 0;
+  return fd_ >= 0;
   }
 
   // Move to the next entry returning false if the iteration is complete.
   bool Next() {
-    int err = readdir_r(dir_,&entry_, &current_);
-    if(0 != err || NULL == current_){
-        return false;
-    }
-    return true;
+  int err = readdir_r(dir_,&entry_, &current_);
+  if(0 != err || NULL == current_){
+    return false;
+  }
+  return true;
   }
 
   const char* name() const {
-    if (NULL == current_)
-      return NULL;
-    return current_->d_name;
+  if (NULL == current_)
+    return NULL;
+  return current_->d_name;
   }
 
   int fd() const {
-    return fd_;
+  return fd_;
   }
 
   static bool IsFallback() {
-    return false;
+  return false;
   }
 
  private:

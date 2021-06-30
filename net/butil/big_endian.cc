@@ -9,18 +9,18 @@
 namespace butil {
 
 BigEndianReader::BigEndianReader(const char* buf, size_t len)
-    : ptr_(buf), end_(ptr_ + len) {}
+  : ptr_(buf), end_(ptr_ + len) {}
 
 bool BigEndianReader::Skip(size_t len) {
   if (ptr_ + len > end_)
-    return false;
+  return false;
   ptr_ += len;
   return true;
 }
 
 bool BigEndianReader::ReadBytes(void* out, size_t len) {
   if (ptr_ + len > end_)
-    return false;
+  return false;
   memcpy(out, ptr_, len);
   ptr_ += len;
   return true;
@@ -28,7 +28,7 @@ bool BigEndianReader::ReadBytes(void* out, size_t len) {
 
 bool BigEndianReader::ReadPiece(butil::StringPiece* out, size_t len) {
   if (ptr_ + len > end_)
-    return false;
+  return false;
   *out = butil::StringPiece(ptr_, len);
   ptr_ += len;
   return true;
@@ -37,7 +37,7 @@ bool BigEndianReader::ReadPiece(butil::StringPiece* out, size_t len) {
 template<typename T>
 bool BigEndianReader::Read(T* value) {
   if (ptr_ + sizeof(T) > end_)
-    return false;
+  return false;
   ReadBigEndian<T>(ptr_, value);
   ptr_ += sizeof(T);
   return true;
@@ -56,18 +56,18 @@ bool BigEndianReader::ReadU32(uint32_t* value) {
 }
 
 BigEndianWriter::BigEndianWriter(char* buf, size_t len)
-    : ptr_(buf), end_(ptr_ + len) {}
+  : ptr_(buf), end_(ptr_ + len) {}
 
 bool BigEndianWriter::Skip(size_t len) {
   if (ptr_ + len > end_)
-    return false;
+  return false;
   ptr_ += len;
   return true;
 }
 
 bool BigEndianWriter::WriteBytes(const void* buf, size_t len) {
   if (ptr_ + len > end_)
-    return false;
+  return false;
   memcpy(ptr_, buf, len);
   ptr_ += len;
   return true;
@@ -76,7 +76,7 @@ bool BigEndianWriter::WriteBytes(const void* buf, size_t len) {
 template<typename T>
 bool BigEndianWriter::Write(T value) {
   if (ptr_ + sizeof(T) > end_)
-    return false;
+  return false;
   WriteBigEndian<T>(ptr_, value);
   ptr_ += sizeof(T);
   return true;

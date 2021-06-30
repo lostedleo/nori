@@ -71,18 +71,18 @@ bool BeingDebugged() {
   static bool being_debugged = false;
 
   if (is_set)
-    return being_debugged;
+  return being_debugged;
 
   // Initialize mib, which tells sysctl what info we want.  In this case,
   // we're looking for information about a specific process ID.
   int mib[] = {
-    CTL_KERN,
-    KERN_PROC,
-    KERN_PROC_PID,
-    getpid()
+  CTL_KERN,
+  KERN_PROC,
+  KERN_PROC_PID,
+  getpid()
 #if defined(OS_OPENBSD)
-    , sizeof(struct kinfo_proc),
-    0
+  , sizeof(struct kinfo_proc),
+  0
 #endif
   };
 
@@ -93,7 +93,7 @@ bool BeingDebugged() {
 
 #if defined(OS_OPENBSD)
   if (sysctl(mib, arraysize(mib), NULL, &info_size, NULL, 0) < 0)
-    return -1;
+  return -1;
 
   mib[5] = (info_size / sizeof(struct kinfo_proc));
 #endif
@@ -101,9 +101,9 @@ bool BeingDebugged() {
   int sysctl_result = sysctl(mib, arraysize(mib), &info, &info_size, NULL, 0);
   DCHECK_EQ(sysctl_result, 0);
   if (sysctl_result != 0) {
-    is_set = true;
-    being_debugged = false;
-    return being_debugged;
+  is_set = true;
+  being_debugged = false;
+  return being_debugged;
   }
 
   // This process is being debugged if the P_TRACED flag is set.
@@ -131,7 +131,7 @@ bool BeingDebugged() {
 
   int status_fd = open("/proc/self/status", O_RDONLY);
   if (status_fd == -1)
-    return false;
+  return false;
 
   // We assume our line will be in the first 1024 characters and that we can
   // read this much all at once.  In practice this will generally be true.
@@ -140,17 +140,17 @@ bool BeingDebugged() {
 
   ssize_t num_read = HANDLE_EINTR(read(status_fd, buf, sizeof(buf)));
   if (IGNORE_EINTR(close(status_fd)) < 0)
-    return false;
+  return false;
 
   if (num_read <= 0)
-    return false;
+  return false;
 
   StringPiece status(buf, num_read);
   StringPiece tracer("TracerPid:\t");
 
   StringPiece::size_type pid_index = status.find(tracer);
   if (pid_index == StringPiece::npos)
-    return false;
+  return false;
 
   // Our pid is 0 without a debugger, assume this for any pid starting with 0.
   pid_index += tracer.size();
@@ -170,15 +170,15 @@ bool BeingDebugged() {
 // Release mode. Breakpad behaves as follows:
 //
 // +-------+-----------------+-----------------+
-// | OS    | Dump on SIGTRAP | Dump on SIGABRT |
+// | OS  | Dump on SIGTRAP | Dump on SIGABRT |
 // +-------+-----------------+-----------------+
-// | Linux |       N         |        Y        |
-// | Mac   |       Y         |        N        |
+// | Linux |     N     |    Y    |
+// | Mac   |     Y     |    N    |
 // +-------+-----------------+-----------------+
 //
 // Thus we do the following:
 // Linux: Debug mode if a debugger is attached, send SIGTRAP; otherwise send
-//        SIGABRT
+//    SIGABRT
 // Mac: Always send SIGTRAP.
 
 #if defined(ARCH_CPU_ARMEL)
@@ -214,15 +214,15 @@ bool BeingDebugged() {
 namespace {
 void DebugBreak() {
   if (!BeingDebugged()) {
-    abort();
+  abort();
   } else {
 #if defined(DEBUG_BREAK_ASM)
-    DEBUG_BREAK_ASM();
+  DEBUG_BREAK_ASM();
 #else
-    volatile int go = 0;
-    while (!go) {
-      butil::PlatformThread::Sleep(butil::TimeDelta::FromMilliseconds(100));
-    }
+  volatile int go = 0;
+  while (!go) {
+    butil::PlatformThread::Sleep(butil::TimeDelta::FromMilliseconds(100));
+  }
 #endif
   }
 }

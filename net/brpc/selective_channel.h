@@ -42,7 +42,7 @@ namespace brpc {
 // When a schan would send a backup request, it calls a sub channel with
 // the request. Since a sub channel can be a combo channel as well, the
 // "backup request" may be "backup requests".
-//                                        ^
+//                    ^
 // CAUTION:
 // =======
 // Currently SelectiveChannel requires `request' to CallMethod be
@@ -51,43 +51,43 @@ namespace brpc {
 // in `done'.
 class SelectiveChannel : public ChannelBase/*non-copyable*/ {
 public:
-    typedef SocketId ChannelHandle;
+  typedef SocketId ChannelHandle;
 
-    SelectiveChannel();
-    ~SelectiveChannel();
+  SelectiveChannel();
+  ~SelectiveChannel();
 
-    // You MUST initialize a schan before using it. `load_balancer_name' is the
-    // name of load balancing algorithm which is listed in brpc/channel.h
-    // if `options' is NULL, use default options.
-    int Init(const char* load_balancer_name, const ChannelOptions* options);
+  // You MUST initialize a schan before using it. `load_balancer_name' is the
+  // name of load balancing algorithm which is listed in brpc/channel.h
+  // if `options' is NULL, use default options.
+  int Init(const char* load_balancer_name, const ChannelOptions* options);
 
-    // Add a sub channel, which will be deleted along with schan or explicitly
-    // by RemoveAndDestroyChannel.
-    // On success, handle is set with the key for removal.
-    // NOTE: Different from pchan, schan can add channels at any time.
-    // Returns 0 on success, -1 otherwise.
-    int AddChannel(ChannelBase* sub_channel, ChannelHandle* handle);
+  // Add a sub channel, which will be deleted along with schan or explicitly
+  // by RemoveAndDestroyChannel.
+  // On success, handle is set with the key for removal.
+  // NOTE: Different from pchan, schan can add channels at any time.
+  // Returns 0 on success, -1 otherwise.
+  int AddChannel(ChannelBase* sub_channel, ChannelHandle* handle);
 
-    // Remove and destroy the sub_channel associated with `handle'.
-    void RemoveAndDestroyChannel(ChannelHandle handle);
+  // Remove and destroy the sub_channel associated with `handle'.
+  void RemoveAndDestroyChannel(ChannelHandle handle);
 
-    // Send request by a sub channel. schan may retry another sub channel
-    // according to retrying/backup-request settings.
-    void CallMethod(const google::protobuf::MethodDescriptor* method,
-                    google::protobuf::RpcController* controller,
-                    const google::protobuf::Message* request,
-                    google::protobuf::Message* response,
-                    google::protobuf::Closure* done);
+  // Send request by a sub channel. schan may retry another sub channel
+  // according to retrying/backup-request settings.
+  void CallMethod(const google::protobuf::MethodDescriptor* method,
+          google::protobuf::RpcController* controller,
+          const google::protobuf::Message* request,
+          google::protobuf::Message* response,
+          google::protobuf::Closure* done);
 
-    // True iff Init() was successful.
-    bool initialized() const;
+  // True iff Init() was successful.
+  bool initialized() const;
 
-    void Describe(std::ostream& os, const DescribeOptions& options) const;
+  void Describe(std::ostream& os, const DescribeOptions& options) const;
 
 private:
-    int CheckHealth();
-    
-    Channel _chan;
+  int CheckHealth();
+  
+  Channel _chan;
 };
 
 } // namespace brpc

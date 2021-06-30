@@ -23,30 +23,30 @@ namespace {
 // is the resulting integer vector. Function returns true if all numbers were
 // parsed successfully, false otherwise.
 bool ParseVersionNumbers(const std::string& version_str,
-                         std::vector<uint16_t>* parsed) {
+             std::vector<uint16_t>* parsed) {
   std::vector<std::string> numbers;
   SplitString(version_str, '.', &numbers);
   if (numbers.empty())
-    return false;
+  return false;
 
   for (std::vector<std::string>::const_iterator it = numbers.begin();
-       it != numbers.end(); ++it) {
-    int num;
-    if (!StringToInt(*it, &num))
-      return false;
+     it != numbers.end(); ++it) {
+  int num;
+  if (!StringToInt(*it, &num))
+    return false;
 
-    if (num < 0)
-      return false;
+  if (num < 0)
+    return false;
 
-    const uint16_t max = 0xFFFF;
-    if (num > max)
-      return false;
+  const uint16_t max = 0xFFFF;
+  if (num > max)
+    return false;
 
-    // This throws out things like +3, or 032.
-    if (IntToString(num) != *it)
-      return false;
+  // This throws out things like +3, or 032.
+  if (IntToString(num) != *it)
+    return false;
 
-    parsed->push_back(static_cast<uint16_t>(num));
+  parsed->push_back(static_cast<uint16_t>(num));
   }
   return true;
 }
@@ -55,24 +55,24 @@ bool ParseVersionNumbers(const std::string& version_str,
 // |components2|. Returns -1, 0 or 1 if |components1| is less than, equal to,
 // or greater than |components2|, respectively.
 int CompareVersionComponents(const std::vector<uint16_t>& components1,
-                             const std::vector<uint16_t>& components2) {
+               const std::vector<uint16_t>& components2) {
   const size_t count = std::min(components1.size(), components2.size());
   for (size_t i = 0; i < count; ++i) {
-    if (components1[i] > components2[i])
-      return 1;
-    if (components1[i] < components2[i])
-      return -1;
+  if (components1[i] > components2[i])
+    return 1;
+  if (components1[i] < components2[i])
+    return -1;
   }
   if (components1.size() > components2.size()) {
-    for (size_t i = count; i < components1.size(); ++i) {
-      if (components1[i] > 0)
-        return 1;
-    }
+  for (size_t i = count; i < components1.size(); ++i) {
+    if (components1[i] > 0)
+    return 1;
+  }
   } else if (components1.size() < components2.size()) {
-    for (size_t i = count; i < components2.size(); ++i) {
-      if (components2[i] > 0)
-        return -1;
-    }
+  for (size_t i = count; i < components2.size(); ++i) {
+    if (components2[i] > 0)
+    return -1;
+  }
   }
   return 0;
 }
@@ -88,7 +88,7 @@ Version::~Version() {
 Version::Version(const std::string& version_str) {
   std::vector<uint16_t> parsed;
   if (!ParseVersionNumbers(version_str, &parsed))
-    return;
+  return;
 
   components_.swap(parsed);
 }
@@ -101,7 +101,7 @@ bool Version::IsValid() const {
 bool Version::IsValidWildcardString(const std::string& wildcard_string) {
   std::string version_string = wildcard_string;
   if (EndsWith(wildcard_string.c_str(), ".*", false))
-    version_string = wildcard_string.substr(0, wildcard_string.size() - 2);
+  version_string = wildcard_string.substr(0, wildcard_string.size() - 2);
 
   Version version(version_string);
   return version.IsValid();
@@ -110,7 +110,7 @@ bool Version::IsValidWildcardString(const std::string& wildcard_string) {
 bool Version::IsOlderThan(const std::string& version_str) const {
   Version proposed_ver(version_str);
   if (!proposed_ver.IsValid())
-    return false;
+  return false;
   return (CompareTo(proposed_ver) < 0);
 }
 
@@ -120,14 +120,14 @@ int Version::CompareToWildcardString(const std::string& wildcard_string) const {
 
   // Default behavior if the string doesn't end with a wildcard.
   if (!EndsWith(wildcard_string.c_str(), ".*", false)) {
-    Version version(wildcard_string);
-    DCHECK(version.IsValid());
-    return CompareTo(version);
+  Version version(wildcard_string);
+  DCHECK(version.IsValid());
+  return CompareTo(version);
   }
 
   std::vector<uint16_t> parsed;
   const bool success = ParseVersionNumbers(
-      wildcard_string.substr(0, wildcard_string.length() - 2), &parsed);
+    wildcard_string.substr(0, wildcard_string.length() - 2), &parsed);
   DCHECK(success);
   const int comparison = CompareVersionComponents(components_, parsed);
   // If the version is smaller than the wildcard version's |parsed| vector,
@@ -136,7 +136,7 @@ int Version::CompareToWildcardString(const std::string& wildcard_string) const {
   // 1.2.2.* is 0 regardless of the wildcard). Under this logic,
   // 1.2.0.0.0.0 compared to 1.2.* is 0.
   if (comparison == -1 || comparison == 0)
-    return comparison;
+  return comparison;
 
   // Catch the case where the digits of |parsed| are found in |components_|,
   // which means that the two are equal since |parsed| has a trailing "*".
@@ -145,8 +145,8 @@ int Version::CompareToWildcardString(const std::string& wildcard_string) const {
   DCHECK_GT(parsed.size(), 0UL);
   const size_t min_num_comp = std::min(components_.size(), parsed.size());
   for (size_t i = 0; i < min_num_comp; ++i) {
-    if (components_[i] != parsed[i])
-      return 1;
+  if (components_[i] != parsed[i])
+    return 1;
   }
   return 0;
 }
@@ -168,8 +168,8 @@ const std::string Version::GetString() const {
   std::string version_str;
   size_t count = components_.size();
   for (size_t i = 0; i < count - 1; ++i) {
-    version_str.append(IntToString(components_[i]));
-    version_str.append(".");
+  version_str.append(IntToString(components_[i]));
+  version_str.append(".");
   }
   version_str.append(IntToString(components_[count - 1]));
   return version_str;

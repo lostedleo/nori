@@ -29,12 +29,12 @@ class Server;
 
 class StatusService : public status, public Tabbed {
 public:
-    void default_method(::google::protobuf::RpcController* cntl_base,
-                        const ::brpc::StatusRequest* request,
-                        ::brpc::StatusResponse* response,
-                        ::google::protobuf::Closure* done);
+  void default_method(::google::protobuf::RpcController* cntl_base,
+            const ::brpc::StatusRequest* request,
+            ::brpc::StatusResponse* response,
+            ::google::protobuf::Closure* done);
 
-    void GetTabInfo(TabInfoList* info_list) const;
+  void GetTabInfo(TabInfoList* info_list) const;
 };
 
 } // namespace brpc

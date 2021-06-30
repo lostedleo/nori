@@ -12,14 +12,14 @@
 namespace butil {
 
 SimpleThread::SimpleThread(const std::string& name_prefix)
-    : name_prefix_(name_prefix), name_(name_prefix),
-      thread_(), event_(true, false), tid_(0), joined_(false) {
+  : name_prefix_(name_prefix), name_(name_prefix),
+    thread_(), event_(true, false), tid_(0), joined_(false) {
 }
 
 SimpleThread::SimpleThread(const std::string& name_prefix,
-                           const Options& options)
-    : name_prefix_(name_prefix), name_(name_prefix), options_(options),
-      thread_(), event_(true, false), tid_(0), joined_(false) {
+               const Options& options)
+  : name_prefix_(name_prefix), name_(name_prefix), options_(options),
+    thread_(), event_(true, false), tid_(0), joined_(false) {
 }
 
 SimpleThread::~SimpleThread() {
@@ -61,16 +61,16 @@ void SimpleThread::ThreadMain() {
 }
 
 DelegateSimpleThread::DelegateSimpleThread(Delegate* delegate,
-                                           const std::string& name_prefix)
-    : SimpleThread(name_prefix),
-      delegate_(delegate) {
+                       const std::string& name_prefix)
+  : SimpleThread(name_prefix),
+    delegate_(delegate) {
 }
 
 DelegateSimpleThread::DelegateSimpleThread(Delegate* delegate,
-                                           const std::string& name_prefix,
-                                           const Options& options)
-    : SimpleThread(name_prefix, options),
-      delegate_(delegate) {
+                       const std::string& name_prefix,
+                       const Options& options)
+  : SimpleThread(name_prefix, options),
+    delegate_(delegate) {
 }
 
 DelegateSimpleThread::~DelegateSimpleThread() {
@@ -83,11 +83,11 @@ void DelegateSimpleThread::Run() {
 }
 
 DelegateSimpleThreadPool::DelegateSimpleThreadPool(
-    const std::string& name_prefix,
-    int num_threads)
-    : name_prefix_(name_prefix),
-      num_threads_(num_threads),
-      dry_(true, false) {
+  const std::string& name_prefix,
+  int num_threads)
+  : name_prefix_(name_prefix),
+    num_threads_(num_threads),
+    dry_(true, false) {
 }
 
 DelegateSimpleThreadPool::~DelegateSimpleThreadPool() {
@@ -99,9 +99,9 @@ DelegateSimpleThreadPool::~DelegateSimpleThreadPool() {
 void DelegateSimpleThreadPool::Start() {
   DCHECK(threads_.empty()) << "Start() called with outstanding threads.";
   for (int i = 0; i < num_threads_; ++i) {
-    DelegateSimpleThread* thread = new DelegateSimpleThread(this, name_prefix_);
-    thread->Start();
-    threads_.push_back(thread);
+  DelegateSimpleThread* thread = new DelegateSimpleThread(this, name_prefix_);
+  thread->Start();
+  threads_.push_back(thread);
   }
 }
 
@@ -113,8 +113,8 @@ void DelegateSimpleThreadPool::JoinAll() {
 
   // Join and destroy all the worker threads.
   for (int i = 0; i < num_threads_; ++i) {
-    threads_[i]->Join();
-    delete threads_[i];
+  threads_[i]->Join();
+  delete threads_[i];
   }
   threads_.clear();
   DCHECK(delegates_.empty());
@@ -123,36 +123,36 @@ void DelegateSimpleThreadPool::JoinAll() {
 void DelegateSimpleThreadPool::AddWork(Delegate* delegate, int repeat_count) {
   AutoLock locked(lock_);
   for (int i = 0; i < repeat_count; ++i)
-    delegates_.push(delegate);
+  delegates_.push(delegate);
   // If we were empty, signal that we have work now.
   if (!dry_.IsSignaled())
-    dry_.Signal();
+  dry_.Signal();
 }
 
 void DelegateSimpleThreadPool::Run() {
   Delegate* work = NULL;
 
   while (true) {
-    dry_.Wait();
-    {
-      AutoLock locked(lock_);
-      if (!dry_.IsSignaled())
-        continue;
+  dry_.Wait();
+  {
+    AutoLock locked(lock_);
+    if (!dry_.IsSignaled())
+    continue;
 
-      DCHECK(!delegates_.empty());
-      work = delegates_.front();
-      delegates_.pop();
+    DCHECK(!delegates_.empty());
+    work = delegates_.front();
+    delegates_.pop();
 
-      // Signal to any other threads that we're currently out of work.
-      if (delegates_.empty())
-        dry_.Reset();
-    }
+    // Signal to any other threads that we're currently out of work.
+    if (delegates_.empty())
+    dry_.Reset();
+  }
 
-    // A NULL delegate pointer signals us to quit.
-    if (!work)
-      break;
+  // A NULL delegate pointer signals us to quit.
+  if (!work)
+    break;
 
-    work->Run();
+  work->Run();
   }
 }
 

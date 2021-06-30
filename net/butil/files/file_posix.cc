@@ -23,8 +23,8 @@ namespace butil {
 
 // Make sure our Whence mappings match the system headers.
 COMPILE_ASSERT(File::FROM_BEGIN   == SEEK_SET &&
-               File::FROM_CURRENT == SEEK_CUR &&
-               File::FROM_END     == SEEK_END, whence_matches_system);
+         File::FROM_CURRENT == SEEK_CUR &&
+         File::FROM_END   == SEEK_END, whence_matches_system);
 
 namespace {
 
@@ -79,7 +79,7 @@ static File::Error CallFctnlFlock(PlatformFile file, bool do_lock) {
   lock.l_start = 0;
   lock.l_len = 0;  // Lock entire file.
   if (HANDLE_EINTR(fcntl(file, do_lock ? F_SETLK : F_UNLCK, &lock)) == -1)
-    return File::OSErrorToFileError(errno);
+  return File::OSErrorToFileError(errno);
   return File::FILE_OK;
 }
 #else  // defined(OS_NACL)
@@ -150,19 +150,19 @@ void File::Info::FromStat(const stat_wrapper_t& stat_info) {
 #endif
 
   last_modified =
-      Time::FromTimeT(last_modified_sec) +
-      TimeDelta::FromMicroseconds(last_modified_nsec /
-                                  Time::kNanosecondsPerMicrosecond);
+    Time::FromTimeT(last_modified_sec) +
+    TimeDelta::FromMicroseconds(last_modified_nsec /
+                  Time::kNanosecondsPerMicrosecond);
 
   last_accessed =
-      Time::FromTimeT(last_accessed_sec) +
-      TimeDelta::FromMicroseconds(last_accessed_nsec /
-                                  Time::kNanosecondsPerMicrosecond);
+    Time::FromTimeT(last_accessed_sec) +
+    TimeDelta::FromMicroseconds(last_accessed_nsec /
+                  Time::kNanosecondsPerMicrosecond);
 
   creation_time =
-      Time::FromTimeT(creation_time_sec) +
-      TimeDelta::FromMicroseconds(creation_time_nsec /
-                                  Time::kNanosecondsPerMicrosecond);
+    Time::FromTimeT(creation_time_sec) +
+    TimeDelta::FromMicroseconds(creation_time_nsec /
+                  Time::kNanosecondsPerMicrosecond);
 }
 
 // NaCl doesn't implement system calls to open files directly.
@@ -174,47 +174,47 @@ void File::InitializeUnsafe(const FilePath& name, uint32_t flags) {
 
   int open_flags = 0;
   if (flags & FLAG_CREATE)
-    open_flags = O_CREAT | O_EXCL;
+  open_flags = O_CREAT | O_EXCL;
 
   created_ = false;
 
   if (flags & FLAG_CREATE_ALWAYS) {
-    DCHECK(!open_flags);
-    DCHECK(flags & FLAG_WRITE);
-    open_flags = O_CREAT | O_TRUNC;
+  DCHECK(!open_flags);
+  DCHECK(flags & FLAG_WRITE);
+  open_flags = O_CREAT | O_TRUNC;
   }
 
   if (flags & FLAG_OPEN_TRUNCATED) {
-    DCHECK(!open_flags);
-    DCHECK(flags & FLAG_WRITE);
-    open_flags = O_TRUNC;
+  DCHECK(!open_flags);
+  DCHECK(flags & FLAG_WRITE);
+  open_flags = O_TRUNC;
   }
 
   if (!open_flags && !(flags & FLAG_OPEN) && !(flags & FLAG_OPEN_ALWAYS)) {
-    NOTREACHED();
-    errno = EOPNOTSUPP;
-    error_details_ = FILE_ERROR_FAILED;
-    return;
+  NOTREACHED();
+  errno = EOPNOTSUPP;
+  error_details_ = FILE_ERROR_FAILED;
+  return;
   }
 
   if (flags & FLAG_WRITE && flags & FLAG_READ) {
-    open_flags |= O_RDWR;
+  open_flags |= O_RDWR;
   } else if (flags & FLAG_WRITE) {
-    open_flags |= O_WRONLY;
+  open_flags |= O_WRONLY;
   } else if (!(flags & FLAG_READ) &&
-             !(flags & FLAG_WRITE_ATTRIBUTES) &&
-             !(flags & FLAG_APPEND) &&
-             !(flags & FLAG_OPEN_ALWAYS)) {
-    NOTREACHED();
+       !(flags & FLAG_WRITE_ATTRIBUTES) &&
+       !(flags & FLAG_APPEND) &&
+       !(flags & FLAG_OPEN_ALWAYS)) {
+  NOTREACHED();
   }
 
   if (flags & FLAG_TERMINAL_DEVICE)
-    open_flags |= O_NOCTTY | O_NDELAY;
+  open_flags |= O_NOCTTY | O_NDELAY;
 
   if (flags & FLAG_APPEND && flags & FLAG_READ)
-    open_flags |= O_APPEND | O_RDWR;
+  open_flags |= O_APPEND | O_RDWR;
   else if (flags & FLAG_APPEND)
-    open_flags |= O_APPEND | O_WRONLY;
+  open_flags |= O_APPEND | O_WRONLY;
 
   COMPILE_ASSERT(O_RDONLY == 0, O_RDONLY_must_equal_zero);
 
@@ -226,27 +226,27 @@ void File::InitializeUnsafe(const FilePath& name, uint32_t flags) {
   int descriptor = HANDLE_EINTR(open(name.value().c_str(), open_flags, mode));
 
   if (flags & FLAG_OPEN_ALWAYS) {
-    if (descriptor < 0) {
-      open_flags |= O_CREAT;
-      if (flags & FLAG_EXCLUSIVE_READ || flags & FLAG_EXCLUSIVE_WRITE)
-        open_flags |= O_EXCL;   // together with O_CREAT implies O_NOFOLLOW
+  if (descriptor < 0) {
+    open_flags |= O_CREAT;
+    if (flags & FLAG_EXCLUSIVE_READ || flags & FLAG_EXCLUSIVE_WRITE)
+    open_flags |= O_EXCL;   // together with O_CREAT implies O_NOFOLLOW
 
-      descriptor = HANDLE_EINTR(open(name.value().c_str(), open_flags, mode));
-      if (descriptor >= 0)
-        created_ = true;
-    }
+    descriptor = HANDLE_EINTR(open(name.value().c_str(), open_flags, mode));
+    if (descriptor >= 0)
+    created_ = true;
+  }
   }
 
   if (descriptor < 0) {
-    error_details_ = File::OSErrorToFileError(errno);
-    return;
+  error_details_ = File::OSErrorToFileError(errno);
+  return;
   }
 
   if (flags & (FLAG_CREATE_ALWAYS | FLAG_CREATE))
-    created_ = true;
+  created_ = true;
 
   if (flags & FLAG_DELETE_ON_CLOSE)
-    unlink(name.value().c_str());
+  unlink(name.value().c_str());
 
   async_ = ((flags & FLAG_ASYNC) == FLAG_ASYNC);
   error_details_ = FILE_OK;
@@ -268,7 +268,7 @@ PlatformFile File::TakePlatformFile() {
 
 void File::Close() {
   if (!IsValid())
-    return;
+  return;
 
   butil::ThreadRestrictions::AssertIOAllowed();
   file_.reset();
@@ -281,11 +281,11 @@ int64_t File::Seek(Whence whence, int64_t offset) {
 #if defined(OS_ANDROID)
   COMPILE_ASSERT(sizeof(int64_t) == sizeof(off64_t), off64_t_64_bit);
   return lseek64(file_.get(), static_cast<off64_t>(offset),
-                 static_cast<int>(whence));
+         static_cast<int>(whence));
 #else
   COMPILE_ASSERT(sizeof(int64_t) == sizeof(off_t), off_t_64_bit);
   return lseek(file_.get(), static_cast<off_t>(offset),
-               static_cast<int>(whence));
+         static_cast<int>(whence));
 #endif
 }
 
@@ -293,17 +293,17 @@ int File::Read(int64_t offset, char* data, int size) {
   butil::ThreadRestrictions::AssertIOAllowed();
   DCHECK(IsValid());
   if (size < 0)
-    return -1;
+  return -1;
 
   int bytes_read = 0;
   int rv;
   do {
-    rv = HANDLE_EINTR(pread(file_.get(), data + bytes_read,
-                            size - bytes_read, offset + bytes_read));
-    if (rv <= 0)
-      break;
+  rv = HANDLE_EINTR(pread(file_.get(), data + bytes_read,
+              size - bytes_read, offset + bytes_read));
+  if (rv <= 0)
+    break;
 
-    bytes_read += rv;
+  bytes_read += rv;
   } while (bytes_read < size);
 
   return bytes_read ? bytes_read : rv;
@@ -313,16 +313,16 @@ int File::ReadAtCurrentPos(char* data, int size) {
   butil::ThreadRestrictions::AssertIOAllowed();
   DCHECK(IsValid());
   if (size < 0)
-    return -1;
+  return -1;
 
   int bytes_read = 0;
   int rv;
   do {
-    rv = HANDLE_EINTR(read(file_.get(), data + bytes_read, size - bytes_read));
-    if (rv <= 0)
-      break;
+  rv = HANDLE_EINTR(read(file_.get(), data + bytes_read, size - bytes_read));
+  if (rv <= 0)
+    break;
 
-    bytes_read += rv;
+  bytes_read += rv;
   } while (bytes_read < size);
 
   return bytes_read ? bytes_read : rv;
@@ -339,7 +339,7 @@ int File::ReadAtCurrentPosNoBestEffort(char* data, int size) {
   butil::ThreadRestrictions::AssertIOAllowed();
   DCHECK(IsValid());
   if (size < 0)
-    return -1;
+  return -1;
 
   return HANDLE_EINTR(read(file_.get(), data, size));
 }
@@ -348,21 +348,21 @@ int File::Write(int64_t offset, const char* data, int size) {
   butil::ThreadRestrictions::AssertIOAllowed();
 
   if (IsOpenAppend(file_.get()))
-    return WriteAtCurrentPos(data, size);
+  return WriteAtCurrentPos(data, size);
 
   DCHECK(IsValid());
   if (size < 0)
-    return -1;
+  return -1;
 
   int bytes_written = 0;
   int rv;
   do {
-    rv = HANDLE_EINTR(pwrite(file_.get(), data + bytes_written,
-                             size - bytes_written, offset + bytes_written));
-    if (rv <= 0)
-      break;
+  rv = HANDLE_EINTR(pwrite(file_.get(), data + bytes_written,
+               size - bytes_written, offset + bytes_written));
+  if (rv <= 0)
+    break;
 
-    bytes_written += rv;
+  bytes_written += rv;
   } while (bytes_written < size);
 
   return bytes_written ? bytes_written : rv;
@@ -372,17 +372,17 @@ int File::WriteAtCurrentPos(const char* data, int size) {
   butil::ThreadRestrictions::AssertIOAllowed();
   DCHECK(IsValid());
   if (size < 0)
-    return -1;
+  return -1;
 
   int bytes_written = 0;
   int rv;
   do {
-    rv = HANDLE_EINTR(write(file_.get(), data + bytes_written,
-                            size - bytes_written));
-    if (rv <= 0)
-      break;
+  rv = HANDLE_EINTR(write(file_.get(), data + bytes_written,
+              size - bytes_written));
+  if (rv <= 0)
+    break;
 
-    bytes_written += rv;
+  bytes_written += rv;
   } while (bytes_written < size);
 
   return bytes_written ? bytes_written : rv;
@@ -392,7 +392,7 @@ int File::WriteAtCurrentPosNoBestEffort(const char* data, int size) {
   butil::ThreadRestrictions::AssertIOAllowed();
   DCHECK(IsValid());
   if (size < 0)
-    return -1;
+  return -1;
 
   return HANDLE_EINTR(write(file_.get(), data, size));
 }
@@ -402,7 +402,7 @@ int64_t File::GetLength() {
 
   stat_wrapper_t file_info;
   if (CallFstat(file_.get(), &file_info))
-    return false;
+  return false;
 
   return file_info.st_size;
 }
@@ -435,7 +435,7 @@ bool File::GetInfo(Info* info) {
 
   stat_wrapper_t file_info;
   if (CallFstat(file_.get(), &file_info))
-    return false;
+  return false;
 
   info->FromStat(file_info);
   return true;
@@ -452,29 +452,29 @@ File::Error File::Unlock() {
 // Static.
 File::Error File::OSErrorToFileError(int saved_errno) {
   switch (saved_errno) {
-    case EACCES:
-    case EISDIR:
-    case EROFS:
-    case EPERM:
-      return FILE_ERROR_ACCESS_DENIED;
+  case EACCES:
+  case EISDIR:
+  case EROFS:
+  case EPERM:
+    return FILE_ERROR_ACCESS_DENIED;
 #if !defined(OS_NACL)  // ETXTBSY not defined by NaCl.
-    case ETXTBSY:
-      return FILE_ERROR_IN_USE;
+  case ETXTBSY:
+    return FILE_ERROR_IN_USE;
 #endif
-    case EEXIST:
-      return FILE_ERROR_EXISTS;
-    case ENOENT:
-      return FILE_ERROR_NOT_FOUND;
-    case EMFILE:
-      return FILE_ERROR_TOO_MANY_OPENED;
-    case ENOMEM:
-      return FILE_ERROR_NO_MEMORY;
-    case ENOSPC:
-      return FILE_ERROR_NO_SPACE;
-    case ENOTDIR:
-      return FILE_ERROR_NOT_A_DIRECTORY;
-    default:
-      return FILE_ERROR_FAILED;
+  case EEXIST:
+    return FILE_ERROR_EXISTS;
+  case ENOENT:
+    return FILE_ERROR_NOT_FOUND;
+  case EMFILE:
+    return FILE_ERROR_TOO_MANY_OPENED;
+  case ENOMEM:
+    return FILE_ERROR_NO_MEMORY;
+  case ENOSPC:
+    return FILE_ERROR_NO_SPACE;
+  case ENOTDIR:
+    return FILE_ERROR_NOT_A_DIRECTORY;
+  default:
+    return FILE_ERROR_FAILED;
   }
 }
 

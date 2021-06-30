@@ -26,10 +26,10 @@ namespace brpc {
 
 class BthreadsService : public bthreads {
 public:
-    void default_method(::google::protobuf::RpcController* cntl_base,
-                        const ::brpc::BthreadsRequest* request,
-                        ::brpc::BthreadsResponse* response,
-                        ::google::protobuf::Closure* done);
+  void default_method(::google::protobuf::RpcController* cntl_base,
+            const ::brpc::BthreadsRequest* request,
+            ::brpc::BthreadsResponse* response,
+            ::google::protobuf::Closure* done);
 };
 
 } // namespace brpc

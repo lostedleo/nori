@@ -28,17 +28,17 @@ namespace policy {
 // Acquire server list from Baidu-Naming-Service, aka BNS
 class BaiduNamingService : public PeriodicNamingService {
 public:
-    // You can specify port by appending port selector:
-    // e.g.: bns://DPOP-inner-API-inner-API.jpaas.hosts:main
-    //                                                 ^^^^^
-    int GetServers(const char *service_name,
-                   std::vector<ServerNode>* servers);
-    
-    void Describe(std::ostream& os, const DescribeOptions&) const;
-    
-    NamingService* New() const;
-    
-    void Destroy();
+  // You can specify port by appending port selector:
+  // e.g.: bns://DPOP-inner-API-inner-API.jpaas.hosts:main
+  //                         ^^^^^
+  int GetServers(const char *service_name,
+           std::vector<ServerNode>* servers);
+  
+  void Describe(std::ostream& os, const DescribeOptions&) const;
+  
+  NamingService* New() const;
+  
+  void Destroy();
 };
 
 }  // namespace policy

@@ -16,9 +16,9 @@ class SelfAssign : public butil::RefCounted<SelfAssign> {
 class CheckDerivedMemberAccess : public scoped_refptr<SelfAssign> {
  public:
   CheckDerivedMemberAccess() {
-    // This shouldn't compile if we don't have access to the member variable.
-    SelfAssign** pptr = &ptr_;
-    EXPECT_EQ(*pptr, ptr_);
+  // This shouldn't compile if we don't have access to the member variable.
+  SelfAssign** pptr = &ptr_;
+  EXPECT_EQ(*pptr, ptr_);
   }
 };
 

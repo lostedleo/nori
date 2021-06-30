@@ -29,25 +29,25 @@ namespace brpc {
 //   "/js/flot_min"   : ploting library for jquery.
 class GetJsService : public ::brpc::js {
 public:
-    void sorttable(::google::protobuf::RpcController* controller,
-                   const GetJsRequest* request,
-                   GetJsResponse* response,
-                   ::google::protobuf::Closure* done);
-    
-    void jquery_min(::google::protobuf::RpcController* controller,
-                    const GetJsRequest* request,
-                    GetJsResponse* response,
-                    ::google::protobuf::Closure* done);
+  void sorttable(::google::protobuf::RpcController* controller,
+           const GetJsRequest* request,
+           GetJsResponse* response,
+           ::google::protobuf::Closure* done);
+  
+  void jquery_min(::google::protobuf::RpcController* controller,
+          const GetJsRequest* request,
+          GetJsResponse* response,
+          ::google::protobuf::Closure* done);
 
-    void flot_min(::google::protobuf::RpcController* controller,
-                  const GetJsRequest* request,
-                  GetJsResponse* response,
-                  ::google::protobuf::Closure* done);
+  void flot_min(::google::protobuf::RpcController* controller,
+          const GetJsRequest* request,
+          GetJsResponse* response,
+          ::google::protobuf::Closure* done);
 
-    void viz_min(::google::protobuf::RpcController* controller,
-                 const GetJsRequest* request,
-                 GetJsResponse* response,
-                 ::google::protobuf::Closure* done);
+  void viz_min(::google::protobuf::RpcController* controller,
+         const GetJsRequest* request,
+         GetJsResponse* response,
+         ::google::protobuf::Closure* done);
 };
 
 } // namespace brpc

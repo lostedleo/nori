@@ -27,10 +27,10 @@ namespace brpc {
 
 class HealthService : public health {
 public:
-    void default_method(::google::protobuf::RpcController* cntl_base,
-                        const ::brpc::HealthRequest* request,
-                        ::brpc::HealthResponse* response,
-                        ::google::protobuf::Closure* done);
+  void default_method(::google::protobuf::RpcController* cntl_base,
+            const ::brpc::HealthRequest* request,
+            ::brpc::HealthResponse* response,
+            ::google::protobuf::Closure* done);
 };
 
 } // namespace brpc

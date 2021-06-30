@@ -29,36 +29,36 @@
 #include <mesalink/openssl/err.h>
 #include <mesalink/openssl/x509.h>
 #endif
-#include "brpc/socket_id.h"            // SocketId
-#include "brpc/ssl_options.h"          // ServerSSLOptions
+#include "brpc/socket_id.h"      // SocketId
+#include "brpc/ssl_options.h"      // ServerSSLOptions
 
 namespace brpc {
 
 enum SSLState {
-    SSL_UNKNOWN = 0,
-    SSL_OFF = 1,                // Not an SSL connection
-    SSL_CONNECTING = 2,         // During SSL handshake
-    SSL_CONNECTED = 3,          // SSL handshake completed
+  SSL_UNKNOWN = 0,
+  SSL_OFF = 1,        // Not an SSL connection
+  SSL_CONNECTING = 2,     // During SSL handshake
+  SSL_CONNECTED = 3,      // SSL handshake completed
 };
 
 enum SSLProtocol {
-    SSLv3 = 1 << 0,
-    TLSv1 = 1 << 1,
-    TLSv1_1 = 1 << 2,
-    TLSv1_2 = 1 << 3,
+  SSLv3 = 1 << 0,
+  TLSv1 = 1 << 1,
+  TLSv1_1 = 1 << 2,
+  TLSv1_2 = 1 << 3,
 };
 
 struct FreeSSLCTX {
-    inline void operator()(SSL_CTX* ctx) const {
-        if (ctx != NULL) {
-            SSL_CTX_free(ctx);
-        }
+  inline void operator()(SSL_CTX* ctx) const {
+    if (ctx != NULL) {
+      SSL_CTX_free(ctx);
     }
+  }
 };
 
 struct SSLError {
-    explicit SSLError(unsigned long e) : error(e) { }
-    unsigned long error;
+  explicit SSLError(unsigned long e) : error(e) { }
+  unsigned long error;
 };
 std::ostream& operator<<(std::ostream& os, const SSLError&);
 std::ostream& operator<<(std::ostream& os, const CertInfo&);
@@ -82,9 +82,9 @@ SSL_CTX* CreateClientSSLContext(const ChannelSSLOptions& options);
 // according `options'. Finally, extract hostnames from CN/subject
 // fields into `hostnames'
 SSL_CTX* CreateServerSSLContext(const std::string& certificate_file,
-                                const std::string& private_key_file,
-                                const ServerSSLOptions& options,
-                                std::vector<std::string>* hostnames);
+                const std::string& private_key_file,
+                const ServerSSLOptions& options,
+                std::vector<std::string>* hostnames);
 
 // Create a new SSL (per connection object) using configurations in `ctx'.
 // Set the required `fd' and mode. `id' will be set into SSL as app data.

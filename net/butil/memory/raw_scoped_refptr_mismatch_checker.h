@@ -26,16 +26,16 @@ template <typename T>
 struct NeedsScopedRefptrButGetsRawPtr {
 #if defined(OS_WIN)
   enum {
-    value = butil::false_type::value
+  value = butil::false_type::value
   };
 #else
   enum {
-    // Human readable translation: you needed to be a scoped_refptr if you are a
-    // raw pointer type and are convertible to a RefCounted(Base|ThreadSafeBase)
-    // type.
-    value = (is_pointer<T>::value &&
-             (is_convertible<T, subtle::RefCountedBase*>::value ||
-              is_convertible<T, subtle::RefCountedThreadSafeBase*>::value))
+  // Human readable translation: you needed to be a scoped_refptr if you are a
+  // raw pointer type and are convertible to a RefCounted(Base|ThreadSafeBase)
+  // type.
+  value = (is_pointer<T>::value &&
+       (is_convertible<T, subtle::RefCountedBase*>::value ||
+        is_convertible<T, subtle::RefCountedThreadSafeBase*>::value))
   };
 #endif
 };
@@ -58,67 +58,67 @@ struct ParamsUseScopedRefptrCorrectly<Tuple1<A> > {
 template <typename A, typename B>
 struct ParamsUseScopedRefptrCorrectly<Tuple2<A, B> > {
   enum { value = !(NeedsScopedRefptrButGetsRawPtr<A>::value ||
-                   NeedsScopedRefptrButGetsRawPtr<B>::value) };
+           NeedsScopedRefptrButGetsRawPtr<B>::value) };
 };
 
 template <typename A, typename B, typename C>
 struct ParamsUseScopedRefptrCorrectly<Tuple3<A, B, C> > {
   enum { value = !(NeedsScopedRefptrButGetsRawPtr<A>::value ||
-                   NeedsScopedRefptrButGetsRawPtr<B>::value ||
-                   NeedsScopedRefptrButGetsRawPtr<C>::value) };
+           NeedsScopedRefptrButGetsRawPtr<B>::value ||
+           NeedsScopedRefptrButGetsRawPtr<C>::value) };
 };
 
 template <typename A, typename B, typename C, typename D>
 struct ParamsUseScopedRefptrCorrectly<Tuple4<A, B, C, D> > {
   enum { value = !(NeedsScopedRefptrButGetsRawPtr<A>::value ||
-                   NeedsScopedRefptrButGetsRawPtr<B>::value ||
-                   NeedsScopedRefptrButGetsRawPtr<C>::value ||
-                   NeedsScopedRefptrButGetsRawPtr<D>::value) };
+           NeedsScopedRefptrButGetsRawPtr<B>::value ||
+           NeedsScopedRefptrButGetsRawPtr<C>::value ||
+           NeedsScopedRefptrButGetsRawPtr<D>::value) };
 };
 
 template <typename A, typename B, typename C, typename D, typename E>
 struct ParamsUseScopedRefptrCorrectly<Tuple5<A, B, C, D, E> > {
   enum { value = !(NeedsScopedRefptrButGetsRawPtr<A>::value ||
-                   NeedsScopedRefptrButGetsRawPtr<B>::value ||
-                   NeedsScopedRefptrButGetsRawPtr<C>::value ||
-                   NeedsScopedRefptrButGetsRawPtr<D>::value ||
-                   NeedsScopedRefptrButGetsRawPtr<E>::value) };
+           NeedsScopedRefptrButGetsRawPtr<B>::value ||
+           NeedsScopedRefptrButGetsRawPtr<C>::value ||
+           NeedsScopedRefptrButGetsRawPtr<D>::value ||
+           NeedsScopedRefptrButGetsRawPtr<E>::value) };
 };
 
 template <typename A, typename B, typename C, typename D, typename E,
-          typename F>
+      typename F>
 struct ParamsUseScopedRefptrCorrectly<Tuple6<A, B, C, D, E, F> > {
   enum { value = !(NeedsScopedRefptrButGetsRawPtr<A>::value ||
-                   NeedsScopedRefptrButGetsRawPtr<B>::value ||
-                   NeedsScopedRefptrButGetsRawPtr<C>::value ||
-                   NeedsScopedRefptrButGetsRawPtr<D>::value ||
-                   NeedsScopedRefptrButGetsRawPtr<E>::value ||
-                   NeedsScopedRefptrButGetsRawPtr<F>::value) };
+           NeedsScopedRefptrButGetsRawPtr<B>::value ||
+           NeedsScopedRefptrButGetsRawPtr<C>::value ||
+           NeedsScopedRefptrButGetsRawPtr<D>::value ||
+           NeedsScopedRefptrButGetsRawPtr<E>::value ||
+           NeedsScopedRefptrButGetsRawPtr<F>::value) };
 };
 
 template <typename A, typename B, typename C, typename D, typename E,
-          typename F, typename G>
+      typename F, typename G>
 struct ParamsUseScopedRefptrCorrectly<Tuple7<A, B, C, D, E, F, G> > {
   enum { value = !(NeedsScopedRefptrButGetsRawPtr<A>::value ||
-                   NeedsScopedRefptrButGetsRawPtr<B>::value ||
-                   NeedsScopedRefptrButGetsRawPtr<C>::value ||
-                   NeedsScopedRefptrButGetsRawPtr<D>::value ||
-                   NeedsScopedRefptrButGetsRawPtr<E>::value ||
-                   NeedsScopedRefptrButGetsRawPtr<F>::value ||
-                   NeedsScopedRefptrButGetsRawPtr<G>::value) };
+           NeedsScopedRefptrButGetsRawPtr<B>::value ||
+           NeedsScopedRefptrButGetsRawPtr<C>::value ||
+           NeedsScopedRefptrButGetsRawPtr<D>::value ||
+           NeedsScopedRefptrButGetsRawPtr<E>::value ||
+           NeedsScopedRefptrButGetsRawPtr<F>::value ||
+           NeedsScopedRefptrButGetsRawPtr<G>::value) };
 };
 
 template <typename A, typename B, typename C, typename D, typename E,
-          typename F, typename G, typename H>
+      typename F, typename G, typename H>
 struct ParamsUseScopedRefptrCorrectly<Tuple8<A, B, C, D, E, F, G, H> > {
   enum { value = !(NeedsScopedRefptrButGetsRawPtr<A>::value ||
-                   NeedsScopedRefptrButGetsRawPtr<B>::value ||
-                   NeedsScopedRefptrButGetsRawPtr<C>::value ||
-                   NeedsScopedRefptrButGetsRawPtr<D>::value ||
-                   NeedsScopedRefptrButGetsRawPtr<E>::value ||
-                   NeedsScopedRefptrButGetsRawPtr<F>::value ||
-                   NeedsScopedRefptrButGetsRawPtr<G>::value ||
-                   NeedsScopedRefptrButGetsRawPtr<H>::value) };
+           NeedsScopedRefptrButGetsRawPtr<B>::value ||
+           NeedsScopedRefptrButGetsRawPtr<C>::value ||
+           NeedsScopedRefptrButGetsRawPtr<D>::value ||
+           NeedsScopedRefptrButGetsRawPtr<E>::value ||
+           NeedsScopedRefptrButGetsRawPtr<F>::value ||
+           NeedsScopedRefptrButGetsRawPtr<G>::value ||
+           NeedsScopedRefptrButGetsRawPtr<H>::value) };
 };
 
 }  // namespace internal

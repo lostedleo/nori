@@ -29,10 +29,10 @@ namespace internal {
 
 struct ScopedCFTypeRefTraits {
   static void Retain(CFTypeRef object) {
-    CFRetain(object);
+  CFRetain(object);
   }
   static void Release(CFTypeRef object) {
-    CFRelease(object);
+  CFRelease(object);
   }
 };
 
@@ -40,18 +40,18 @@ struct ScopedCFTypeRefTraits {
 
 template<typename CFT>
 class ScopedCFTypeRef
-    : public ScopedTypeRef<CFT, internal::ScopedCFTypeRefTraits> {
+  : public ScopedTypeRef<CFT, internal::ScopedCFTypeRefTraits> {
  public:
   typedef CFT element_type;
 
   explicit ScopedCFTypeRef(
-      CFT object = NULL,
-      butil::scoped_policy::OwnershipPolicy policy = butil::scoped_policy::ASSUME)
-      : ScopedTypeRef<CFT,
-                      internal::ScopedCFTypeRefTraits>(object, policy) {}
+    CFT object = NULL,
+    butil::scoped_policy::OwnershipPolicy policy = butil::scoped_policy::ASSUME)
+    : ScopedTypeRef<CFT,
+            internal::ScopedCFTypeRefTraits>(object, policy) {}
 
   ScopedCFTypeRef(const ScopedCFTypeRef<CFT>& that)
-      : ScopedTypeRef<CFT, internal::ScopedCFTypeRefTraits>(that) {}
+    : ScopedTypeRef<CFT, internal::ScopedCFTypeRefTraits>(that) {}
 };
 
 }  // namespace butil

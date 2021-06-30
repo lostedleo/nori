@@ -28,10 +28,10 @@ namespace brpc {
 
 class VLogService : public vlog {
 public:
-    void default_method(::google::protobuf::RpcController* controller,
-                        const ::brpc::VLogRequest* request,
-                        ::brpc::VLogResponse* response,
-                        ::google::protobuf::Closure* done);
+  void default_method(::google::protobuf::RpcController* controller,
+            const ::brpc::VLogRequest* request,
+            ::brpc::VLogResponse* response,
+            ::google::protobuf::Closure* done);
 
 };
 

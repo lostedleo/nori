@@ -23,30 +23,30 @@
 namespace brpc {
 
 ThriftService::ThriftService() {
-    _status = new (std::nothrow) MethodStatus;
-    LOG_IF(FATAL, _status == NULL) << "Fail to new MethodStatus";
+  _status = new (std::nothrow) MethodStatus;
+  LOG_IF(FATAL, _status == NULL) << "Fail to new MethodStatus";
 }
 
 ThriftService::~ThriftService() {
-    delete _status;
-    _status = NULL;
+  delete _status;
+  _status = NULL;
 }
 
 void ThriftService::Describe(std::ostream &os, const DescribeOptions&) const {
-    os << butil::class_name_str(*this);
+  os << butil::class_name_str(*this);
 }
 
 void ThriftService::Expose(const butil::StringPiece& prefix) {
-    if (_status == NULL) {
-        return;
-    }
-    std::string s;
-    const std::string& cached_name = butil::class_name_str(*this);
-    s.reserve(prefix.size() + 1 + cached_name.size());
-    s.append(prefix.data(), prefix.size());
-    s.push_back('_');
-    s.append(cached_name);
-    _status->Expose(s);
+  if (_status == NULL) {
+    return;
+  }
+  std::string s;
+  const std::string& cached_name = butil::class_name_str(*this);
+  s.reserve(prefix.size() + 1 + cached_name.size());
+  s.append(prefix.data(), prefix.size());
+  s.push_back('_');
+  s.append(cached_name);
+  _status->Expose(s);
 }
 
 } // namespace brpc

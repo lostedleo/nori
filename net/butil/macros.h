@@ -30,18 +30,18 @@
 #endif
 
 // Put this in the private: declarations for a class to be uncopyable.
-#define DISALLOW_COPY(TypeName)                         \
-    BUTIL_DELETE_FUNCTION(TypeName(const TypeName&))
+#define DISALLOW_COPY(TypeName)             \
+  BUTIL_DELETE_FUNCTION(TypeName(const TypeName&))
 
 // Put this in the private: declarations for a class to be unassignable.
-#define DISALLOW_ASSIGN(TypeName)                               \
-    BUTIL_DELETE_FUNCTION(void operator=(const TypeName&))
+#define DISALLOW_ASSIGN(TypeName)                 \
+  BUTIL_DELETE_FUNCTION(void operator=(const TypeName&))
 
 // A macro to disallow the copy constructor and operator= functions
 // This should be used in the private: declarations for a class
-#define DISALLOW_COPY_AND_ASSIGN(TypeName)                      \
-    BUTIL_DELETE_FUNCTION(TypeName(const TypeName&));            \
-    BUTIL_DELETE_FUNCTION(void operator=(const TypeName&))
+#define DISALLOW_COPY_AND_ASSIGN(TypeName)            \
+  BUTIL_DELETE_FUNCTION(TypeName(const TypeName&));      \
+  BUTIL_DELETE_FUNCTION(void operator=(const TypeName&))
 
 // An older, deprecated, politically incorrect name for the above.
 // NOTE: The usage of this macro was banned from our code base, but some
@@ -57,8 +57,8 @@
 // that wants to prevent anyone from instantiating it. This is
 // especially useful for classes containing only static methods.
 #define DISALLOW_IMPLICIT_CONSTRUCTORS(TypeName) \
-    BUTIL_DELETE_FUNCTION(TypeName());            \
-    DISALLOW_COPY_AND_ASSIGN(TypeName)
+  BUTIL_DELETE_FUNCTION(TypeName());      \
+  DISALLOW_COPY_AND_ASSIGN(TypeName)
 
 // Concatenate numbers in c/c++ macros.
 #ifndef BAIDU_CONCAT
@@ -80,7 +80,7 @@
 
 // This template function declaration is used in defining arraysize.
 // Note that the function doesn't need an implementation, as we only
-// use its type.    
+// use its type.  
 namespace butil {
 template <typename T, size_t N>
 char (&ArraySizeHelper(T (&array)[N]))[N];
@@ -140,8 +140,8 @@ char (&ArraySizeHelper(const T (&array)[N]))[N];
 // size is 3 or greater than 4 will be (righteously) rejected.
 #undef ARRAYSIZE_UNSAFE
 #define ARRAYSIZE_UNSAFE(a) \
-    ((sizeof(a) / sizeof(*(a))) / \
-     static_cast<size_t>(!(sizeof(a) % sizeof(*(a)))))
+  ((sizeof(a) / sizeof(*(a))) / \
+   static_cast<size_t>(!(sizeof(a) % sizeof(*(a)))))
 
 // Use implicit_cast as a safe version of static_cast or const_cast
 // for upcasting in the type hierarchy (i.e. casting a pointer to Foo
@@ -176,11 +176,11 @@ inline To implicit_cast(From const &f) {
 
 // Assert constant boolean expressions at compile-time
 // Params:
-//   expr     the constant expression to be checked
-//   msg      an error infomation conforming name conventions of C/C++
-//            variables(alphabets/numbers/underscores, no blanks). For
-//            example "cannot_accept_a_number_bigger_than_128" is valid
-//            while "this number is out-of-range" is illegal.
+//   expr   the constant expression to be checked
+//   msg    an error infomation conforming name conventions of C/C++
+//      variables(alphabets/numbers/underscores, no blanks). For
+//      example "cannot_accept_a_number_bigger_than_128" is valid
+//      while "this number is out-of-range" is illegal.
 //
 // when an asssertion like "BAIDU_CASSERT(false, you_should_not_be_here)"
 // breaks, a compilation error is printed:
@@ -194,12 +194,12 @@ inline To implicit_cast(From const &f) {
 //   int main () { ... }
 //
 //   struct Foo {
-//       BAIDU_CASSERT(1 == 0, Never_equals);
+//     BAIDU_CASSERT(1 == 0, Never_equals);
 //   };
 //
 //   int bar(...)
 //   {
-//       BAIDU_CASSERT (value < 10, invalid_value);
+//     BAIDU_CASSERT (value < 10, invalid_value);
 //   }
 //
 namespace butil {
@@ -207,9 +207,9 @@ template <bool> struct CAssert { static const int x = 1; };
 template <> struct CAssert<false> { static const char * x; };
 }
 
-#define BAIDU_CASSERT(expr, msg)                                \
-    enum { BAIDU_CONCAT(BAIDU_CONCAT(LINE_, __LINE__), __##msg) \
-           = ::butil::CAssert<!!(expr)>::x };
+#define BAIDU_CASSERT(expr, msg)                \
+  enum { BAIDU_CONCAT(BAIDU_CONCAT(LINE_, __LINE__), __##msg) \
+       = ::butil::CAssert<!!(expr)>::x };
 
 #endif  // BUTIL_CXX11_ENABLED
 
@@ -229,7 +229,7 @@ template <> struct CAssert<false> { static const char * x; };
 // The classical address-casting method is:
 //
 //   // WRONG
-//   float f = 3.14159265358979;            // WRONG
+//   float f = 3.14159265358979;      // WRONG
 //   int i = * reinterpret_cast<int*>(&f);  // WRONG
 //
 // The address-casting method actually produces undefined behavior
@@ -287,7 +287,7 @@ inline Dest bit_cast(const Source& source) {
 //
 //   scoped_ptr<MyType> my_var = ...;
 //   if (TakeOwnership(my_var.get()) == SUCCESS)
-//     ignore_result(my_var.release());
+//   ignore_result(my_var.release());
 //
 namespace butil {
 template<typename T>
@@ -305,9 +305,9 @@ inline void ignore_result(const T&) {
 // zeroes (which the loader does for static variables), AND the destructor also
 // does nothing to the storage, AND there are no virtual methods, then a
 // constructor declared as
-//       explicit MyClass(butil::LinkerInitialized x) {}
+//     explicit MyClass(butil::LinkerInitialized x) {}
 // and invoked as
-//       static MyClass my_variable_name(butil::LINKER_INITIALIZED);
+//     static MyClass my_variable_name(butil::LINKER_INITIALIZED);
 namespace butil {
 enum LinkerInitialized { LINKER_INITIALIZED };
 
@@ -339,13 +339,13 @@ enum LinkerInitialized { LINKER_INITIALIZED };
 # endif // BUTIL_CXX11_ENABLED
 #endif  // BAIDU_TYPEOF
 
-// ptr:     the pointer to the member.
-// type:    the type of the container struct this is embedded in.
+// ptr:   the pointer to the member.
+// type:  the type of the container struct this is embedded in.
 // member:  the name of the member within the struct.
 #ifndef container_of
-# define container_of(ptr, type, member) ({                             \
-            const BAIDU_TYPEOF( ((type *)0)->member ) *__mptr = (ptr);  \
-            (type *)( (char *)__mptr - offsetof(type,member) );})
+# define container_of(ptr, type, member) ({               \
+      const BAIDU_TYPEOF( ((type *)0)->member ) *__mptr = (ptr);  \
+      (type *)( (char *)__mptr - offsetof(type,member) );})
 #endif
 
 // DEFINE_SMALL_ARRAY(MyType, my_array, size, 64);
@@ -358,57 +358,57 @@ enum LinkerInitialized { LINKER_INITIALIZED };
 namespace butil {
 namespace internal {
 template <typename T> struct ArrayDeleter {
-    ArrayDeleter() : arr(0) {}
-    ~ArrayDeleter() { delete[] arr; }
-    T* arr;
+  ArrayDeleter() : arr(0) {}
+  ~ArrayDeleter() { delete[] arr; }
+  T* arr;
 };
 }}
 
 // Many versions of clang does not support variable-length array with non-pod
 // types, have to implement the macro differently.
 #if !defined(__clang__)
-# define DEFINE_SMALL_ARRAY(Tp, name, size, maxsize)                    \
-    Tp* name = 0;                                                       \
-    const unsigned name##_size = (size);                                \
-    const unsigned name##_stack_array_size = (name##_size <= (maxsize) ? name##_size : 0); \
-    Tp name##_stack_array[name##_stack_array_size];                     \
-    ::butil::internal::ArrayDeleter<Tp> name##_array_deleter;            \
-    if (name##_stack_array_size) {                                      \
-        name = name##_stack_array;                                      \
-    } else {                                                            \
-        name = new (::std::nothrow) Tp[name##_size];                    \
-        name##_array_deleter.arr = name;                                \
-    }
+# define DEFINE_SMALL_ARRAY(Tp, name, size, maxsize)          \
+  Tp* name = 0;                             \
+  const unsigned name##_size = (size);                \
+  const unsigned name##_stack_array_size = (name##_size <= (maxsize) ? name##_size : 0); \
+  Tp name##_stack_array[name##_stack_array_size];           \
+  ::butil::internal::ArrayDeleter<Tp> name##_array_deleter;      \
+  if (name##_stack_array_size) {                    \
+    name = name##_stack_array;                    \
+  } else {                              \
+    name = new (::std::nothrow) Tp[name##_size];          \
+    name##_array_deleter.arr = name;                \
+  }
 #else
 // This implementation works for GCC as well, however it needs extra 16 bytes
 // for ArrayCtorDtor.
 namespace butil {
 namespace internal {
 template <typename T> struct ArrayCtorDtor {
-    ArrayCtorDtor(void* arr, unsigned size) : _arr((T*)arr), _size(size) {
-        for (unsigned i = 0; i < size; ++i) { new (_arr + i) T; }
-    }
-    ~ArrayCtorDtor() {
-        for (unsigned i = 0; i < _size; ++i) { _arr[i].~T(); }
-    }
+  ArrayCtorDtor(void* arr, unsigned size) : _arr((T*)arr), _size(size) {
+    for (unsigned i = 0; i < size; ++i) { new (_arr + i) T; }
+  }
+  ~ArrayCtorDtor() {
+    for (unsigned i = 0; i < _size; ++i) { _arr[i].~T(); }
+  }
 private:
-    T* _arr;
-    unsigned _size;
+  T* _arr;
+  unsigned _size;
 };
 }}
-# define DEFINE_SMALL_ARRAY(Tp, name, size, maxsize)                    \
-    Tp* name = 0;                                                       \
-    const unsigned name##_size = (size);                                \
-    const unsigned name##_stack_array_size = (name##_size <= (maxsize) ? name##_size : 0); \
-    char name##_stack_array[sizeof(Tp) * name##_stack_array_size];      \
-    ::butil::internal::ArrayDeleter<char> name##_array_deleter;          \
-    if (name##_stack_array_size) {                                      \
-        name = (Tp*)name##_stack_array;                                 \
-    } else {                                                            \
-        name = (Tp*)new (::std::nothrow) char[sizeof(Tp) * name##_size];\
-        name##_array_deleter.arr = (char*)name;                         \
-    }                                                                   \
-    const ::butil::internal::ArrayCtorDtor<Tp> name##_array_ctor_dtor(name, name##_size);
+# define DEFINE_SMALL_ARRAY(Tp, name, size, maxsize)          \
+  Tp* name = 0;                             \
+  const unsigned name##_size = (size);                \
+  const unsigned name##_stack_array_size = (name##_size <= (maxsize) ? name##_size : 0); \
+  char name##_stack_array[sizeof(Tp) * name##_stack_array_size];    \
+  ::butil::internal::ArrayDeleter<char> name##_array_deleter;      \
+  if (name##_stack_array_size) {                    \
+    name = (Tp*)name##_stack_array;                 \
+  } else {                              \
+    name = (Tp*)new (::std::nothrow) char[sizeof(Tp) * name##_size];\
+    name##_array_deleter.arr = (char*)name;             \
+  }                                   \
+  const ::butil::internal::ArrayCtorDtor<Tp> name##_array_ctor_dtor(name, name##_size);
 #endif // !defined(__clang__)
 #endif // defined(__cplusplus)
 
@@ -416,7 +416,7 @@ private:
 // 
 //   BAIDU_GLOBAL_INIT()
 //   {
-//       ... your code ...
+//     ... your code ...
 //   }
 //
 // Your can:
@@ -427,18 +427,18 @@ private:
 // Since the code run in global scope, quit with exit() or similar functions.
 
 #if defined(__cplusplus)
-# define BAIDU_GLOBAL_INIT                                      \
-namespace {  /*anonymous namespace */                           \
-    struct BAIDU_CONCAT(BaiduGlobalInit, __LINE__) {            \
-        BAIDU_CONCAT(BaiduGlobalInit, __LINE__)() { init(); }   \
-        void init();                                            \
-    } BAIDU_CONCAT(baidu_global_init_dummy_, __LINE__);         \
-}  /* anonymous namespace */                                    \
-    void BAIDU_CONCAT(BaiduGlobalInit, __LINE__)::init              
+# define BAIDU_GLOBAL_INIT                    \
+namespace {  /*anonymous namespace */               \
+  struct BAIDU_CONCAT(BaiduGlobalInit, __LINE__) {      \
+    BAIDU_CONCAT(BaiduGlobalInit, __LINE__)() { init(); }   \
+    void init();                      \
+  } BAIDU_CONCAT(baidu_global_init_dummy_, __LINE__);     \
+}  /* anonymous namespace */                  \
+  void BAIDU_CONCAT(BaiduGlobalInit, __LINE__)::init        
 #else
-# define BAIDU_GLOBAL_INIT                      \
-    static void __attribute__((constructor))    \
-    BAIDU_CONCAT(baidu_global_init_, __LINE__)
+# define BAIDU_GLOBAL_INIT            \
+  static void __attribute__((constructor))  \
+  BAIDU_CONCAT(baidu_global_init_, __LINE__)
 
 #endif  // __cplusplus
 

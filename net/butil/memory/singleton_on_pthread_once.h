@@ -27,9 +27,9 @@ namespace butil {
 
 template <typename T> class GetLeakySingleton {
 public:
-    static butil::subtle::AtomicWord g_leaky_singleton_untyped;
-    static pthread_once_t g_create_leaky_singleton_once;
-    static void create_leaky_singleton();
+  static butil::subtle::AtomicWord g_leaky_singleton_untyped;
+  static pthread_once_t g_create_leaky_singleton_once;
+  static void create_leaky_singleton();
 };
 template <typename T>
 butil::subtle::AtomicWord GetLeakySingleton<T>::g_leaky_singleton_untyped = 0;
@@ -39,10 +39,10 @@ pthread_once_t GetLeakySingleton<T>::g_create_leaky_singleton_once = PTHREAD_ONC
 
 template <typename T>
 void GetLeakySingleton<T>::create_leaky_singleton() {
-    T* obj = new T;
-    butil::subtle::Release_Store(
-        &g_leaky_singleton_untyped,
-        reinterpret_cast<butil::subtle::AtomicWord>(obj));
+  T* obj = new T;
+  butil::subtle::Release_Store(
+    &g_leaky_singleton_untyped,
+    reinterpret_cast<butil::subtle::AtomicWord>(obj));
 }
 
 // To get a never-deleted singleton of a type T, just call get_leaky_singleton<T>().
@@ -52,24 +52,24 @@ void GetLeakySingleton<T>::create_leaky_singleton() {
 // global variables.
 template <typename T>
 inline T* get_leaky_singleton() {
-    const butil::subtle::AtomicWord value = butil::subtle::Acquire_Load(
-        &GetLeakySingleton<T>::g_leaky_singleton_untyped);
-    if (value) {
-        return reinterpret_cast<T*>(value);
-    }
-    pthread_once(&GetLeakySingleton<T>::g_create_leaky_singleton_once,
-                 GetLeakySingleton<T>::create_leaky_singleton);
-    return reinterpret_cast<T*>(
-        GetLeakySingleton<T>::g_leaky_singleton_untyped);
+  const butil::subtle::AtomicWord value = butil::subtle::Acquire_Load(
+    &GetLeakySingleton<T>::g_leaky_singleton_untyped);
+  if (value) {
+    return reinterpret_cast<T*>(value);
+  }
+  pthread_once(&GetLeakySingleton<T>::g_create_leaky_singleton_once,
+         GetLeakySingleton<T>::create_leaky_singleton);
+  return reinterpret_cast<T*>(
+    GetLeakySingleton<T>::g_leaky_singleton_untyped);
 }
 
 // True(non-NULL) if the singleton is created.
 // The returned object (if not NULL) can be used directly.
 template <typename T>
 inline T* has_leaky_singleton() {
-    return reinterpret_cast<T*>(
-        butil::subtle::Acquire_Load(
-            &GetLeakySingleton<T>::g_leaky_singleton_untyped));
+  return reinterpret_cast<T*>(
+    butil::subtle::Acquire_Load(
+      &GetLeakySingleton<T>::g_leaky_singleton_untyped));
 }
 
 } // namespace butil

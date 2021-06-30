@@ -38,7 +38,7 @@ TEST_F(SysInfoTest, AmountOfFreeDiskSpace) {
   FilePath tmp_path;
   ASSERT_TRUE(butil::GetTempDir(&tmp_path));
   EXPECT_GT(butil::SysInfo::AmountOfFreeDiskSpace(tmp_path), 0)
-            << tmp_path.value();
+      << tmp_path.value();
 }
 
 #if defined(OS_WIN) || defined(OS_MACOSX)
@@ -47,8 +47,8 @@ TEST_F(SysInfoTest, OperatingSystemVersionNumbers) {
   int32_t os_minor_version = -1;
   int32_t os_bugfix_version = -1;
   butil::SysInfo::OperatingSystemVersionNumbers(&os_major_version,
-                                               &os_minor_version,
-                                               &os_bugfix_version);
+                         &os_minor_version,
+                         &os_bugfix_version);
   EXPECT_GT(os_major_version, -1);
   EXPECT_GT(os_minor_version, -1);
   EXPECT_GT(os_bugfix_version, -1);
@@ -72,12 +72,12 @@ TEST_F(SysInfoTest, GoogleChromeOSVersionNumbers) {
   int32_t os_minor_version = -1;
   int32_t os_bugfix_version = -1;
   const char* kLsbRelease =
-      "FOO=1234123.34.5\n"
-      "CHROMEOS_RELEASE_VERSION=1.2.3.4\n";
+    "FOO=1234123.34.5\n"
+    "CHROMEOS_RELEASE_VERSION=1.2.3.4\n";
   butil::SysInfo::SetChromeOSVersionInfoForTest(kLsbRelease, butil::Time());
   butil::SysInfo::OperatingSystemVersionNumbers(&os_major_version,
-                                               &os_minor_version,
-                                               &os_bugfix_version);
+                         &os_minor_version,
+                         &os_bugfix_version);
   EXPECT_EQ(1, os_major_version);
   EXPECT_EQ(2, os_minor_version);
   EXPECT_EQ(3, os_bugfix_version);
@@ -88,12 +88,12 @@ TEST_F(SysInfoTest, GoogleChromeOSVersionNumbersFirst) {
   int32_t os_minor_version = -1;
   int32_t os_bugfix_version = -1;
   const char* kLsbRelease =
-      "CHROMEOS_RELEASE_VERSION=1.2.3.4\n"
-      "FOO=1234123.34.5\n";
+    "CHROMEOS_RELEASE_VERSION=1.2.3.4\n"
+    "FOO=1234123.34.5\n";
   butil::SysInfo::SetChromeOSVersionInfoForTest(kLsbRelease, butil::Time());
   butil::SysInfo::OperatingSystemVersionNumbers(&os_major_version,
-                                               &os_minor_version,
-                                               &os_bugfix_version);
+                         &os_minor_version,
+                         &os_bugfix_version);
   EXPECT_EQ(1, os_major_version);
   EXPECT_EQ(2, os_minor_version);
   EXPECT_EQ(3, os_bugfix_version);
@@ -106,8 +106,8 @@ TEST_F(SysInfoTest, GoogleChromeOSNoVersionNumbers) {
   const char* kLsbRelease = "FOO=1234123.34.5\n";
   butil::SysInfo::SetChromeOSVersionInfoForTest(kLsbRelease, butil::Time());
   butil::SysInfo::OperatingSystemVersionNumbers(&os_major_version,
-                                               &os_minor_version,
-                                               &os_bugfix_version);
+                         &os_minor_version,
+                         &os_bugfix_version);
   EXPECT_EQ(0, os_major_version);
   EXPECT_EQ(0, os_minor_version);
   EXPECT_EQ(0, os_bugfix_version);
@@ -120,7 +120,7 @@ TEST_F(SysInfoTest, GoogleChromeOSLsbReleaseTime) {
   butil::SysInfo::SetChromeOSVersionInfoForTest(kLsbRelease, lsb_release_time);
   butil::Time parsed_lsb_release_time = butil::SysInfo::GetLsbReleaseTime();
   EXPECT_DOUBLE_EQ(lsb_release_time.ToDoubleT(),
-                   parsed_lsb_release_time.ToDoubleT());
+           parsed_lsb_release_time.ToDoubleT());
 }
 
 TEST_F(SysInfoTest, IsRunningOnChromeOS) {
@@ -128,19 +128,19 @@ TEST_F(SysInfoTest, IsRunningOnChromeOS) {
   EXPECT_FALSE(butil::SysInfo::IsRunningOnChromeOS());
 
   const char* kLsbRelease1 =
-      "CHROMEOS_RELEASE_NAME=Non Chrome OS\n"
-      "CHROMEOS_RELEASE_VERSION=1.2.3.4\n";
+    "CHROMEOS_RELEASE_NAME=Non Chrome OS\n"
+    "CHROMEOS_RELEASE_VERSION=1.2.3.4\n";
   butil::SysInfo::SetChromeOSVersionInfoForTest(kLsbRelease1, butil::Time());
   EXPECT_FALSE(butil::SysInfo::IsRunningOnChromeOS());
 
   const char* kLsbRelease2 =
-      "CHROMEOS_RELEASE_NAME=Chrome OS\n"
-      "CHROMEOS_RELEASE_VERSION=1.2.3.4\n";
+    "CHROMEOS_RELEASE_NAME=Chrome OS\n"
+    "CHROMEOS_RELEASE_VERSION=1.2.3.4\n";
   butil::SysInfo::SetChromeOSVersionInfoForTest(kLsbRelease2, butil::Time());
   EXPECT_TRUE(butil::SysInfo::IsRunningOnChromeOS());
 
   const char* kLsbRelease3 =
-      "CHROMEOS_RELEASE_NAME=Chromium OS\n";
+    "CHROMEOS_RELEASE_NAME=Chromium OS\n";
   butil::SysInfo::SetChromeOSVersionInfoForTest(kLsbRelease3, butil::Time());
   EXPECT_TRUE(butil::SysInfo::IsRunningOnChromeOS());
 }

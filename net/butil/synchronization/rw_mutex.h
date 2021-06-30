@@ -39,11 +39,11 @@ class RWMutex {
 class ReaderAutoLock {
  public:
   explicit ReaderAutoLock(RWMutex *mutex)
-      : mutex_(mutex) {
-    mutex_->ReaderLock();
+    : mutex_(mutex) {
+  mutex_->ReaderLock();
   }
   ~ReaderAutoLock() {
-    mutex_->ReaderUnlock();
+  mutex_->ReaderUnlock();
   }
 
  private:
@@ -55,11 +55,11 @@ class ReaderAutoLock {
 class WriterAutoLock {
  public:
   explicit WriterAutoLock(RWMutex *mutex)
-      : mutex_(mutex) {
-    mutex_->Lock();
+    : mutex_(mutex) {
+  mutex_->Lock();
   }
   ~WriterAutoLock() {
-    mutex_->Unlock();
+  mutex_->Unlock();
   }
 
  private:

@@ -13,7 +13,7 @@ namespace butil {
 ScopedLocale::ScopedLocale(const std::string& locale) {
   prev_locale_ = setlocale(LC_ALL, NULL);
   EXPECT_TRUE(setlocale(LC_ALL, locale.c_str()) != NULL) <<
-      "Failed to set locale: " << locale;
+    "Failed to set locale: " << locale;
 }
 
 ScopedLocale::~ScopedLocale() {

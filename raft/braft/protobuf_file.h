@@ -4,7 +4,7 @@
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 // 
-//     http://www.apache.org/licenses/LICENSE-2.0
+//   http://www.apache.org/licenses/LICENSE-2.0
 // 
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -28,16 +28,16 @@ namespace braft {
 // protobuf data
 class ProtoBufFile {
 public:
-    ProtoBufFile(const char* path, FileSystemAdaptor* fs = NULL);
-    ProtoBufFile(const std::string& path, FileSystemAdaptor* fs = NULL);
-    ~ProtoBufFile() {}
+  ProtoBufFile(const char* path, FileSystemAdaptor* fs = NULL);
+  ProtoBufFile(const std::string& path, FileSystemAdaptor* fs = NULL);
+  ~ProtoBufFile() {}
 
-    int save(const ::google::protobuf::Message* message, bool sync);
-    int load(::google::protobuf::Message* message);
+  int save(const ::google::protobuf::Message* message, bool sync);
+  int load(::google::protobuf::Message* message);
 
 private:
-    std::string _path;
-    scoped_refptr<FileSystemAdaptor> _fs;
+  std::string _path;
+  scoped_refptr<FileSystemAdaptor> _fs;
 };
 
 }

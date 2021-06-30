@@ -20,9 +20,9 @@ class BUTIL_EXPORT Location {
   // It assumes the provided value will persist as a global constant, and it
   // will not make a copy of it.
   Location(const char* function_name,
-           const char* file_name,
-           int line_number,
-           const void* program_counter);
+       const char* file_name,
+       int line_number,
+       const void* program_counter);
 
   // Provide a default constructor for easy of debugging.
   Location();
@@ -34,16 +34,16 @@ class BUTIL_EXPORT Location {
   // a difference), and then pointers as secondary keys (just to get some
   // distinctions).
   bool operator < (const Location& other) const {
-    if (line_number_ != other.line_number_)
-      return line_number_ < other.line_number_;
-    if (file_name_ != other.file_name_)
-      return file_name_ < other.file_name_;
-    return function_name_ < other.function_name_;
+  if (line_number_ != other.line_number_)
+    return line_number_ < other.line_number_;
+  if (file_name_ != other.file_name_)
+    return file_name_ < other.file_name_;
+  return function_name_ < other.function_name_;
   }
 
   const char* function_name()   const { return function_name_; }
-  const char* file_name()       const { return file_name_; }
-  int line_number()             const { return line_number_; }
+  const char* file_name()     const { return file_name_; }
+  int line_number()       const { return line_number_; }
   const void* program_counter() const { return program_counter_; }
 
   std::string ToString() const;
@@ -53,7 +53,7 @@ class BUTIL_EXPORT Location {
   // string to |output|.  Inclusion of the file_name_ and function_name_ are
   // optional, and controlled by the boolean arguments.
   void Write(bool display_filename, bool display_function_name,
-             std::string* output) const;
+       std::string* output) const;
 
   // Write function_name_ in HTML with '<' and '>' properly encoded.
   void WriteFunctionName(std::string* output) const;
@@ -83,11 +83,11 @@ BUTIL_EXPORT const void* GetProgramCounter();
 // Define a macro to record the current source location.
 #define FROM_HERE FROM_HERE_WITH_EXPLICIT_FUNCTION(__FUNCTION__)
 
-#define FROM_HERE_WITH_EXPLICIT_FUNCTION(function_name)                        \
-    ::tracked_objects::Location(function_name,                                 \
-                                __FILE__,                                      \
-                                __LINE__,                                      \
-                                ::tracked_objects::GetProgramCounter())
+#define FROM_HERE_WITH_EXPLICIT_FUNCTION(function_name)            \
+  ::tracked_objects::Location(function_name,                 \
+                __FILE__,                    \
+                __LINE__,                    \
+                ::tracked_objects::GetProgramCounter())
 
 }  // namespace tracked_objects
 

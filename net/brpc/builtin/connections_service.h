@@ -29,16 +29,16 @@ namespace brpc {
 class Acceptor;
 class ConnectionsService : public connections, public Tabbed {
 public:
-    void default_method(::google::protobuf::RpcController* cntl_base,
-                        const ::brpc::ConnectionsRequest* request,
-                        ::brpc::ConnectionsResponse* response,
-                        ::google::protobuf::Closure* done);
+  void default_method(::google::protobuf::RpcController* cntl_base,
+            const ::brpc::ConnectionsRequest* request,
+            ::brpc::ConnectionsResponse* response,
+            ::google::protobuf::Closure* done);
 
-    void GetTabInfo(TabInfoList* info_list) const;
-    
+  void GetTabInfo(TabInfoList* info_list) const;
+  
 private:
-    void PrintConnections(std::ostream& os, const std::vector<SocketId>& conns,
-                          bool use_html, const Server*, bool need_local) const;
+  void PrintConnections(std::ostream& os, const std::vector<SocketId>& conns,
+              bool use_html, const Server*, bool need_local) const;
 };
 
 } // namespace brpc

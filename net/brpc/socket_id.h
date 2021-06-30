@@ -22,8 +22,8 @@
 // To brpc developers: This is a header included by user, don't depend
 // on internal structures, use opaque pointers instead.
 
-#include <stdint.h>               // uint64_t
-#include "butil/unique_ptr.h"      // std::unique_ptr
+#include <stdint.h>         // uint64_t
+#include "butil/unique_ptr.h"    // std::unique_ptr
 
 
 namespace brpc {
@@ -41,9 +41,9 @@ class Socket;
 extern void DereferenceSocket(Socket*);
 
 struct SocketDeleter {
-    void operator()(Socket* m) const {
-        DereferenceSocket(m);
-    }
+  void operator()(Socket* m) const {
+    DereferenceSocket(m);
+  }
 };
 
 typedef std::unique_ptr<Socket, SocketDeleter> SocketUniquePtr;

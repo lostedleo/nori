@@ -31,7 +31,7 @@ namespace brpc {
 // Possible options are: short, pooled, single
 // Returns: CONNECTION_TYPE_UNKNOWN on error.
 ConnectionType StringToConnectionType(const butil::StringPiece& type,
-                                      bool print_log_on_unknown);
+                    bool print_log_on_unknown);
 inline ConnectionType StringToConnectionType(const butil::StringPiece& type)
 { return StringToConnectionType(type, true); }
 
@@ -41,27 +41,27 @@ const char* ConnectionTypeToString(ConnectionType);
 // Assignable by both ConnectionType and names.
 class AdaptiveConnectionType {
 public:
-    AdaptiveConnectionType() : _type(CONNECTION_TYPE_UNKNOWN), _error(false) {}
-    AdaptiveConnectionType(ConnectionType type) : _type(type), _error(false) {}
-    ~AdaptiveConnectionType() {}
+  AdaptiveConnectionType() : _type(CONNECTION_TYPE_UNKNOWN), _error(false) {}
+  AdaptiveConnectionType(ConnectionType type) : _type(type), _error(false) {}
+  ~AdaptiveConnectionType() {}
 
-    void operator=(ConnectionType type) {
-        _type = type;
-        _error = false;
-    }
-    void operator=(const butil::StringPiece& name);
+  void operator=(ConnectionType type) {
+    _type = type;
+    _error = false;
+  }
+  void operator=(const butil::StringPiece& name);
 
-    operator ConnectionType() const { return _type; }
-    const char* name() const { return ConnectionTypeToString(_type); }
-    bool has_error() const { return _error; }
+  operator ConnectionType() const { return _type; }
+  const char* name() const { return ConnectionTypeToString(_type); }
+  bool has_error() const { return _error; }
 
 private:
-    ConnectionType _type;
-    // Since this structure occupies 8 bytes in 64-bit machines anyway,
-    // we add a field to mark if last operator=(name) failed so that
-    // channel can print a error log before re-selecting a valid
-    // ConnectionType for user.
-    bool _error;
+  ConnectionType _type;
+  // Since this structure occupies 8 bytes in 64-bit machines anyway,
+  // we add a field to mark if last operator=(name) failed so that
+  // channel can print a error log before re-selecting a valid
+  // ConnectionType for user.
+  bool _error;
 };
 
 } // namespace brpc

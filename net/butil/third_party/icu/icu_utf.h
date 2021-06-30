@@ -55,9 +55,9 @@ typedef int8_t UBool;
  * @stable ICU 2.4
  */
 #define CBU_IS_UNICODE_NONCHAR(c) \
-    ((c)>=0xfdd0 && \
-     ((uint32_t)(c)<=0xfdef || ((c)&0xfffe)==0xfffe) && \
-     (uint32_t)(c)<=0x10ffff)
+  ((c)>=0xfdd0 && \
+   ((uint32_t)(c)<=0xfdef || ((c)&0xfffe)==0xfffe) && \
+   (uint32_t)(c)<=0x10ffff)
 
 /**
  * Is c a Unicode code point value (0..U+10ffff)
@@ -77,10 +77,10 @@ typedef int8_t UBool;
  * @stable ICU 2.4
  */
 #define CBU_IS_UNICODE_CHAR(c) \
-    ((uint32_t)(c)<0xd800 || \
-        ((uint32_t)(c)>0xdfff && \
-         (uint32_t)(c)<=0x10ffff && \
-         !CBU_IS_UNICODE_NONCHAR(c)))
+  ((uint32_t)(c)<0xd800 || \
+    ((uint32_t)(c)>0xdfff && \
+     (uint32_t)(c)<=0x10ffff && \
+     !CBU_IS_UNICODE_NONCHAR(c)))
 
 /**
  * Is this code point a surrogate (U+d800..U+dfff)?
@@ -149,15 +149,15 @@ extern const uint8_t utf8_countTrailBytes[256];
  * @stable ICU 2.4
  */
 #define CBU8_LENGTH(c) \
-    ((uint32_t)(c)<=0x7f ? 1 : \
-        ((uint32_t)(c)<=0x7ff ? 2 : \
-            ((uint32_t)(c)<=0xd7ff ? 3 : \
-                ((uint32_t)(c)<=0xdfff || (uint32_t)(c)>0x10ffff ? 0 : \
-                    ((uint32_t)(c)<=0xffff ? 3 : 4)\
-                ) \
-            ) \
+  ((uint32_t)(c)<=0x7f ? 1 : \
+    ((uint32_t)(c)<=0x7ff ? 2 : \
+      ((uint32_t)(c)<=0xd7ff ? 3 : \
+        ((uint32_t)(c)<=0xdfff || (uint32_t)(c)>0x10ffff ? 0 : \
+          ((uint32_t)(c)<=0xffff ? 3 : 4)\
         ) \
-    )
+      ) \
+    ) \
+  )
 
 /**
  * The maximum number of UTF-8 code units (bytes) per Unicode code point (U+0000..U+10ffff).
@@ -191,14 +191,14 @@ UChar32 utf8_nextCharSafeBody(const uint8_t *s, int32_t *pi, int32_t length, UCh
  * @stable ICU 2.4
  */
 #define CBU8_NEXT(s, i, length, c) { \
-    (c)=(s)[(i)++]; \
-    if(((uint8_t)(c))>=0x80) { \
-        if(CBU8_IS_LEAD(c)) { \
-            (c)=base_icu::utf8_nextCharSafeBody((const uint8_t *)s, &(i), (int32_t)(length), c, -1); \
-        } else { \
-            (c)=(base_icu::UChar32)CBU_SENTINEL;        \
-        } \
+  (c)=(s)[(i)++]; \
+  if(((uint8_t)(c))>=0x80) { \
+    if(CBU8_IS_LEAD(c)) { \
+      (c)=base_icu::utf8_nextCharSafeBody((const uint8_t *)s, &(i), (int32_t)(length), c, -1); \
+    } else { \
+      (c)=(base_icu::UChar32)CBU_SENTINEL;    \
     } \
+  } \
 }
 
 /**
@@ -215,22 +215,22 @@ UChar32 utf8_nextCharSafeBody(const uint8_t *s, int32_t *pi, int32_t length, UCh
  * @stable ICU 2.4
  */
 #define CBU8_APPEND_UNSAFE(s, i, c) { \
-    if((uint32_t)(c)<=0x7f) { \
-        (s)[(i)++]=(uint8_t)(c); \
+  if((uint32_t)(c)<=0x7f) { \
+    (s)[(i)++]=(uint8_t)(c); \
+  } else { \
+    if((uint32_t)(c)<=0x7ff) { \
+      (s)[(i)++]=(uint8_t)(((c)>>6)|0xc0); \
     } else { \
-        if((uint32_t)(c)<=0x7ff) { \
-            (s)[(i)++]=(uint8_t)(((c)>>6)|0xc0); \
-        } else { \
-            if((uint32_t)(c)<=0xffff) { \
-                (s)[(i)++]=(uint8_t)(((c)>>12)|0xe0); \
-            } else { \
-                (s)[(i)++]=(uint8_t)(((c)>>18)|0xf0); \
-                (s)[(i)++]=(uint8_t)((((c)>>12)&0x3f)|0x80); \
-            } \
-            (s)[(i)++]=(uint8_t)((((c)>>6)&0x3f)|0x80); \
-        } \
-        (s)[(i)++]=(uint8_t)(((c)&0x3f)|0x80); \
+      if((uint32_t)(c)<=0xffff) { \
+        (s)[(i)++]=(uint8_t)(((c)>>12)|0xe0); \
+      } else { \
+        (s)[(i)++]=(uint8_t)(((c)>>18)|0xf0); \
+        (s)[(i)++]=(uint8_t)((((c)>>12)&0x3f)|0x80); \
+      } \
+      (s)[(i)++]=(uint8_t)((((c)>>6)&0x3f)|0x80); \
     } \
+    (s)[(i)++]=(uint8_t)(((c)&0x3f)|0x80); \
+  } \
 }
 
 // UTF-16 macros ---------------------------------------------------------------
@@ -295,7 +295,7 @@ UChar32 utf8_nextCharSafeBody(const uint8_t *s, int32_t *pi, int32_t length, UCh
  * @stable ICU 2.4
  */
 #define CBU16_GET_SUPPLEMENTARY(lead, trail) \
-    (((base_icu::UChar32)(lead)<<10UL)+(base_icu::UChar32)(trail)-CBU16_SURROGATE_OFFSET)
+  (((base_icu::UChar32)(lead)<<10UL)+(base_icu::UChar32)(trail)-CBU16_SURROGATE_OFFSET)
 
 
 /**
@@ -306,7 +306,7 @@ UChar32 utf8_nextCharSafeBody(const uint8_t *s, int32_t *pi, int32_t length, UCh
  * @stable ICU 2.4
  */
 #define CBU16_LEAD(supplementary) \
-    (base_icu::UChar)(((supplementary)>>10)+0xd7c0)
+  (base_icu::UChar)(((supplementary)>>10)+0xd7c0)
 
 /**
  * Get the trail surrogate (0xdc00..0xdfff) for a
@@ -316,7 +316,7 @@ UChar32 utf8_nextCharSafeBody(const uint8_t *s, int32_t *pi, int32_t length, UCh
  * @stable ICU 2.4
  */
 #define CBU16_TRAIL(supplementary) \
-    (base_icu::UChar)(((supplementary)&0x3ff)|0xdc00)
+  (base_icu::UChar)(((supplementary)&0x3ff)|0xdc00)
 
 /**
  * How many 16-bit code units are used to encode this Unicode code point? (1 or 2)
@@ -354,14 +354,14 @@ UChar32 utf8_nextCharSafeBody(const uint8_t *s, int32_t *pi, int32_t length, UCh
  * @stable ICU 2.4
  */
 #define CBU16_NEXT(s, i, length, c) { \
-    (c)=(s)[(i)++]; \
-    if(CBU16_IS_LEAD(c)) { \
-        uint16_t __c2; \
-        if((i)<(length) && CBU16_IS_TRAIL(__c2=(s)[(i)])) { \
-            ++(i); \
-            (c)=CBU16_GET_SUPPLEMENTARY((c), __c2); \
-        } \
+  (c)=(s)[(i)++]; \
+  if(CBU16_IS_LEAD(c)) { \
+    uint16_t __c2; \
+    if((i)<(length) && CBU16_IS_TRAIL(__c2=(s)[(i)])) { \
+      ++(i); \
+      (c)=CBU16_GET_SUPPLEMENTARY((c), __c2); \
     } \
+  } \
 }
 
 /**
@@ -378,12 +378,12 @@ UChar32 utf8_nextCharSafeBody(const uint8_t *s, int32_t *pi, int32_t length, UCh
  * @stable ICU 2.4
  */
 #define CBU16_APPEND_UNSAFE(s, i, c) { \
-    if((uint32_t)(c)<=0xffff) { \
-        (s)[(i)++]=(uint16_t)(c); \
-    } else { \
-        (s)[(i)++]=(uint16_t)(((c)>>10)+0xd7c0); \
-        (s)[(i)++]=(uint16_t)(((c)&0x3ff)|0xdc00); \
-    } \
+  if((uint32_t)(c)<=0xffff) { \
+    (s)[(i)++]=(uint16_t)(c); \
+  } else { \
+    (s)[(i)++]=(uint16_t)(((c)>>10)+0xd7c0); \
+    (s)[(i)++]=(uint16_t)(((c)&0x3ff)|0xdc00); \
+  } \
 }
 
 }  // namesapce base_icu

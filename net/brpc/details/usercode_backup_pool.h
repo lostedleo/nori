@@ -44,8 +44,8 @@ void RunUserCode(void (*fn)(void*), void* arg);
 // RPC code should check this function before submitting operations that have
 // user code to run laterly.
 inline bool TooManyUserCode() {
-    extern bool g_too_many_usercode;
-    return g_too_many_usercode;
+  extern bool g_too_many_usercode;
+  return g_too_many_usercode;
 }
 
 // If this function returns true, the user code is suggested to be run in-place
@@ -54,14 +54,14 @@ inline bool TooManyUserCode() {
 // in backup threads.
 // Check RunUserCode() below to see the usage pattern.
 inline bool BeginRunningUserCode() {
-    extern butil::static_atomic<int> g_usercode_inplace;
-    return (g_usercode_inplace.fetch_add(1, butil::memory_order_relaxed)
-            + FLAGS_usercode_backup_threads) < bthread_getconcurrency();
+  extern butil::static_atomic<int> g_usercode_inplace;
+  return (g_usercode_inplace.fetch_add(1, butil::memory_order_relaxed)
+      + FLAGS_usercode_backup_threads) < bthread_getconcurrency();
 }
 
 inline void EndRunningUserCodeInPlace() {
-    extern butil::static_atomic<int> g_usercode_inplace;
-    g_usercode_inplace.fetch_sub(1, butil::memory_order_relaxed);
+  extern butil::static_atomic<int> g_usercode_inplace;
+  g_usercode_inplace.fetch_sub(1, butil::memory_order_relaxed);
 }
 
 void EndRunningUserCodeInPool(void (*fn)(void*), void* arg);
@@ -70,12 +70,12 @@ void EndRunningUserCodeInPool(void (*fn)(void*), void* arg);
 // has to be new-ed even for in-place cases. If performance is critical, use
 // the BeginXXX/EndXXX pattern.
 inline void RunUserCode(void (*fn)(void*), void* arg) {
-    if (BeginRunningUserCode()) {
-        fn(arg);
-        EndRunningUserCodeInPlace();
-    } else {
-        EndRunningUserCodeInPool(fn, arg);
-    }
+  if (BeginRunningUserCode()) {
+    fn(arg);
+    EndRunningUserCodeInPlace();
+  } else {
+    EndRunningUserCodeInPool(fn, arg);
+  }
 }
 
 // [Optional] initialize the pool of backup threads. If this function is not

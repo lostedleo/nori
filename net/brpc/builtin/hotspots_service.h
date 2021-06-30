@@ -30,47 +30,47 @@ class Server;
 
 class HotspotsService : public hotspots, public Tabbed {
 public:
-    void cpu(::google::protobuf::RpcController* cntl_base,
-             const ::brpc::HotspotsRequest* request,
-             ::brpc::HotspotsResponse* response,
-             ::google::protobuf::Closure* done);
-    
-    void heap(::google::protobuf::RpcController* cntl_base,
+  void cpu(::google::protobuf::RpcController* cntl_base,
+       const ::brpc::HotspotsRequest* request,
+       ::brpc::HotspotsResponse* response,
+       ::google::protobuf::Closure* done);
+  
+  void heap(::google::protobuf::RpcController* cntl_base,
+        const ::brpc::HotspotsRequest* request,
+        ::brpc::HotspotsResponse* response,
+        ::google::protobuf::Closure* done);
+
+  void growth(::google::protobuf::RpcController* cntl_base,
+        const ::brpc::HotspotsRequest* request,
+        ::brpc::HotspotsResponse* response,
+        ::google::protobuf::Closure* done);
+
+  void contention(::google::protobuf::RpcController* cntl_base,
+          const ::brpc::HotspotsRequest* request,
+          ::brpc::HotspotsResponse* response,
+          ::google::protobuf::Closure* done);
+
+  void cpu_non_responsive(::google::protobuf::RpcController* cntl_base,
               const ::brpc::HotspotsRequest* request,
               ::brpc::HotspotsResponse* response,
               ::google::protobuf::Closure* done);
 
-    void growth(::google::protobuf::RpcController* cntl_base,
-                const ::brpc::HotspotsRequest* request,
-                ::brpc::HotspotsResponse* response,
-                ::google::protobuf::Closure* done);
+  void heap_non_responsive(::google::protobuf::RpcController* cntl_base,
+              const ::brpc::HotspotsRequest* request,
+              ::brpc::HotspotsResponse* response,
+              ::google::protobuf::Closure* done);
+  
+  void growth_non_responsive(::google::protobuf::RpcController* cntl_base,
+                 const ::brpc::HotspotsRequest* request,
+                 ::brpc::HotspotsResponse* response,
+                 ::google::protobuf::Closure* done);
 
-    void contention(::google::protobuf::RpcController* cntl_base,
-                    const ::brpc::HotspotsRequest* request,
-                    ::brpc::HotspotsResponse* response,
-                    ::google::protobuf::Closure* done);
+  void contention_non_responsive(::google::protobuf::RpcController* cntl_base,
+                   const ::brpc::HotspotsRequest* request,
+                   ::brpc::HotspotsResponse* response,
+                   ::google::protobuf::Closure* done);
 
-    void cpu_non_responsive(::google::protobuf::RpcController* cntl_base,
-                            const ::brpc::HotspotsRequest* request,
-                            ::brpc::HotspotsResponse* response,
-                            ::google::protobuf::Closure* done);
-
-    void heap_non_responsive(::google::protobuf::RpcController* cntl_base,
-                            const ::brpc::HotspotsRequest* request,
-                            ::brpc::HotspotsResponse* response,
-                            ::google::protobuf::Closure* done);
-    
-    void growth_non_responsive(::google::protobuf::RpcController* cntl_base,
-                               const ::brpc::HotspotsRequest* request,
-                               ::brpc::HotspotsResponse* response,
-                               ::google::protobuf::Closure* done);
-
-    void contention_non_responsive(::google::protobuf::RpcController* cntl_base,
-                                   const ::brpc::HotspotsRequest* request,
-                                   ::brpc::HotspotsResponse* response,
-                                   ::google::protobuf::Closure* done);
-
-    void GetTabInfo(brpc::TabInfoList*) const;
+  void GetTabInfo(brpc::TabInfoList*) const;
 };
 
 } // namespace brpc

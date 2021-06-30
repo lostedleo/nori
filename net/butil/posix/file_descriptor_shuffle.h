@@ -56,25 +56,25 @@ class BUTIL_EXPORT FileDescriptorTableInjection : public InjectionDelegate {
 // A single arc of the directed graph which describes an injective multimapping.
 struct InjectionArc {
   InjectionArc(int in_source, int in_dest, bool in_close)
-      : source(in_source),
-        dest(in_dest),
-        close(in_close) {
+    : source(in_source),
+    dest(in_dest),
+    close(in_close) {
   }
 
   int source;
   int dest;
   bool close;  // if true, delete the source element after performing the
-               // mapping.
+         // mapping.
 };
 
 typedef std::vector<InjectionArc> InjectiveMultimap;
 
 BUTIL_EXPORT bool PerformInjectiveMultimap(const InjectiveMultimap& map,
-                                          InjectionDelegate* delegate);
+                      InjectionDelegate* delegate);
 
 BUTIL_EXPORT bool PerformInjectiveMultimapDestructive(
-    InjectiveMultimap* map,
-    InjectionDelegate* delegate);
+  InjectiveMultimap* map,
+  InjectionDelegate* delegate);
 
 // This function will not call malloc but will mutate |map|
 static inline bool ShuffleFileDescriptors(InjectiveMultimap* map) {

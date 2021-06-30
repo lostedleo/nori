@@ -41,26 +41,26 @@ TEST(LeakTrackerTest, NotEnabled) {
 
 TEST(LeakTrackerTest, Basic) {
   {
-    ClassA a1;
+  ClassA a1;
 
-    EXPECT_EQ(1, LeakTracker<ClassA>::NumLiveInstances());
-    EXPECT_EQ(0, LeakTracker<ClassB>::NumLiveInstances());
+  EXPECT_EQ(1, LeakTracker<ClassA>::NumLiveInstances());
+  EXPECT_EQ(0, LeakTracker<ClassB>::NumLiveInstances());
 
-    ClassB b1;
-    ClassB b2;
+  ClassB b1;
+  ClassB b2;
 
-    EXPECT_EQ(1, LeakTracker<ClassA>::NumLiveInstances());
-    EXPECT_EQ(2, LeakTracker<ClassB>::NumLiveInstances());
+  EXPECT_EQ(1, LeakTracker<ClassA>::NumLiveInstances());
+  EXPECT_EQ(2, LeakTracker<ClassB>::NumLiveInstances());
 
-    scoped_ptr<ClassA> a2(new ClassA);
+  scoped_ptr<ClassA> a2(new ClassA);
 
-    EXPECT_EQ(2, LeakTracker<ClassA>::NumLiveInstances());
-    EXPECT_EQ(2, LeakTracker<ClassB>::NumLiveInstances());
+  EXPECT_EQ(2, LeakTracker<ClassA>::NumLiveInstances());
+  EXPECT_EQ(2, LeakTracker<ClassB>::NumLiveInstances());
 
-    a2.reset();
+  a2.reset();
 
-    EXPECT_EQ(1, LeakTracker<ClassA>::NumLiveInstances());
-    EXPECT_EQ(2, LeakTracker<ClassB>::NumLiveInstances());
+  EXPECT_EQ(1, LeakTracker<ClassA>::NumLiveInstances());
+  EXPECT_EQ(2, LeakTracker<ClassB>::NumLiveInstances());
   }
 
   EXPECT_EQ(0, LeakTracker<ClassA>::NumLiveInstances());

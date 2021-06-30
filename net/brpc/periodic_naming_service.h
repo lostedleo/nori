@@ -26,11 +26,11 @@ namespace brpc {
 
 class PeriodicNamingService : public NamingService {
 protected:
-    virtual int GetServers(const char *service_name,
-                           std::vector<ServerNode>* servers) = 0;
-    
-    int RunNamingService(const char* service_name,
-                         NamingServiceActions* actions);
+  virtual int GetServers(const char *service_name,
+               std::vector<ServerNode>* servers) = 0;
+  
+  int RunNamingService(const char* service_name,
+             NamingServiceActions* actions);
 };
 
 } // namespace brpc

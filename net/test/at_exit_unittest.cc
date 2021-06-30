@@ -74,6 +74,6 @@ TEST_F(AtExitTest, LIFOOrder) {
 TEST_F(AtExitTest, Param) {
   butil::AtExitManager::RegisterCallback(&ExpectParamIsNull, NULL);
   butil::AtExitManager::RegisterCallback(&ExpectParamIsCounter,
-                                        &g_test_counter_1);
+                    &g_test_counter_1);
   butil::AtExitManager::ProcessCallbacksNow();
 }

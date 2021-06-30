@@ -32,7 +32,8 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
 endif()
 
 set(CMAKE_CPP_FLAGS "${CMAKE_CPP_FLAGS} -DBTHREAD_USE_FAST_PTHREAD_MUTEX -D__const__= -D_GNU_SOURCE -DUSE_SYMBOLIZE -DNO_TCMALLOC -D__STDC_FORMAT_MACROS -D__STDC_LIMIT_MACROS -D__STDC_CONSTANT_MACROS -DUNIT_TEST -Dprivate=public -Dprotected=public -DBVAR_NOT_LINK_DEFAULT_VARIABLES -D__STRICT_ANSI__ -include ${PROJECT_SOURCE_DIR}/test/sstream_workaround.h")
-set(CMAKE_CXX_FLAGS "${CMAKE_CPP_FLAGS} -g -O2 -pipe -Wall -W -fPIC -fstrict-aliasing -Wno-invalid-offsetof -Wno-unused-parameter -fno-omit-frame-pointer")
+set(CMAKE_CPP_FLAGS "${CMAKE_CPP_FLAGS} -Wno-self-assign-overloaded")
+set(CMAKE_CXX_FLAGS "${CMAKE_CPP_FLAGS}")
 
 file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/cert1.key DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
 file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/cert2.key DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
@@ -145,13 +146,6 @@ if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
   set(TEST_BUTIL_SOURCES ${TEST_BUTIL_SOURCES}
     ${CMAKE_CURRENT_SOURCE_DIR}/proc_maps_linux_unittest.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/test_file_util_linux.cc)
-endif()
-
-if(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
-    set(DYNAMIC_LIB ${DYNAMIC_LIB}
-                    "-Wl,-U,_bthread_getspecific"
-                    "-Wl,-U,_bthread_setspecific"
-                    "-Wl,-U,_bthread_key_create")
 endif()
 
 file(GLOB TEST_BVAR_SRCS "bvar_*_unittest.cpp")

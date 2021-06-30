@@ -15,10 +15,10 @@ template <typename T>
 class CommonStringPieceTest : public ::testing::Test {
  public:
   static const T as_string(const char* input) {
-    return T(input);
+  return T(input);
   }
   static const T& as_string(const T& input) {
-    return input;
+  return input;
   }
 };
 
@@ -26,10 +26,10 @@ template <>
 class CommonStringPieceTest<string16> : public ::testing::Test {
  public:
   static const string16 as_string(const char* input) {
-    return ASCIIToUTF16(input);
+  return ASCIIToUTF16(input);
   }
   static const string16 as_string(const std::string& input) {
-    return ASCIIToUTF16(input);
+  return ASCIIToUTF16(input);
   }
 };
 
@@ -38,24 +38,24 @@ typedef ::testing::Types<std::string, string16> SupportedStringTypes;
 TYPED_TEST_CASE(CommonStringPieceTest, SupportedStringTypes);
 
 TYPED_TEST(CommonStringPieceTest, CheckComparisonOperators) {
-#define CMP_Y(op, x, y)                                                    \
-  {                                                                        \
-    TypeParam lhs(TestFixture::as_string(x));                              \
-    TypeParam rhs(TestFixture::as_string(y));                              \
-    ASSERT_TRUE( (BasicStringPiece<TypeParam>((lhs.c_str())) op            \
-                  BasicStringPiece<TypeParam>((rhs.c_str()))));            \
-    ASSERT_TRUE( (BasicStringPiece<TypeParam>((lhs.c_str())).compare(      \
-                      BasicStringPiece<TypeParam>((rhs.c_str()))) op 0));  \
+#define CMP_Y(op, x, y)                          \
+  {                                    \
+  TypeParam lhs(TestFixture::as_string(x));                \
+  TypeParam rhs(TestFixture::as_string(y));                \
+  ASSERT_TRUE( (BasicStringPiece<TypeParam>((lhs.c_str())) op      \
+          BasicStringPiece<TypeParam>((rhs.c_str()))));      \
+  ASSERT_TRUE( (BasicStringPiece<TypeParam>((lhs.c_str())).compare(    \
+            BasicStringPiece<TypeParam>((rhs.c_str()))) op 0));  \
   }
 
-#define CMP_N(op, x, y)                                                    \
-  {                                                                        \
-    TypeParam lhs(TestFixture::as_string(x));                              \
-    TypeParam rhs(TestFixture::as_string(y));                              \
-    ASSERT_FALSE( (BasicStringPiece<TypeParam>((lhs.c_str())) op           \
-                  BasicStringPiece<TypeParam>((rhs.c_str()))));            \
-    ASSERT_FALSE( (BasicStringPiece<TypeParam>((lhs.c_str())).compare(     \
-                      BasicStringPiece<TypeParam>((rhs.c_str()))) op 0));  \
+#define CMP_N(op, x, y)                          \
+  {                                    \
+  TypeParam lhs(TestFixture::as_string(x));                \
+  TypeParam rhs(TestFixture::as_string(y));                \
+  ASSERT_FALSE( (BasicStringPiece<TypeParam>((lhs.c_str())) op       \
+          BasicStringPiece<TypeParam>((rhs.c_str()))));      \
+  ASSERT_FALSE( (BasicStringPiece<TypeParam>((lhs.c_str())).compare(   \
+            BasicStringPiece<TypeParam>((rhs.c_str()))) op 0));  \
   }
 
   CMP_Y(==, "",   "");
@@ -118,14 +118,14 @@ TYPED_TEST(CommonStringPieceTest, CheckComparisonOperators) {
 
   std::string x;
   for (int i = 0; i < 256; i++) {
-    x += 'a';
-    std::string y = x;
-    CMP_Y(==, x, y);
-    for (int j = 0; j < i; j++) {
-      std::string z = x;
-      z[j] = 'b';       // Differs in position 'j'
-      CMP_N(==, x, z);
-    }
+  x += 'a';
+  std::string y = x;
+  CMP_Y(==, x, y);
+  for (int j = 0; j < i; j++) {
+    std::string z = x;
+    z[j] = 'b';     // Differs in position 'j'
+    CMP_N(==, x, z);
+  }
   }
 
 #undef CMP_Y
@@ -164,7 +164,7 @@ TYPED_TEST(CommonStringPieceTest, CheckSTL) {
 
   ASSERT_EQ(*a.rbegin(), static_cast<typename TypeParam::value_type>('z'));
   ASSERT_EQ(*(b.rbegin() + 2),
-            static_cast<typename TypeParam::value_type>('a'));
+      static_cast<typename TypeParam::value_type>('a'));
   ASSERT_EQ(*(c.rend() - 1), static_cast<typename TypeParam::value_type>('x'));
   ASSERT_TRUE(a.rbegin() + 26 == a.rend());
 
@@ -628,9 +628,9 @@ TEST(StringPieceTest, CheckComparisons2) {
 
 TYPED_TEST(CommonStringPieceTest, StringCompareNotAmbiguous) {
   ASSERT_TRUE(TestFixture::as_string("hello").c_str() ==
-              TestFixture::as_string("hello"));
+        TestFixture::as_string("hello"));
   ASSERT_TRUE(TestFixture::as_string("hello").c_str() <
-              TestFixture::as_string("world"));
+        TestFixture::as_string("world"));
 }
 
 TYPED_TEST(CommonStringPieceTest, HeterogenousStringPieceEquals) {
@@ -661,9 +661,9 @@ TEST(StringPiece16Test, CheckConversion) {
   // Make sure that we can convert from UTF8 to UTF16 and back. We use a two
   // byte character (G clef) to test this.
   ASSERT_EQ(
-      UTF16ToUTF8(
-          StringPiece16(UTF8ToUTF16("\xf0\x9d\x84\x9e")).as_string()),
-      "\xf0\x9d\x84\x9e");
+    UTF16ToUTF8(
+      StringPiece16(UTF8ToUTF16("\xf0\x9d\x84\x9e")).as_string()),
+    "\xf0\x9d\x84\x9e");
 }
 
 TYPED_TEST(CommonStringPieceTest, CheckConstructors) {
@@ -673,12 +673,12 @@ TYPED_TEST(CommonStringPieceTest, CheckConstructors) {
   ASSERT_TRUE(str == BasicStringPiece<TypeParam>(str));
   ASSERT_TRUE(str == BasicStringPiece<TypeParam>(str.c_str()));
   ASSERT_TRUE(TestFixture::as_string("hello") ==
-              BasicStringPiece<TypeParam>(str.c_str(), 5));
+        BasicStringPiece<TypeParam>(str.c_str(), 5));
   ASSERT_TRUE(empty == BasicStringPiece<TypeParam>(str.c_str(),
-      static_cast<typename BasicStringPiece<TypeParam>::size_type>(0)));
+    static_cast<typename BasicStringPiece<TypeParam>::size_type>(0)));
   ASSERT_TRUE(empty == BasicStringPiece<TypeParam>(NULL));
   ASSERT_TRUE(empty == BasicStringPiece<TypeParam>(NULL,
-      static_cast<typename BasicStringPiece<TypeParam>::size_type>(0)));
+    static_cast<typename BasicStringPiece<TypeParam>::size_type>(0)));
   ASSERT_TRUE(empty == BasicStringPiece<TypeParam>());
   ASSERT_TRUE(str == BasicStringPiece<TypeParam>(str.begin(), str.end()));
   ASSERT_TRUE(empty == BasicStringPiece<TypeParam>(str.begin(), str.begin()));

@@ -15,11 +15,11 @@ namespace butil {
 bool EvictFileFromSystemCache(const FilePath& file) {
   ScopedFD fd(open(file.value().c_str(), O_RDONLY));
   if (!fd.is_valid())
-    return false;
+  return false;
   if (fdatasync(fd.get()) != 0)
-    return false;
+  return false;
   if (posix_fadvise(fd.get(), 0, 0, POSIX_FADV_DONTNEED) != 0)
-    return false;
+  return false;
   return true;
 }
 

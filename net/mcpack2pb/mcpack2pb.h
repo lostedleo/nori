@@ -32,68 +32,68 @@
 namespace mcpack2pb {
 
 typedef bool (*SetFieldFn)(::google::protobuf::Message* msg,
-                           UnparsedValue& value);
+               UnparsedValue& value);
 
 // Mapping from filed name to its parsing&setting function.
 typedef butil::FlatMap<butil::StringPiece, SetFieldFn> FieldMap;
 
 enum SerializationFormat {
-    FORMAT_COMPACK,
-    FORMAT_MCPACK_V2
+  FORMAT_COMPACK,
+  FORMAT_MCPACK_V2
 };
 
 struct MessageHandler {
-    // Parse `msg' from `input' as a mcpack_v2 or compack object.
-    // Returns number of bytes consumed.
-    size_t (*parse)(::google::protobuf::Message* msg,
-                    ::google::protobuf::io::ZeroCopyInputStream* input);
+  // Parse `msg' from `input' as a mcpack_v2 or compack object.
+  // Returns number of bytes consumed.
+  size_t (*parse)(::google::protobuf::Message* msg,
+          ::google::protobuf::io::ZeroCopyInputStream* input);
 
-    // Parse `msg' from `input' as a mcpack_v2 or compack object removed with header.
-    // Returns true on success.
-    bool (*parse_body)(::google::protobuf::Message* msg,
-                       ::google::protobuf::io::ZeroCopyInputStream* input,
-                       size_t size);
-    
-    // Serialize `msg' as a mcpack_v2 or compack object into `output'.
-    // The serialization format is decided by `format'.
-    // Returns true on success.
-    bool (*serialize)(const ::google::protobuf::Message& msg,
-                      ::google::protobuf::io::ZeroCopyOutputStream* output,
-                      SerializationFormat format);
+  // Parse `msg' from `input' as a mcpack_v2 or compack object removed with header.
+  // Returns true on success.
+  bool (*parse_body)(::google::protobuf::Message* msg,
+             ::google::protobuf::io::ZeroCopyInputStream* input,
+             size_t size);
+  
+  // Serialize `msg' as a mcpack_v2 or compack object into `output'.
+  // The serialization format is decided by `format'.
+  // Returns true on success.
+  bool (*serialize)(const ::google::protobuf::Message& msg,
+            ::google::protobuf::io::ZeroCopyOutputStream* output,
+            SerializationFormat format);
 
-    // Serialize `msg' as a mcpack_v2 or compack object without header into
-    // `serializer'. The serialization format is decided by `format'.
-    // Returns true on success.
-    void (*serialize_body)(const ::google::protobuf::Message& msg,
-                           Serializer& serializer,
-                           SerializationFormat format);
+  // Serialize `msg' as a mcpack_v2 or compack object without header into
+  // `serializer'. The serialization format is decided by `format'.
+  // Returns true on success.
+  void (*serialize_body)(const ::google::protobuf::Message& msg,
+               Serializer& serializer,
+               SerializationFormat format);
 
-    // -------------------
-    //  Helper functions
-    // -------------------
+  // -------------------
+  //  Helper functions
+  // -------------------
 
-    // Parse `msg' from IOBuf or array which may contain more data than just
-    // the message.
-    // Returns bytes parsed, 0 on error.
-    size_t parse_from_iobuf_prefix(::google::protobuf::Message* msg,
-                                   const ::butil::IOBuf& buf);
-    size_t parse_from_array_prefix(::google::protobuf::Message* msg,
-                                   const void* data, int size);
-    // Parse `msg' from IOBuf or array which may just contain the message.
-    // Returns true on success.
-    bool parse_from_iobuf(::google::protobuf::Message* msg,
-                          const ::butil::IOBuf& buf);
-    bool parse_from_array(::google::protobuf::Message* msg,
-                          const void* data, int size);
-    // Serialize `msg' to IOBuf or string.
-    // Returns true on success.
-    bool serialize_to_iobuf(const ::google::protobuf::Message& msg,
-                            ::butil::IOBuf* buf, SerializationFormat format);
+  // Parse `msg' from IOBuf or array which may contain more data than just
+  // the message.
+  // Returns bytes parsed, 0 on error.
+  size_t parse_from_iobuf_prefix(::google::protobuf::Message* msg,
+                   const ::butil::IOBuf& buf);
+  size_t parse_from_array_prefix(::google::protobuf::Message* msg,
+                   const void* data, int size);
+  // Parse `msg' from IOBuf or array which may just contain the message.
+  // Returns true on success.
+  bool parse_from_iobuf(::google::protobuf::Message* msg,
+              const ::butil::IOBuf& buf);
+  bool parse_from_array(::google::protobuf::Message* msg,
+              const void* data, int size);
+  // Serialize `msg' to IOBuf or string.
+  // Returns true on success.
+  bool serialize_to_iobuf(const ::google::protobuf::Message& msg,
+              ::butil::IOBuf* buf, SerializationFormat format);
 
-    // TODO(gejun): serialize_to_string is not supported because OutputStream
-    // requires the embedded zero-copy stream to return permanent memory blocks
-    // to support reserve() however the string inside StringOutputStream may
-    // be resized and invalidates previous returned memory blocks.
+  // TODO(gejun): serialize_to_string is not supported because OutputStream
+  // requires the embedded zero-copy stream to return permanent memory blocks
+  // to support reserve() however the string inside StringOutputStream may
+  // be resized and invalidates previous returned memory blocks.
 };
 
 static const MessageHandler INVALID_MESSAGE_HANDLER = {NULL, NULL, NULL, NULL};
@@ -101,7 +101,7 @@ static const MessageHandler INVALID_MESSAGE_HANDLER = {NULL, NULL, NULL, NULL};
 // if the *.pb.cc and *.pb.h was generated by mcpack2pb. This function will be
 // called with the mcpack/compack parser and serializer BEFORE main().
 void register_message_handler_or_die(const std::string& full_name,
-                                     const MessageHandler& handler);
+                   const MessageHandler& handler);
 
 // Find the registered parser/serializer by `full_name'
 // e.g. "example.SampleMessage".
@@ -110,54 +110,54 @@ MessageHandler find_message_handler(const std::string& full_name);
 
 // inline impl.
 inline size_t MessageHandler::parse_from_iobuf_prefix(
-    ::google::protobuf::Message* msg, const ::butil::IOBuf& buf) {
-    if (parse == NULL) {
-        LOG(ERROR) << "`parse' is NULL";
-        return 0;
-    }
-    ::butil::IOBufAsZeroCopyInputStream zc_stream(buf);
-    return parse(msg, &zc_stream);
+  ::google::protobuf::Message* msg, const ::butil::IOBuf& buf) {
+  if (parse == NULL) {
+    LOG(ERROR) << "`parse' is NULL";
+    return 0;
+  }
+  ::butil::IOBufAsZeroCopyInputStream zc_stream(buf);
+  return parse(msg, &zc_stream);
 }
 
 inline bool MessageHandler::parse_from_iobuf(
-    ::google::protobuf::Message* msg, const ::butil::IOBuf& buf) {
-    if (parse == NULL) {
-        LOG(ERROR) << "`parse' is NULL";
-        return 0;
-    }
-    ::butil::IOBufAsZeroCopyInputStream zc_stream(buf);
-    return parse(msg, &zc_stream) == buf.size();
+  ::google::protobuf::Message* msg, const ::butil::IOBuf& buf) {
+  if (parse == NULL) {
+    LOG(ERROR) << "`parse' is NULL";
+    return 0;
+  }
+  ::butil::IOBufAsZeroCopyInputStream zc_stream(buf);
+  return parse(msg, &zc_stream) == buf.size();
 }
 
 inline size_t MessageHandler::parse_from_array_prefix(
-    ::google::protobuf::Message* msg, const void* data, int size) {
-    if (parse == NULL) {
-        LOG(ERROR) << "`parse' is NULL";
-        return 0;
-    }
-    ::google::protobuf::io::ArrayInputStream zc_stream(data, size);
-    return parse(msg, &zc_stream);
+  ::google::protobuf::Message* msg, const void* data, int size) {
+  if (parse == NULL) {
+    LOG(ERROR) << "`parse' is NULL";
+    return 0;
+  }
+  ::google::protobuf::io::ArrayInputStream zc_stream(data, size);
+  return parse(msg, &zc_stream);
 }
 
 inline bool MessageHandler::parse_from_array(
-    ::google::protobuf::Message* msg, const void* data, int size) {
-    if (parse == NULL) {
-        LOG(ERROR) << "`parse' is NULL";
-        return 0;
-    }
-    ::google::protobuf::io::ArrayInputStream zc_stream(data, size);
-    return (int)parse(msg, &zc_stream) == size;
+  ::google::protobuf::Message* msg, const void* data, int size) {
+  if (parse == NULL) {
+    LOG(ERROR) << "`parse' is NULL";
+    return 0;
+  }
+  ::google::protobuf::io::ArrayInputStream zc_stream(data, size);
+  return (int)parse(msg, &zc_stream) == size;
 }
 
 inline bool MessageHandler::serialize_to_iobuf(
-    const ::google::protobuf::Message& msg,
-    ::butil::IOBuf* buf, SerializationFormat format) {
-    if (serialize == NULL) {
-        LOG(ERROR) << "`serialize' is NULL";
-        return false;
-    }
-    ::butil::IOBufAsZeroCopyOutputStream zc_stream(buf);
-    return serialize(msg, &zc_stream, format);
+  const ::google::protobuf::Message& msg,
+  ::butil::IOBuf* buf, SerializationFormat format) {
+  if (serialize == NULL) {
+    LOG(ERROR) << "`serialize' is NULL";
+    return false;
+  }
+  ::butil::IOBufAsZeroCopyOutputStream zc_stream(buf);
+  return serialize(msg, &zc_stream, format);
 }
 
 } // namespace mcpack2pb

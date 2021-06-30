@@ -15,13 +15,13 @@ class AClass {};
 union AUnion {};
 enum AnEnum { AN_ENUM_APPLE, AN_ENUM_BANANA, AN_ENUM_CARROT };
 struct BStruct {
-    int x;
+  int x;
 };
 class BClass {
 #if defined(__clang__)
-    int ALLOW_UNUSED _x;
+  int ALLOW_UNUSED _x;
 #else
-    int _x;
+  int _x;
 #endif
 };
 
@@ -58,7 +58,7 @@ COMPILE_ASSERT(is_non_const_reference<int&>::value, IsNonConstReference);
 // Extra parens needed to make preprocessor macro parsing happy. Otherwise,
 // it sees the equivalent of:
 //
-//     (is_convertible < Child), (Parent > ::value)
+//   (is_convertible < Child), (Parent > ::value)
 //
 // Silly C++.
 COMPILE_ASSERT( (is_convertible<Child, Parent>::value), IsConvertible);
@@ -103,147 +103,147 @@ COMPILE_ASSERT(!(is_enum<AStruct>::value), IsEnum);
 COMPILE_ASSERT(!(is_enum<AUnion>::value), IsEnum);
 
 COMPILE_ASSERT(!is_member_function_pointer<int>::value,
-               IsMemberFunctionPointer);
+         IsMemberFunctionPointer);
 COMPILE_ASSERT(!is_member_function_pointer<int*>::value,
-               IsMemberFunctionPointer);
+         IsMemberFunctionPointer);
 COMPILE_ASSERT(!is_member_function_pointer<void*>::value,
-               IsMemberFunctionPointer);
+         IsMemberFunctionPointer);
 COMPILE_ASSERT(!is_member_function_pointer<AStruct>::value,
-               IsMemberFunctionPointer);
+         IsMemberFunctionPointer);
 COMPILE_ASSERT(!is_member_function_pointer<AStruct*>::value,
-               IsMemberFunctionPointer);
+         IsMemberFunctionPointer);
 COMPILE_ASSERT(!is_member_function_pointer<int(*)(int)>::value,
-               IsMemberFunctionPointer);
+         IsMemberFunctionPointer);
 COMPILE_ASSERT(!is_member_function_pointer<int(*)(int, int)>::value,
-               IsMemberFunctionPointer);
+         IsMemberFunctionPointer);
 
 COMPILE_ASSERT(is_member_function_pointer<void (AStruct::*)()>::value,
-               IsMemberFunctionPointer);
+         IsMemberFunctionPointer);
 COMPILE_ASSERT(is_member_function_pointer<void (AStruct::*)(int)>::value,
-               IsMemberFunctionPointer);
+         IsMemberFunctionPointer);
 COMPILE_ASSERT(is_member_function_pointer<int (AStruct::*)(int)>::value,
-               IsMemberFunctionPointer);
+         IsMemberFunctionPointer);
 COMPILE_ASSERT(is_member_function_pointer<int (AStruct::*)(int) const>::value,
-               IsMemberFunctionPointer);
+         IsMemberFunctionPointer);
 COMPILE_ASSERT(is_member_function_pointer<int (AStruct::*)(int, int)>::value,
-               IsMemberFunctionPointer);
+         IsMemberFunctionPointer);
 COMPILE_ASSERT(is_member_function_pointer<
-                 int (AStruct::*)(int, int) const>::value,
-               IsMemberFunctionPointer);
+         int (AStruct::*)(int, int) const>::value,
+         IsMemberFunctionPointer);
 COMPILE_ASSERT(is_member_function_pointer<
-                 int (AStruct::*)(int, int, int)>::value,
-               IsMemberFunctionPointer);
+         int (AStruct::*)(int, int, int)>::value,
+         IsMemberFunctionPointer);
 COMPILE_ASSERT(is_member_function_pointer<
-                 int (AStruct::*)(int, int, int) const>::value,
-               IsMemberFunctionPointer);
+         int (AStruct::*)(int, int, int) const>::value,
+         IsMemberFunctionPointer);
 COMPILE_ASSERT(is_member_function_pointer<
-                 int (AStruct::*)(int, int, int, int)>::value,
-               IsMemberFunctionPointer);
+         int (AStruct::*)(int, int, int, int)>::value,
+         IsMemberFunctionPointer);
 COMPILE_ASSERT(is_member_function_pointer<
-                 int (AStruct::*)(int, int, int, int) const>::value,
-               IsMemberFunctionPointer);
+         int (AStruct::*)(int, int, int, int) const>::value,
+         IsMemberFunctionPointer);
 
 // False because we don't have a specialization for 5 params yet.
 COMPILE_ASSERT(!is_member_function_pointer<
-                 int (AStruct::*)(int, int, int, int, int)>::value,
-               IsMemberFunctionPointer);
+         int (AStruct::*)(int, int, int, int, int)>::value,
+         IsMemberFunctionPointer);
 COMPILE_ASSERT(!is_member_function_pointer<
-                 int (AStruct::*)(int, int, int, int, int) const>::value,
-               IsMemberFunctionPointer);
+         int (AStruct::*)(int, int, int, int, int) const>::value,
+         IsMemberFunctionPointer);
 
 // add_const
 COMPILE_ASSERT((is_same<add_const<int>::type, const int>::value), AddConst);
 COMPILE_ASSERT((is_same<add_const<long>::type, const long>::value), AddConst);
 COMPILE_ASSERT((is_same<add_const<std::string>::type, const std::string>::value),
-               AddConst);
+         AddConst);
 COMPILE_ASSERT((is_same<add_const<const int>::type, const int>::value),
-               AddConst);
+         AddConst);
 COMPILE_ASSERT((is_same<add_const<const long>::type, const long>::value),
-               AddConst);
+         AddConst);
 COMPILE_ASSERT((is_same<add_const<const std::string>::type,
-                const std::string>::value), AddConst);
+        const std::string>::value), AddConst);
 
 // add_volatile
 COMPILE_ASSERT((is_same<add_volatile<int>::type, volatile int>::value),
-               AddVolatile);
+         AddVolatile);
 COMPILE_ASSERT((is_same<add_volatile<long>::type, volatile long>::value),
-               AddVolatile);
+         AddVolatile);
 COMPILE_ASSERT((is_same<add_volatile<std::string>::type,
-                volatile std::string>::value), AddVolatile);
+        volatile std::string>::value), AddVolatile);
 COMPILE_ASSERT((is_same<add_volatile<volatile int>::type, volatile int>::value),
-               AddVolatile);
+         AddVolatile);
 COMPILE_ASSERT((is_same<add_volatile<volatile long>::type, volatile long>::value),
-               AddVolatile);
+         AddVolatile);
 COMPILE_ASSERT((is_same<add_volatile<volatile std::string>::type,
-                volatile std::string>::value), AddVolatile);
+        volatile std::string>::value), AddVolatile);
 
 // add_reference
 COMPILE_ASSERT((is_same<add_reference<int>::type, int&>::value), AddReference);
 COMPILE_ASSERT((is_same<add_reference<long>::type, long&>::value), AddReference);
 COMPILE_ASSERT((is_same<add_reference<std::string>::type, std::string&>::value),
-               AddReference);
+         AddReference);
 COMPILE_ASSERT((is_same<add_reference<int&>::type, int&>::value),
-               AddReference);
+         AddReference);
 COMPILE_ASSERT((is_same<add_reference<long&>::type, long&>::value),
-               AddReference);
+         AddReference);
 COMPILE_ASSERT((is_same<add_reference<std::string&>::type,
-                std::string&>::value), AddReference);
+        std::string&>::value), AddReference);
 COMPILE_ASSERT((is_same<add_reference<const int&>::type, const int&>::value),
-               AddReference);
+         AddReference);
 COMPILE_ASSERT((is_same<add_reference<const long&>::type, const long&>::value),
-               AddReference);
+         AddReference);
 COMPILE_ASSERT((is_same<add_reference<const std::string&>::type,
-                const std::string&>::value), AddReference);
+        const std::string&>::value), AddReference);
 
 // add_cr_non_integral
 COMPILE_ASSERT((is_same<add_cr_non_integral<int>::type, int>::value),
-               AddCrNonIntegral);
+         AddCrNonIntegral);
 COMPILE_ASSERT((is_same<add_cr_non_integral<long>::type, long>::value),
-               AddCrNonIntegral);
+         AddCrNonIntegral);
 COMPILE_ASSERT((is_same<add_cr_non_integral<std::string>::type,
-                const std::string&>::value), AddCrNonIntegral);
+        const std::string&>::value), AddCrNonIntegral);
 COMPILE_ASSERT((is_same<add_cr_non_integral<const int>::type, const int&>::value),
-               AddCrNonIntegral);
+         AddCrNonIntegral);
 COMPILE_ASSERT((is_same<add_cr_non_integral<const long>::type, const long&>::value),
-               AddCrNonIntegral);
+         AddCrNonIntegral);
 COMPILE_ASSERT((is_same<add_cr_non_integral<const std::string>::type,
-                const std::string&>::value), AddCrNonIntegral);
+        const std::string&>::value), AddCrNonIntegral);
 COMPILE_ASSERT((is_same<add_cr_non_integral<const int&>::type, const int&>::value),
-               AddCrNonIntegral);
+         AddCrNonIntegral);
 COMPILE_ASSERT((is_same<add_cr_non_integral<const long&>::type, const long&>::value),
-               AddCrNonIntegral);
+         AddCrNonIntegral);
 COMPILE_ASSERT((is_same<add_cr_non_integral<const std::string&>::type,
-                const std::string&>::value), AddCrNonIntegral);
+        const std::string&>::value), AddCrNonIntegral);
 
 // remove_const
 COMPILE_ASSERT((is_same<remove_const<const int>::type, int>::value),
-               RemoveConst);
+         RemoveConst);
 COMPILE_ASSERT((is_same<remove_const<const long>::type, long>::value),
-               RemoveConst);
+         RemoveConst);
 COMPILE_ASSERT((is_same<remove_const<const std::string>::type,
-                std::string>::value), RemoveConst);
+        std::string>::value), RemoveConst);
 COMPILE_ASSERT((is_same<remove_const<int>::type, int>::value), RemoveConst);
 COMPILE_ASSERT((is_same<remove_const<long>::type, long>::value), RemoveConst);
 COMPILE_ASSERT((is_same<remove_const<std::string>::type, std::string>::value),
-               RemoveConst);
+         RemoveConst);
 
 // remove_reference
 COMPILE_ASSERT((is_same<remove_reference<int&>::type, int>::value),
-               RemoveReference);
+         RemoveReference);
 COMPILE_ASSERT((is_same<remove_reference<long&>::type, long>::value),
-               RemoveReference);
+         RemoveReference);
 COMPILE_ASSERT((is_same<remove_reference<std::string&>::type,
-                std::string>::value), RemoveReference);
+        std::string>::value), RemoveReference);
 COMPILE_ASSERT((is_same<remove_reference<const int&>::type, const int>::value),
-               RemoveReference);
+         RemoveReference);
 COMPILE_ASSERT((is_same<remove_reference<const long&>::type, const long>::value),
-               RemoveReference);
+         RemoveReference);
 COMPILE_ASSERT((is_same<remove_reference<const std::string&>::type,
-                const std::string>::value), RemoveReference);
+        const std::string>::value), RemoveReference);
 COMPILE_ASSERT((is_same<remove_reference<int>::type, int>::value), RemoveReference);
 COMPILE_ASSERT((is_same<remove_reference<long>::type, long>::value), RemoveReference);
 COMPILE_ASSERT((is_same<remove_reference<std::string>::type, std::string>::value),
-               RemoveReference);
+         RemoveReference);
 
 
 

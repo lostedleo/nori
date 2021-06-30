@@ -12,7 +12,7 @@ namespace internal {
 
 bool PlatformThreadLocalStorage::AllocTLS(TLSKey* key) {
   return !pthread_key_create(key,
-      butil::internal::PlatformThreadLocalStorage::OnThreadExit);
+    butil::internal::PlatformThreadLocalStorage::OnThreadExit);
 }
 
 void PlatformThreadLocalStorage::FreeTLS(TLSKey key) {

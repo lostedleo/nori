@@ -23,30 +23,30 @@ using butil::TimeTicks;
 class TimeTest : public testing::Test {
  protected:
   virtual void SetUp() OVERRIDE {
-    // Use mktime to get a time_t, and turn it into a PRTime by converting
-    // seconds to microseconds.  Use 15th Oct 2007 12:45:00 local.  This
-    // must be a time guaranteed to be outside of a DST fallback hour in
-    // any timezone.
-    struct tm local_comparison_tm = {
-      0,            // second
-      45,           // minute
-      12,           // hour
-      15,           // day of month
-      10 - 1,       // month
-      2007 - 1900,  // year
-      0,            // day of week (ignored, output only)
-      0,            // day of year (ignored, output only)
-      -1,           // DST in effect, -1 tells mktime to figure it out
-      0,
-      NULL
-    };
+  // Use mktime to get a time_t, and turn it into a PRTime by converting
+  // seconds to microseconds.  Use 15th Oct 2007 12:45:00 local.  This
+  // must be a time guaranteed to be outside of a DST fallback hour in
+  // any timezone.
+  struct tm local_comparison_tm = {
+    0,      // second
+    45,       // minute
+    12,       // hour
+    15,       // day of month
+    10 - 1,     // month
+    2007 - 1900,  // year
+    0,      // day of week (ignored, output only)
+    0,      // day of year (ignored, output only)
+    -1,       // DST in effect, -1 tells mktime to figure it out
+    0,
+    NULL
+  };
 
-    time_t converted_time = mktime(&local_comparison_tm);
-    ASSERT_GT(converted_time, 0);
-    comparison_time_local_ = Time::FromTimeT(converted_time);
+  time_t converted_time = mktime(&local_comparison_tm);
+  ASSERT_GT(converted_time, 0);
+  comparison_time_local_ = Time::FromTimeT(converted_time);
 
-    // time_t representation of 15th Oct 2007 12:45:00 PDT
-    comparison_time_pdt_ = Time::FromTimeT(1192477500);
+  // time_t representation of 15th Oct 2007 12:45:00 PDT
+  comparison_time_pdt_ = Time::FromTimeT(1192477500);
   }
 
   Time comparison_time_local_;
@@ -269,10 +269,10 @@ TEST_F(TimeTest, DISABLED_ParseTimeTestEpoch0) {
 
   // time_t == epoch == 0
   EXPECT_TRUE(Time::FromString("Thu Jan 01 01:00:00 +0100 1970",
-                               &parsed_time));
+                 &parsed_time));
   EXPECT_EQ(0, parsed_time.ToTimeT());
   EXPECT_TRUE(Time::FromString("Thu Jan 01 00:00:00 GMT 1970",
-                               &parsed_time));
+                 &parsed_time));
   EXPECT_EQ(0, parsed_time.ToTimeT());
 }
 
@@ -281,10 +281,10 @@ TEST_F(TimeTest, DISABLED_ParseTimeTestEpoch1) {
 
   // time_t == 1 second after epoch == 1
   EXPECT_TRUE(Time::FromString("Thu Jan 01 01:00:01 +0100 1970",
-                               &parsed_time));
+                 &parsed_time));
   EXPECT_EQ(1, parsed_time.ToTimeT());
   EXPECT_TRUE(Time::FromString("Thu Jan 01 00:00:01 GMT 1970",
-                               &parsed_time));
+                 &parsed_time));
   EXPECT_EQ(1, parsed_time.ToTimeT());
 }
 
@@ -293,10 +293,10 @@ TEST_F(TimeTest, DISABLED_ParseTimeTestEpoch2) {
 
   // time_t == 2 seconds after epoch == 2
   EXPECT_TRUE(Time::FromString("Thu Jan 01 01:00:02 +0100 1970",
-                               &parsed_time));
+                 &parsed_time));
   EXPECT_EQ(2, parsed_time.ToTimeT());
   EXPECT_TRUE(Time::FromString("Thu Jan 01 00:00:02 GMT 1970",
-                               &parsed_time));
+                 &parsed_time));
   EXPECT_EQ(2, parsed_time.ToTimeT());
 }
 
@@ -305,10 +305,10 @@ TEST_F(TimeTest, DISABLED_ParseTimeTestEpochNeg1) {
 
   // time_t == 1 second before epoch == -1
   EXPECT_TRUE(Time::FromString("Thu Jan 01 00:59:59 +0100 1970",
-                               &parsed_time));
+                 &parsed_time));
   EXPECT_EQ(-1, parsed_time.ToTimeT());
   EXPECT_TRUE(Time::FromString("Wed Dec 31 23:59:59 GMT 1969",
-                               &parsed_time));
+                 &parsed_time));
   EXPECT_EQ(-1, parsed_time.ToTimeT());
 }
 
@@ -319,7 +319,7 @@ TEST_F(TimeTest, DISABLED_ParseTimeTestEpochNotNeg1) {
   Time parsed_time;
 
   EXPECT_TRUE(Time::FromString("Wed Dec 31 23:59:59 GMT 2100",
-                               &parsed_time));
+                 &parsed_time));
   EXPECT_NE(-1, parsed_time.ToTimeT());
 }
 
@@ -328,10 +328,10 @@ TEST_F(TimeTest, DISABLED_ParseTimeTestEpochNeg2) {
 
   // time_t == 2 seconds before epoch == -2
   EXPECT_TRUE(Time::FromString("Thu Jan 01 00:59:58 +0100 1970",
-                               &parsed_time));
+                 &parsed_time));
   EXPECT_EQ(-2, parsed_time.ToTimeT());
   EXPECT_TRUE(Time::FromString("Wed Dec 31 23:59:58 GMT 1969",
-                               &parsed_time));
+                 &parsed_time));
   EXPECT_EQ(-2, parsed_time.ToTimeT());
 }
 
@@ -340,13 +340,13 @@ TEST_F(TimeTest, DISABLED_ParseTimeTestEpoch1960) {
 
   // time_t before Epoch, in 1960
   EXPECT_TRUE(Time::FromString("Wed Jun 29 19:40:01 +0100 1960",
-                               &parsed_time));
+                 &parsed_time));
   EXPECT_EQ(-299999999, parsed_time.ToTimeT());
   EXPECT_TRUE(Time::FromString("Wed Jun 29 18:40:01 GMT 1960",
-                               &parsed_time));
+                 &parsed_time));
   EXPECT_EQ(-299999999, parsed_time.ToTimeT());
   EXPECT_TRUE(Time::FromString("Wed Jun 29 17:40:01 GMT 1960",
-                               &parsed_time));
+                 &parsed_time));
   EXPECT_EQ(-300003599, parsed_time.ToTimeT());
 }
 
@@ -566,14 +566,14 @@ TEST_F(TimeTest, MaxConversions) {
   tval = t.ToTimeVal();
   EXPECT_EQ(std::numeric_limits<time_t>::max(), tval.tv_sec);
   EXPECT_EQ(static_cast<suseconds_t>(Time::kMicrosecondsPerSecond) - 1,
-      tval.tv_usec);
+    tval.tv_usec);
 #endif
 
 #if defined(OS_MACOSX)
   t = Time::FromCFAbsoluteTime(std::numeric_limits<CFAbsoluteTime>::infinity());
   EXPECT_TRUE(t.is_max());
   EXPECT_EQ(std::numeric_limits<CFAbsoluteTime>::infinity(),
-            t.ToCFAbsoluteTime());
+      t.ToCFAbsoluteTime());
 #endif
 
 #if defined(OS_WIN)
@@ -601,12 +601,12 @@ TEST_F(TimeTest, FromLocalExplodedCrashOnAndroid) {
   // This crashed inside Time:: FromLocalExploded() on Android 4.1.2.
   // See http://crbug.com/287821
   Time::Exploded midnight = {2013,  // year
-                             10,    // month
-                             0,     // day_of_week
-                             13,    // day_of_month
-                             0,     // hour
-                             0,     // minute
-                             0,     // second
+               10,  // month
+               0,   // day_of_week
+               13,  // day_of_month
+               0,   // hour
+               0,   // minute
+               0,   // second
   };
   // The string passed to putenv() must be a char* and the documentation states
   // that it 'becomes part of the environment', so use a static buffer.
@@ -620,28 +620,28 @@ TEST_F(TimeTest, FromLocalExplodedCrashOnAndroid) {
 
 TEST(TimeTicks, Deltas) {
   for (int index = 0; index < 50; index++) {
-    TimeTicks ticks_start = TimeTicks::Now();
-    butil::PlatformThread::Sleep(butil::TimeDelta::FromMilliseconds(10));
-    TimeTicks ticks_stop = TimeTicks::Now();
-    TimeDelta delta = ticks_stop - ticks_start;
-    // Note:  Although we asked for a 10ms sleep, if the
-    // time clock has a finer granularity than the Sleep()
-    // clock, it is quite possible to wakeup early.  Here
-    // is how that works:
-    //      Time(ms timer)      Time(us timer)
-    //          5                   5010
-    //          6                   6010
-    //          7                   7010
-    //          8                   8010
-    //          9                   9000
-    // Elapsed  4ms                 3990us
-    //
-    // Unfortunately, our InMilliseconds() function truncates
-    // rather than rounds.  We should consider fixing this
-    // so that our averages come out better.
-    EXPECT_GE(delta.InMilliseconds(), 9);
-    EXPECT_GE(delta.InMicroseconds(), 9000);
-    EXPECT_EQ(delta.InSeconds(), 0);
+  TimeTicks ticks_start = TimeTicks::Now();
+  butil::PlatformThread::Sleep(butil::TimeDelta::FromMilliseconds(10));
+  TimeTicks ticks_stop = TimeTicks::Now();
+  TimeDelta delta = ticks_stop - ticks_start;
+  // Note:  Although we asked for a 10ms sleep, if the
+  // time clock has a finer granularity than the Sleep()
+  // clock, it is quite possible to wakeup early.  Here
+  // is how that works:
+  //    Time(ms timer)    Time(us timer)
+  //      5           5010
+  //      6           6010
+  //      7           7010
+  //      8           8010
+  //      9           9000
+  // Elapsed  4ms         3990us
+  //
+  // Unfortunately, our InMilliseconds() function truncates
+  // rather than rounds.  We should consider fixing this
+  // so that our averages come out better.
+  EXPECT_GE(delta.InMilliseconds(), 9);
+  EXPECT_GE(delta.InMicroseconds(), 9000);
+  EXPECT_EQ(delta.InSeconds(), 0);
   }
 }
 
@@ -650,7 +650,7 @@ static void HighResClockTest(TimeTicks (*GetTicks)()) {
   // HighResNow doesn't work on some systems.  Since the product still works
   // even if it doesn't work, it makes this entire test questionable.
   if (!TimeTicks::IsHighResClockWorking())
-    return;
+  return;
 #endif
 
   // Why do we loop here?
@@ -667,16 +667,16 @@ static void HighResClockTest(TimeTicks (*GetTicks)()) {
   int retries = 100;  // Arbitrary.
   TimeDelta delta;
   while (!success && retries--) {
-    TimeTicks ticks_start = GetTicks();
-    // Loop until we can detect that the clock has changed.  Non-HighRes timers
-    // will increment in chunks, e.g. 15ms.  By spinning until we see a clock
-    // change, we detect the minimum time between measurements.
-    do {
-      delta = GetTicks() - ticks_start;
-    } while (delta.InMilliseconds() == 0);
+  TimeTicks ticks_start = GetTicks();
+  // Loop until we can detect that the clock has changed.  Non-HighRes timers
+  // will increment in chunks, e.g. 15ms.  By spinning until we see a clock
+  // change, we detect the minimum time between measurements.
+  do {
+    delta = GetTicks() - ticks_start;
+  } while (delta.InMilliseconds() == 0);
 
-    if (delta.InMicroseconds() <= kTargetGranularityUs)
-      success = true;
+  if (delta.InMicroseconds() <= kTargetGranularityUs)
+    success = true;
   }
 
   // In high resolution mode, we expect to see the clock increment
@@ -697,21 +697,21 @@ TEST(TimeTicks, HighResNow) {
 #endif
 TEST(TimeTicks, MAYBE_ThreadNow) {
   if (TimeTicks::IsThreadNowSupported()) {
-    TimeTicks begin = TimeTicks::Now();
-    TimeTicks begin_thread = TimeTicks::ThreadNow();
-    // Make sure that ThreadNow value is non-zero.
-    EXPECT_GT(begin_thread, TimeTicks());
-    // Sleep for 10 milliseconds to get the thread de-scheduled.
-    butil::PlatformThread::Sleep(butil::TimeDelta::FromMilliseconds(10));
-    TimeTicks end_thread = TimeTicks::ThreadNow();
-    TimeTicks end = TimeTicks::Now();
-    TimeDelta delta = end - begin;
-    TimeDelta delta_thread = end_thread - begin_thread;
-    // Make sure that some thread time have elapsed.
-    EXPECT_GT(delta_thread.InMicroseconds(), 0);
-    // But the thread time is at least 9ms less than clock time.
-    TimeDelta difference = delta - delta_thread;
-    EXPECT_GE(difference.InMicroseconds(), 9000);
+  TimeTicks begin = TimeTicks::Now();
+  TimeTicks begin_thread = TimeTicks::ThreadNow();
+  // Make sure that ThreadNow value is non-zero.
+  EXPECT_GT(begin_thread, TimeTicks());
+  // Sleep for 10 milliseconds to get the thread de-scheduled.
+  butil::PlatformThread::Sleep(butil::TimeDelta::FromMilliseconds(10));
+  TimeTicks end_thread = TimeTicks::ThreadNow();
+  TimeTicks end = TimeTicks::Now();
+  TimeDelta delta = end - begin;
+  TimeDelta delta_thread = end_thread - begin_thread;
+  // Make sure that some thread time have elapsed.
+  EXPECT_GT(delta_thread.InMicroseconds(), 0);
+  // But the thread time is at least 9ms less than clock time.
+  TimeDelta difference = delta - delta_thread;
+  EXPECT_GE(difference.InMicroseconds(), 9000);
   }
 }
 
@@ -726,11 +726,11 @@ TEST(TimeDelta, FromAndIn) {
   EXPECT_TRUE(TimeDelta::FromMinutes(2) == TimeDelta::FromSeconds(120));
   EXPECT_TRUE(TimeDelta::FromSeconds(2) == TimeDelta::FromMilliseconds(2000));
   EXPECT_TRUE(TimeDelta::FromMilliseconds(2) ==
-              TimeDelta::FromMicroseconds(2000));
+        TimeDelta::FromMicroseconds(2000));
   EXPECT_TRUE(TimeDelta::FromSecondsD(2.3) ==
-              TimeDelta::FromMilliseconds(2300));
+        TimeDelta::FromMilliseconds(2300));
   EXPECT_TRUE(TimeDelta::FromMillisecondsD(2.5) ==
-              TimeDelta::FromMicroseconds(2500));
+        TimeDelta::FromMicroseconds(2500));
   EXPECT_EQ(13, TimeDelta::FromDays(13).InDays());
   EXPECT_EQ(13, TimeDelta::FromHours(13).InHours());
   EXPECT_EQ(13, TimeDelta::FromMinutes(13).InMinutes());
@@ -760,7 +760,7 @@ TEST(TimeDelta, TimeSpecConversion) {
   EXPECT_EQ(result.tv_nsec, 1000);
 
   result = TimeDelta::FromMicroseconds(
-      Time::kMicrosecondsPerSecond + 1).ToTimeSpec();
+    Time::kMicrosecondsPerSecond + 1).ToTimeSpec();
   EXPECT_EQ(result.tv_sec, 1);
   EXPECT_EQ(result.tv_nsec, 1000);
 }

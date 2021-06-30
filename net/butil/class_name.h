@@ -24,7 +24,7 @@
 #define BUTIL_CLASS_NAME_H
 
 #include <typeinfo>
-#include <string>                                // std::string
+#include <string>                // std::string
 
 namespace butil {
 
@@ -37,20 +37,20 @@ template <typename T> std::string ClassNameHelper<T>::name = demangle(typeid(T).
 
 // Get name of class |T|, in std::string.
 template <typename T> const std::string& class_name_str() {
-    // We don't use static-variable-inside-function because before C++11
-    // local static variable is not guaranteed to be thread-safe.
-    return detail::ClassNameHelper<T>::name;
+  // We don't use static-variable-inside-function because before C++11
+  // local static variable is not guaranteed to be thread-safe.
+  return detail::ClassNameHelper<T>::name;
 }
 
 // Get name of class |T|, in const char*.
 // Address of returned name never changes.
 template <typename T> const char* class_name() {
-    return class_name_str<T>().c_str();
+  return class_name_str<T>().c_str();
 }
 
 // Get typename of |obj|, in std::string
 template <typename T> std::string class_name_str(T const& obj) {
-    return demangle(typeid(obj).name());
+  return demangle(typeid(obj).name());
 }
 
 }  // namespace butil

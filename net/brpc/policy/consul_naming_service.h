@@ -29,27 +29,27 @@ namespace policy {
 
 class ConsulNamingService : public NamingService {
 private:
-    int RunNamingService(const char* service_name,
-                         NamingServiceActions* actions) override;
+  int RunNamingService(const char* service_name,
+             NamingServiceActions* actions) override;
 
-    int GetServers(const char* service_name,
-                   std::vector<ServerNode>* servers);
+  int GetServers(const char* service_name,
+           std::vector<ServerNode>* servers);
 
-    void Describe(std::ostream& os, const DescribeOptions&) const override;
+  void Describe(std::ostream& os, const DescribeOptions&) const override;
 
-    NamingService* New() const override;
+  NamingService* New() const override;
 
-    int DegradeToOtherServiceIfNeeded(const char* service_name,
-                                      std::vector<ServerNode>* servers);
+  int DegradeToOtherServiceIfNeeded(const char* service_name,
+                    std::vector<ServerNode>* servers);
 
-    void Destroy() override;
+  void Destroy() override;
 
 private:
-    Channel _channel;
-    std::string _consul_index;
-    std::string _consul_url;
-    bool _backup_file_loaded = false;
-    bool _consul_connected = false;
+  Channel _channel;
+  std::string _consul_index;
+  std::string _consul_url;
+  bool _backup_file_loaded = false;
+  bool _consul_connected = false;
 };
 
 }  // namespace policy

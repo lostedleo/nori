@@ -27,7 +27,7 @@ namespace policy {
 
 // Parse redis response.
 ParseResult ParseRedisMessage(butil::IOBuf* source, Socket *socket, bool read_eof,
-                              const void *arg);
+                const void *arg);
 
 // Actions to a redis response.
 void ProcessRedisResponse(InputMessageBase* msg);
@@ -41,21 +41,21 @@ void ProcessRedisRequest(InputMessageBase* msg);
 
 // Serialize a redis request.
 void SerializeRedisRequest(butil::IOBuf* buf,
-                           Controller* cntl,
-                           const google::protobuf::Message* request);
+               Controller* cntl,
+               const google::protobuf::Message* request);
 
 // Pack `request' to `method' into `buf'.
 void PackRedisRequest(butil::IOBuf* buf,
-                      SocketMessage**,
-                      uint64_t correlation_id,
-                      const google::protobuf::MethodDescriptor* method,
-                      Controller* controller,
-                      const butil::IOBuf& request,
-                      const Authenticator* auth);
+            SocketMessage**,
+            uint64_t correlation_id,
+            const google::protobuf::MethodDescriptor* method,
+            Controller* controller,
+            const butil::IOBuf& request,
+            const Authenticator* auth);
 
 const std::string& GetRedisMethodName(
-    const google::protobuf::MethodDescriptor*,
-    const Controller*);
+  const google::protobuf::MethodDescriptor*,
+  const Controller*);
 
 }  // namespace policy
 } // namespace brpc

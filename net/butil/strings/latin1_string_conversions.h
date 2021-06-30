@@ -24,8 +24,8 @@ typedef unsigned char Latin1Char;
 // to string16. This function is defined here rather than in WebString.h to
 // avoid binary bloat in all the callers of the conversion operator.
 BUTIL_EXPORT string16 Latin1OrUTF16ToUTF16(size_t length,
-                                          const Latin1Char* latin1,
-                                          const char16* utf16);
+                      const Latin1Char* latin1,
+                      const char16* utf16);
 
 }  // namespace butil
 

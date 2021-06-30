@@ -17,8 +17,8 @@
 
 
 #include <ostream>
-#include "brpc/closure_guard.h"        // ClosureGuard
-#include "brpc/controller.h"           // Controller
+#include "brpc/closure_guard.h"    // ClosureGuard
+#include "brpc/controller.h"       // Controller
 #include "brpc/builtin/common.h"
 #include "brpc/builtin/ids_service.h"
 
@@ -31,30 +31,30 @@ void id_pool_status(std::ostream& os);
 namespace brpc {
 
 void IdsService::default_method(::google::protobuf::RpcController* cntl_base,
-                                const ::brpc::IdsRequest*,
-                                ::brpc::IdsResponse*,
-                                ::google::protobuf::Closure* done) {
-    ClosureGuard done_guard(done);
-    Controller *cntl = static_cast<Controller*>(cntl_base);
-    cntl->http_response().set_content_type("text/plain");
-    butil::IOBufBuilder os;
-    const std::string& constraint = cntl->http_request().unresolved_path();
-    
-    if (constraint.empty()) {
-        os << "# Use /ids/<call_id>\n";
-        bthread::id_pool_status(os);
+                const ::brpc::IdsRequest*,
+                ::brpc::IdsResponse*,
+                ::google::protobuf::Closure* done) {
+  ClosureGuard done_guard(done);
+  Controller *cntl = static_cast<Controller*>(cntl_base);
+  cntl->http_response().set_content_type("text/plain");
+  butil::IOBufBuilder os;
+  const std::string& constraint = cntl->http_request().unresolved_path();
+  
+  if (constraint.empty()) {
+    os << "# Use /ids/<call_id>\n";
+    bthread::id_pool_status(os);
+  } else {
+    char* endptr = NULL;
+    bthread_id_t id = { strtoull(constraint.c_str(), &endptr, 10) };
+    if (*endptr == '\0' || *endptr == '/') {
+      bthread::id_status(id, os);
     } else {
-        char* endptr = NULL;
-        bthread_id_t id = { strtoull(constraint.c_str(), &endptr, 10) };
-        if (*endptr == '\0' || *endptr == '/') {
-            bthread::id_status(id, os);
-        } else {
-            cntl->SetFailed(ENOMETHOD, "path=%s is not a bthread_id",
-                            constraint.c_str());
-            return;
-        }
+      cntl->SetFailed(ENOMETHOD, "path=%s is not a bthread_id",
+              constraint.c_str());
+      return;
     }
-    os.move_to(cntl->response_attachment());
+  }
+  os.move_to(cntl->response_attachment());
 }
 
 } // namespace brpc

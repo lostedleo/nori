@@ -16,11 +16,11 @@ namespace butil {
 class ScopedClearErrno {
  public:
   ScopedClearErrno() : old_errno_(errno) {
-    errno = 0;
+  errno = 0;
   }
   ~ScopedClearErrno() {
-    if (errno == 0)
-      errno = old_errno_;
+  if (errno == 0)
+    errno = old_errno_;
   }
 
  private:

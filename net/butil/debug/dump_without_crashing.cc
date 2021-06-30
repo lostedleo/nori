@@ -20,7 +20,7 @@ namespace debug {
 
 void DumpWithoutCrashing() {
   if (dump_without_crashing_function_)
-    (*dump_without_crashing_function_)();
+  (*dump_without_crashing_function_)();
 }
 
 void SetDumpWithoutCrashingFunction(void (CDECL *function)()) {

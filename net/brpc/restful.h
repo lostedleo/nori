@@ -27,16 +27,16 @@
 namespace brpc {
 
 struct RestfulMethodPath {
-    std::string service_name;
-    std::string prefix;
-    std::string postfix;
-    bool has_wildcard;
+  std::string service_name;
+  std::string prefix;
+  std::string postfix;
+  bool has_wildcard;
 
-    std::string to_string() const;
+  std::string to_string() const;
 };
 struct RestfulMapping {
-    RestfulMethodPath path;
-    std::string method_name;
+  RestfulMethodPath path;
+  std::string method_name;
 };
 
 // Split components of `path_in' into `path_out'.
@@ -51,59 +51,59 @@ bool ParseRestfulPath(butil::StringPiece path_in, RestfulMethodPath* path_out);
 // * NAMEs are valid as method names in protobuf.
 // Returns true on success.
 bool ParseRestfulMappings(const butil::StringPiece& mappings,
-                          std::vector<RestfulMapping>* list);
+              std::vector<RestfulMapping>* list);
 
 struct RestfulMethodProperty : public Server::MethodProperty {
-    RestfulMethodPath path;
-    ServiceOwnership ownership;
+  RestfulMethodPath path;
+  ServiceOwnership ownership;
 };
 
 // Store paths under a same toplevel name.
 class RestfulMap {
 public:
-    typedef std::map<std::string, RestfulMethodProperty> DedupMap;
-    typedef std::vector<RestfulMethodProperty*> PathList;
+  typedef std::map<std::string, RestfulMethodProperty> DedupMap;
+  typedef std::vector<RestfulMethodProperty*> PathList;
 
-    explicit RestfulMap(const std::string& service_name)
-        : _service_name(service_name) {}
-    virtual ~RestfulMap();
+  explicit RestfulMap(const std::string& service_name)
+    : _service_name(service_name) {}
+  virtual ~RestfulMap();
 
-    // Map `path' to the method denoted by `method_name' in `service'.
-    // Returns MethodStatus of the method on success, NULL otherwise.
-    bool AddMethod(const RestfulMethodPath& path,
-                   google::protobuf::Service* service,
-                   const Server::MethodProperty::OpaqueParams& params,
-                   const std::string& method_name,
-                   MethodStatus* status);
+  // Map `path' to the method denoted by `method_name' in `service'.
+  // Returns MethodStatus of the method on success, NULL otherwise.
+  bool AddMethod(const RestfulMethodPath& path,
+           google::protobuf::Service* service,
+           const Server::MethodProperty::OpaqueParams& params,
+           const std::string& method_name,
+           MethodStatus* status);
 
-    // Remove by RestfulMethodPath::to_string() of the path to AddMethod()
-    // Returns number of methods removed (should be 1 or 0 currently)
-    size_t RemoveByPathString(const std::string& path);
+  // Remove by RestfulMethodPath::to_string() of the path to AddMethod()
+  // Returns number of methods removed (should be 1 or 0 currently)
+  size_t RemoveByPathString(const std::string& path);
 
-    // Remove all methods.
-    void ClearMethods();
+  // Remove all methods.
+  void ClearMethods();
 
-    // Called after by Server at starting moment, to refresh _sorted_paths
-    void PrepareForFinding();
-    
-    // Find the method by path.
-    // Time complexity in worst-case is #slashes-in-input * log(#paths-stored)
-    const Server::MethodProperty*
-    FindMethodProperty(const butil::StringPiece& method_path,
-                       std::string* unresolved_path) const;
+  // Called after by Server at starting moment, to refresh _sorted_paths
+  void PrepareForFinding();
+  
+  // Find the method by path.
+  // Time complexity in worst-case is #slashes-in-input * log(#paths-stored)
+  const Server::MethodProperty*
+  FindMethodProperty(const butil::StringPiece& method_path,
+             std::string* unresolved_path) const;
 
-    const std::string& service_name() const { return _service_name; }
+  const std::string& service_name() const { return _service_name; }
 
-    // Number of methods in this map. Only for UT right now.
-    size_t size() const { return _dedup_map.size(); }
-    
+  // Number of methods in this map. Only for UT right now.
+  size_t size() const { return _dedup_map.size(); }
+  
 private:
-    DISALLOW_COPY_AND_ASSIGN(RestfulMap);
-    
-    std::string _service_name;
-    // refreshed each time 
-    PathList _sorted_paths;
-    DedupMap _dedup_map;
+  DISALLOW_COPY_AND_ASSIGN(RestfulMap);
+  
+  std::string _service_name;
+  // refreshed each time 
+  PathList _sorted_paths;
+  DedupMap _dedup_map;
 };
 
 std::ostream& operator<<(std::ostream& os, const RestfulMethodPath&);

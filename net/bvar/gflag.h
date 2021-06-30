@@ -20,7 +20,7 @@
 #ifndef  BVAR_GFLAG_H
 #define  BVAR_GFLAG_H
 
-#include <string>                       // std::string
+#include <string>             // std::string
 #include "bvar/variable.h"
 
 namespace bvar {
@@ -28,36 +28,36 @@ namespace bvar {
 // Expose important gflags as bvar so that they're monitored.
 class GFlag : public Variable {
 public:
-    GFlag(const butil::StringPiece& gflag_name);
-    
-    GFlag(const butil::StringPiece& prefix,
-          const butil::StringPiece& gflag_name);
-    
-    // Calling hide() in dtor manually is a MUST required by Variable.
-    ~GFlag() { hide(); }
+  GFlag(const butil::StringPiece& gflag_name);
+  
+  GFlag(const butil::StringPiece& prefix,
+      const butil::StringPiece& gflag_name);
+  
+  // Calling hide() in dtor manually is a MUST required by Variable.
+  ~GFlag() { hide(); }
 
-    void describe(std::ostream& os, bool quote_string) const override;
+  void describe(std::ostream& os, bool quote_string) const override;
 
 #ifdef BAIDU_INTERNAL
-    void get_value(boost::any* value) const override;
+  void get_value(boost::any* value) const override;
 #endif
 
-    // Get value of the gflag.
-    // We don't bother making the return type generic. This function
-    // is just for consistency with other classes.
-    std::string get_value() const;
+  // Get value of the gflag.
+  // We don't bother making the return type generic. This function
+  // is just for consistency with other classes.
+  std::string get_value() const;
 
-    // Set the gflag with a new value.
-    // Returns true on success.
-    bool set_value(const char* value);
+  // Set the gflag with a new value.
+  // Returns true on success.
+  bool set_value(const char* value);
 
-    // name of the gflag.
-    const std::string& gflag_name() const {
-        return _gflag_name.empty() ? name() : _gflag_name;
-    }
-    
+  // name of the gflag.
+  const std::string& gflag_name() const {
+    return _gflag_name.empty() ? name() : _gflag_name;
+  }
+  
 private:
-    std::string _gflag_name;
+  std::string _gflag_name;
 };
 
 }  // namespace bvar

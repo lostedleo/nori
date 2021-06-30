@@ -22,23 +22,23 @@ namespace {
 
 class BaiduStringPrintfTest : public ::testing::Test{
 protected:
-    BaiduStringPrintfTest(){
-    };
-    virtual ~BaiduStringPrintfTest(){};
-    virtual void SetUp() {
-    };
-    virtual void TearDown() {
-    };
+  BaiduStringPrintfTest(){
+  };
+  virtual ~BaiduStringPrintfTest(){};
+  virtual void SetUp() {
+  };
+  virtual void TearDown() {
+  };
 };
 
 TEST_F(BaiduStringPrintfTest, sanity) {
-    ASSERT_EQ("hello 1 124 world", butil::string_printf("hello %d 124 %s", 1, "world"));
-    std::string sth;
-    ASSERT_EQ(0, butil::string_printf(&sth, "boolean %d", 1));
-    ASSERT_EQ("boolean 1", sth);
-    
-    ASSERT_EQ(0, butil::string_appendf(&sth, "too simple"));
-    ASSERT_EQ("boolean 1too simple", sth);
+  ASSERT_EQ("hello 1 124 world", butil::string_printf("hello %d 124 %s", 1, "world"));
+  std::string sth;
+  ASSERT_EQ(0, butil::string_printf(&sth, "boolean %d", 1));
+  ASSERT_EQ("boolean 1", sth);
+  
+  ASSERT_EQ(0, butil::string_appendf(&sth, "too simple"));
+  ASSERT_EQ("boolean 1too simple", sth);
 }
 
 }

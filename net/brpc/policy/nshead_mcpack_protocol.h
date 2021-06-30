@@ -30,33 +30,33 @@ namespace policy {
 void ProcessNsheadMcpackResponse(InputMessageBase* msg);
 
 void SerializeNsheadMcpackRequest(butil::IOBuf* buf, Controller* cntl,
-                                 const google::protobuf::Message* request);
+                 const google::protobuf::Message* request);
 
 // Pack `request' to `method' into `buf'.
 void PackNsheadMcpackRequest(butil::IOBuf* buf,
-                             SocketMessage**,
-                             uint64_t correlation_id,
-                             const google::protobuf::MethodDescriptor* method,
-                             Controller* controller,
-                             const butil::IOBuf& request,
-                             const Authenticator* auth);
+               SocketMessage**,
+               uint64_t correlation_id,
+               const google::protobuf::MethodDescriptor* method,
+               Controller* controller,
+               const butil::IOBuf& request,
+               const Authenticator* auth);
 
 class NsheadMcpackAdaptor : public NsheadPbServiceAdaptor {
 public:
-    void ParseNsheadMeta(const Server& svr,
-                        const NsheadMessage& request,
-                        Controller*,
-                        NsheadMeta* out_meta) const;
+  void ParseNsheadMeta(const Server& svr,
+            const NsheadMessage& request,
+            Controller*,
+            NsheadMeta* out_meta) const;
 
-    void ParseRequestFromIOBuf(
-        const NsheadMeta& meta, const NsheadMessage& ns_req,
-        Controller* controller, google::protobuf::Message* pb_req) const;
+  void ParseRequestFromIOBuf(
+    const NsheadMeta& meta, const NsheadMessage& ns_req,
+    Controller* controller, google::protobuf::Message* pb_req) const;
 
-    void SerializeResponseToIOBuf(
-        const NsheadMeta& meta,
-        Controller* controller,
-        const google::protobuf::Message* pb_res,
-        NsheadMessage* ns_res) const;
+  void SerializeResponseToIOBuf(
+    const NsheadMeta& meta,
+    Controller* controller,
+    const google::protobuf::Message* pb_res,
+    NsheadMessage* ns_res) const;
 };
 
 }  // namespace policy

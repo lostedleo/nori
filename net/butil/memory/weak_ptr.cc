@@ -42,15 +42,15 @@ WeakReferenceOwner::~WeakReferenceOwner() {
 WeakReference WeakReferenceOwner::GetRef() const {
   // If we hold the last reference to the Flag then create a new one.
   if (!HasRefs())
-    flag_ = new WeakReference::Flag();
+  flag_ = new WeakReference::Flag();
 
   return WeakReference(flag_.get());
 }
 
 void WeakReferenceOwner::Invalidate() {
   if (flag_.get()) {
-    flag_->Invalidate();
-    flag_ = NULL;
+  flag_->Invalidate();
+  flag_ = NULL;
   }
 }
 

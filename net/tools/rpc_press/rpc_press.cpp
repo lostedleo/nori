@@ -4,7 +4,7 @@
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 // 
-//     http://www.apache.org/licenses/LICENSE-2.0
+//   http://www.apache.org/licenses/LICENSE-2.0
 // 
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -43,76 +43,76 @@ DEFINE_int32(qps, 100 , "how many calls  per seconds");
 DEFINE_bool(pretty, true, "output pretty jsons");
 
 bool set_press_options(pbrpcframework::PressOptions* options){
-    size_t dot_pos = FLAGS_method.find_last_of('.');
-    if (dot_pos == std::string::npos) {
-        LOG(ERROR) << "-method must be in form of: package.service.method";
-        return false;
-    }
-    options->service = FLAGS_method.substr(0, dot_pos);
-    options->method = FLAGS_method.substr(dot_pos + 1);
-    options->lb_policy = FLAGS_lb_policy;
-    options->test_req_rate = FLAGS_qps;
-    if (FLAGS_thread_num > 0) {
-        options->test_thread_num = FLAGS_thread_num;
+  size_t dot_pos = FLAGS_method.find_last_of('.');
+  if (dot_pos == std::string::npos) {
+    LOG(ERROR) << "-method must be in form of: package.service.method";
+    return false;
+  }
+  options->service = FLAGS_method.substr(0, dot_pos);
+  options->method = FLAGS_method.substr(dot_pos + 1);
+  options->lb_policy = FLAGS_lb_policy;
+  options->test_req_rate = FLAGS_qps;
+  if (FLAGS_thread_num > 0) {
+    options->test_thread_num = FLAGS_thread_num;
+  } else {
+    if (FLAGS_qps <= 0) { // unlimited qps
+      options->test_thread_num = 50;
     } else {
-        if (FLAGS_qps <= 0) { // unlimited qps
-            options->test_thread_num = 50;
-        } else {
-            options->test_thread_num = FLAGS_qps / 10000;
-            if (options->test_thread_num < 1) {
-                options->test_thread_num = 1;
-            }
-            if (options->test_thread_num > 50) {
-                options->test_thread_num = 50;
-            }
-        }
+      options->test_thread_num = FLAGS_qps / 10000;
+      if (options->test_thread_num < 1) {
+        options->test_thread_num = 1;
+      }
+      if (options->test_thread_num > 50) {
+        options->test_thread_num = 50;
+      }
     }
+  }
 
-    options->input = FLAGS_input;
-    options->output = FLAGS_output;
-    options->connection_type = FLAGS_connection_type;
-    options->connect_timeout_ms = FLAGS_connection_timeout_ms;
-    options->timeout_ms = FLAGS_timeout_ms;
-    options->max_retry = FLAGS_max_retry;
-    options->protocol = FLAGS_protocol;
-    options->request_compress_type = FLAGS_request_compress_type;
-    options->response_compress_type = FLAGS_response_compress_type;
-    options->attachment_size = FLAGS_attachment_size;
-    options->host = FLAGS_server;
-    options->proto_file = FLAGS_proto;
-    options->proto_includes = FLAGS_inc;
-    return true;
+  options->input = FLAGS_input;
+  options->output = FLAGS_output;
+  options->connection_type = FLAGS_connection_type;
+  options->connect_timeout_ms = FLAGS_connection_timeout_ms;
+  options->timeout_ms = FLAGS_timeout_ms;
+  options->max_retry = FLAGS_max_retry;
+  options->protocol = FLAGS_protocol;
+  options->request_compress_type = FLAGS_request_compress_type;
+  options->response_compress_type = FLAGS_response_compress_type;
+  options->attachment_size = FLAGS_attachment_size;
+  options->host = FLAGS_server;
+  options->proto_file = FLAGS_proto;
+  options->proto_includes = FLAGS_inc;
+  return true;
 }
 
 int main(int argc, char* argv[]) {
-    // Parse gflags. We recommend you to use gflags as well
-    google::ParseCommandLineFlags(&argc, &argv, true);
-    // set global log option
+  // Parse gflags. We recommend you to use gflags as well
+  google::ParseCommandLineFlags(&argc, &argv, true);
+  // set global log option
 
-    if (FLAGS_dummy_port >= 0) {
-        brpc::StartDummyServerAt(FLAGS_dummy_port);
-    }
+  if (FLAGS_dummy_port >= 0) {
+    brpc::StartDummyServerAt(FLAGS_dummy_port);
+  }
 
-    pbrpcframework::PressOptions options;
-    if (!set_press_options(&options)) {
-        return -1;
-    }
-    pbrpcframework::RpcPress* rpc_press = new pbrpcframework::RpcPress;
-    if (0 != rpc_press->init(&options)) {
-        LOG(FATAL) << "Fail to init rpc_press";
-        return -1;
-    }
+  pbrpcframework::PressOptions options;
+  if (!set_press_options(&options)) {
+    return -1;
+  }
+  pbrpcframework::RpcPress* rpc_press = new pbrpcframework::RpcPress;
+  if (0 != rpc_press->init(&options)) {
+    LOG(FATAL) << "Fail to init rpc_press";
+    return -1;
+  }
 
-    rpc_press->start();
-    if (FLAGS_duration <= 0) {
-        while (!brpc::IsAskedToQuit()) {
-            sleep(1);
-        }
-    } else {
-        sleep(FLAGS_duration);
+  rpc_press->start();
+  if (FLAGS_duration <= 0) {
+    while (!brpc::IsAskedToQuit()) {
+      sleep(1);
     }
-    rpc_press->stop();
-    // NOTE(gejun): Can't delete rpc_press on exit. It's probably
-    // used by concurrently running done.
-    return 0;
+  } else {
+    sleep(FLAGS_duration);
+  }
+  rpc_press->stop();
+  // NOTE(gejun): Can't delete rpc_press on exit. It's probably
+  // used by concurrently running done.
+  return 0;
 }

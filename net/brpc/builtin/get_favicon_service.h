@@ -25,10 +25,10 @@ namespace brpc {
 
 class GetFaviconService : public ico {
 public:
-    void default_method(::google::protobuf::RpcController* controller,
-                        const GetFaviconRequest* request,
-                        GetFaviconResponse* response,
-                        ::google::protobuf::Closure* done);
+  void default_method(::google::protobuf::RpcController* controller,
+            const GetFaviconRequest* request,
+            GetFaviconResponse* response,
+            ::google::protobuf::Closure* done);
 };
 
 } // namespace brpc

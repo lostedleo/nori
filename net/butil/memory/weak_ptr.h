@@ -16,29 +16,29 @@
 //
 //  class Controller {
 //   public:
-//    void SpawnWorker() { Worker::StartNew(weak_factory_.GetWeakPtr()); }
-//    void WorkComplete(const Result& result) { ... }
+//  void SpawnWorker() { Worker::StartNew(weak_factory_.GetWeakPtr()); }
+//  void WorkComplete(const Result& result) { ... }
 //   private:
-//    // Member variables should appear before the WeakPtrFactory, to ensure
-//    // that any WeakPtrs to Controller are invalidated before its members
-//    // variable's destructors are executed, rendering them invalid.
-//    WeakPtrFactory<Controller> weak_factory_;
+//  // Member variables should appear before the WeakPtrFactory, to ensure
+//  // that any WeakPtrs to Controller are invalidated before its members
+//  // variable's destructors are executed, rendering them invalid.
+//  WeakPtrFactory<Controller> weak_factory_;
 //  };
 //
 //  class Worker {
 //   public:
-//    static void StartNew(const WeakPtr<Controller>& controller) {
-//      Worker* worker = new Worker(controller);
-//      // Kick off asynchronous processing...
-//    }
+//  static void StartNew(const WeakPtr<Controller>& controller) {
+//    Worker* worker = new Worker(controller);
+//    // Kick off asynchronous processing...
+//  }
 //   private:
-//    Worker(const WeakPtr<Controller>& controller)
-//        : controller_(controller) {}
-//    void DidCompleteAsynchronousProcessing(const Result& result) {
-//      if (controller_)
-//        controller_->WorkComplete(result);
-//    }
-//    WeakPtr<Controller> controller_;
+//  Worker(const WeakPtr<Controller>& controller)
+//    : controller_(controller) {}
+//  void DidCompleteAsynchronousProcessing(const Result& result) {
+//    if (controller_)
+//    controller_->WorkComplete(result);
+//  }
+//  WeakPtr<Controller> controller_;
 //  };
 //
 // With this implementation a caller may use SpawnWorker() to dispatch multiple
@@ -84,17 +84,17 @@ class BUTIL_EXPORT WeakReference {
   // via butil::WeakPtr::~WeakPtr().
   class BUTIL_EXPORT Flag : public RefCountedThreadSafe<Flag> {
    public:
-    Flag();
+  Flag();
 
-    void Invalidate();
-    bool IsValid() const;
+  void Invalidate();
+  bool IsValid() const;
 
    private:
-    friend class butil::RefCountedThreadSafe<Flag>;
+  friend class butil::RefCountedThreadSafe<Flag>;
 
-    ~Flag();
+  ~Flag();
 
-    bool is_valid_;
+  bool is_valid_;
   };
 
   WeakReference();
@@ -115,7 +115,7 @@ class BUTIL_EXPORT WeakReferenceOwner {
   WeakReference GetRef() const;
 
   bool HasRefs() const {
-    return flag_.get() && !flag_->HasOneRef();
+  return flag_.get() && !flag_->HasOneRef();
   }
 
   void Invalidate();
@@ -150,11 +150,11 @@ class SupportsWeakPtrBase {
   // function that makes calling this easier.
   template<typename Derived>
   static WeakPtr<Derived> StaticAsWeakPtr(Derived* t) {
-    typedef
-        is_convertible<Derived, internal::SupportsWeakPtrBase&> convertible;
-    COMPILE_ASSERT(convertible::value,
-                   AsWeakPtr_argument_inherits_from_SupportsWeakPtr);
-    return AsWeakPtrImpl<Derived>(t, *t);
+  typedef
+    is_convertible<Derived, internal::SupportsWeakPtrBase&> convertible;
+  COMPILE_ASSERT(convertible::value,
+           AsWeakPtr_argument_inherits_from_SupportsWeakPtr);
+  return AsWeakPtrImpl<Derived>(t, *t);
   }
 
  private:
@@ -163,9 +163,9 @@ class SupportsWeakPtrBase {
   // static_cast the Base* to a Derived*.
   template <typename Derived, typename Base>
   static WeakPtr<Derived> AsWeakPtrImpl(
-      Derived* t, const SupportsWeakPtr<Base>&) {
-    WeakPtr<Base> ptr = t->Base::AsWeakPtr();
-    return WeakPtr<Derived>(ptr.ref_, static_cast<Derived*>(ptr.ptr_));
+    Derived* t, const SupportsWeakPtr<Base>&) {
+  WeakPtr<Base> ptr = t->Base::AsWeakPtr();
+  return WeakPtr<Derived>(ptr.ref_, static_cast<Derived*>(ptr.ptr_));
   }
 };
 
@@ -184,7 +184,7 @@ template <typename T> class WeakPtrFactory;
 //   class Foo { ... };
 //   WeakPtr<Foo> foo;
 //   if (foo)
-//     foo->method();
+//   foo->method();
 //
 template <typename T>
 class WeakPtr : public internal::WeakPtrBase {
@@ -201,12 +201,12 @@ class WeakPtr : public internal::WeakPtrBase {
   T* get() const { return ref_.is_valid() ? ptr_ : NULL; }
 
   T& operator*() const {
-    DCHECK(get() != NULL);
-    return *get();
+  DCHECK(get() != NULL);
+  return *get();
   }
   T* operator->() const {
-    DCHECK(get() != NULL);
-    return get();
+  DCHECK(get() != NULL);
+  return get();
   }
 
   // Allow WeakPtr<element_type> to be used in boolean expressions, but not
@@ -223,8 +223,8 @@ class WeakPtr : public internal::WeakPtrBase {
   operator Testable() const { return get() ? &WeakPtr::ptr_ : NULL; }
 
   void reset() {
-    ref_ = internal::WeakReference();
-    ptr_ = NULL;
+  ref_ = internal::WeakReference();
+  ptr_ = NULL;
   }
 
  private:
@@ -239,8 +239,8 @@ class WeakPtr : public internal::WeakPtrBase {
   friend class WeakPtrFactory<T>;
 
   WeakPtr(const internal::WeakReference& ref, T* ptr)
-      : WeakPtrBase(ref),
-        ptr_(ptr) {
+    : WeakPtrBase(ref),
+    ptr_(ptr) {
   }
 
   // This pointer is only valid when ref_.is_valid() is true.  Otherwise, its
@@ -260,24 +260,24 @@ class WeakPtrFactory {
   }
 
   ~WeakPtrFactory() {
-    ptr_ = NULL;
+  ptr_ = NULL;
   }
 
   WeakPtr<T> GetWeakPtr() {
-    DCHECK(ptr_);
-    return WeakPtr<T>(weak_reference_owner_.GetRef(), ptr_);
+  DCHECK(ptr_);
+  return WeakPtr<T>(weak_reference_owner_.GetRef(), ptr_);
   }
 
   // Call this method to invalidate all existing weak pointers.
   void InvalidateWeakPtrs() {
-    DCHECK(ptr_);
-    weak_reference_owner_.Invalidate();
+  DCHECK(ptr_);
+  weak_reference_owner_.Invalidate();
   }
 
   // Call this method to determine if any weak pointers exist.
   bool HasWeakPtrs() const {
-    DCHECK(ptr_);
-    return weak_reference_owner_.HasRefs();
+  DCHECK(ptr_);
+  return weak_reference_owner_.HasRefs();
   }
 
  private:
@@ -297,7 +297,7 @@ class SupportsWeakPtr : public internal::SupportsWeakPtrBase {
   SupportsWeakPtr() {}
 
   WeakPtr<T> AsWeakPtr() {
-    return WeakPtr<T>(weak_reference_owner_.GetRef(), static_cast<T*>(this));
+  return WeakPtr<T>(weak_reference_owner_.GetRef(), static_cast<T*>(this));
   }
 
  protected:

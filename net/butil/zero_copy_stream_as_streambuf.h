@@ -31,22 +31,22 @@ namespace butil {
 // appended data.
 class ZeroCopyStreamAsStreamBuf : public std::streambuf {
 public:
-    ZeroCopyStreamAsStreamBuf(google::protobuf::io::ZeroCopyOutputStream* stream)
-        : _zero_copy_stream(stream) {}
-    virtual ~ZeroCopyStreamAsStreamBuf();
+  ZeroCopyStreamAsStreamBuf(google::protobuf::io::ZeroCopyOutputStream* stream)
+    : _zero_copy_stream(stream) {}
+  virtual ~ZeroCopyStreamAsStreamBuf();
 
-    // BackUp() unused bytes. Automatically called in destructor.
-    void shrink();
-    
+  // BackUp() unused bytes. Automatically called in destructor.
+  void shrink();
+  
 protected:
-    int overflow(int ch) override;
-    int sync() override;
-    std::streampos seekoff(std::streamoff off,
-                           std::ios_base::seekdir way,
-                           std::ios_base::openmode which) override;
+  int overflow(int ch) override;
+  int sync() override;
+  std::streampos seekoff(std::streamoff off,
+               std::ios_base::seekdir way,
+               std::ios_base::openmode which) override;
 
 private:
-    google::protobuf::io::ZeroCopyOutputStream* _zero_copy_stream;
+  google::protobuf::io::ZeroCopyOutputStream* _zero_copy_stream;
 };
 
 }  // namespace butil

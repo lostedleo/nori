@@ -18,11 +18,11 @@ std::string GenerateGUID() {
 // use this as well.
 std::string RandomDataToGUIDString(const uint64_t bytes[2]) {
   return StringPrintf("%08X-%04X-%04X-%04X-%012llX",
-                      static_cast<unsigned int>(bytes[0] >> 32),
-                      static_cast<unsigned int>((bytes[0] >> 16) & 0x0000ffff),
-                      static_cast<unsigned int>(bytes[0] & 0x0000ffff),
-                      static_cast<unsigned int>(bytes[1] >> 48),
-                      bytes[1] & 0x0000ffffffffffffULL);
+            static_cast<unsigned int>(bytes[0] >> 32),
+            static_cast<unsigned int>((bytes[0] >> 16) & 0x0000ffff),
+            static_cast<unsigned int>(bytes[0] & 0x0000ffff),
+            static_cast<unsigned int>(bytes[1] >> 48),
+            bytes[1] & 0x0000ffffffffffffULL);
 }
 
 }  // namespace guid

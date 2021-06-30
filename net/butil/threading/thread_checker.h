@@ -31,7 +31,7 @@ namespace butil {
 class ThreadCheckerDoNothing {
  public:
   bool CalledOnValidThread() const {
-    return true;
+  return true;
   }
 
   void DetachFromThread() {}
@@ -48,9 +48,9 @@ class ThreadCheckerDoNothing {
 // ThreadChecker member and inheriting from butil::NonThreadSafe should be based
 // on whether:
 //  - Derived classes need to know the thread they belong to, as opposed to
-//    having that functionality fully encapsulated in the base class.
+//  having that functionality fully encapsulated in the base class.
 //  - Derived classes should be able to reassign the base class to another
-//    thread, via DetachFromThread.
+//  thread, via DetachFromThread.
 //
 // If neither of these are true, then having a ThreadChecker member and calling
 // CalledOnValidThread is the preferable solution.
@@ -59,8 +59,8 @@ class ThreadCheckerDoNothing {
 // class MyClass {
 //  public:
 //   void Foo() {
-//     DCHECK(thread_checker_.CalledOnValidThread());
-//     ... (do stuff) ...
+//   DCHECK(thread_checker_.CalledOnValidThread());
+//   ... (do stuff) ...
 //   }
 //
 //  private:

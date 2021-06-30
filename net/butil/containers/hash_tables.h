@@ -73,12 +73,12 @@ namespace BUTIL_HASH_NAMESPACE {
 // use it for.
 
 #define DEFINE_TRIVIAL_HASH(integral_type) \
-    template<> \
-    struct hash<integral_type> { \
-      std::size_t operator()(integral_type value) const { \
-        return static_cast<std::size_t>(value); \
-      } \
-    }
+  template<> \
+  struct hash<integral_type> { \
+    std::size_t operator()(integral_type value) const { \
+    return static_cast<std::size_t>(value); \
+    } \
+  }
 
 DEFINE_TRIVIAL_HASH(long long);
 DEFINE_TRIVIAL_HASH(unsigned long long);
@@ -93,15 +93,15 @@ DEFINE_TRIVIAL_HASH(unsigned long long);
 // is disabled, as it is in our build.
 
 #define DEFINE_STRING_HASH(string_type) \
-    template<> \
-    struct hash<string_type> { \
-      std::size_t operator()(const string_type& s) const { \
-        std::size_t result = 0; \
-        for (string_type::const_iterator i = s.begin(); i != s.end(); ++i) \
-          result = (result * 131) + *i; \
-        return result; \
-      } \
-    }
+  template<> \
+  struct hash<string_type> { \
+    std::size_t operator()(const string_type& s) const { \
+    std::size_t result = 0; \
+    for (string_type::const_iterator i = s.begin(); i != s.end(); ++i) \
+      result = (result * 131) + *i; \
+    return result; \
+    } \
+  }
 
 DEFINE_STRING_HASH(std::string);
 DEFINE_STRING_HASH(butil::string16);
@@ -151,14 +151,14 @@ inline std::size_t HashInts64(uint64_t value1, uint64_t value2) {
   uint64_t hash64 = product1 + product2 + product3 + product4;
 
   if (sizeof(std::size_t) >= sizeof(uint64_t))
-    return static_cast<std::size_t>(hash64);
+  return static_cast<std::size_t>(hash64);
 
   uint64_t odd_random = 1578233944LL << 32 | 194370989LL;
   uint32_t shift_random = 20591U << 16;
 
   hash64 = hash64 * odd_random + shift_random;
   std::size_t high_bits = static_cast<std::size_t>(
-      hash64 >> (8 * (sizeof(uint64_t) - sizeof(std::size_t))));
+    hash64 >> (8 * (sizeof(uint64_t) - sizeof(std::size_t))));
   return high_bits;
 }
 
@@ -238,13 +238,13 @@ inline std::size_t hash_value(Type* ptr) {
 template<typename Type1, typename Type2>
 struct hash<std::pair<Type1, Type2> > {
   std::size_t operator()(std::pair<Type1, Type2> value) const {
-    return butil::HashPair(value.first, value.second);
+  return butil::HashPair(value.first, value.second);
   }
 };
 template<typename Type>
 struct hash<Type*> {
   std::size_t operator()(Type* ptr) const {
-    return (uintptr_t)ptr;
+  return (uintptr_t)ptr;
   }
 };
 

@@ -62,7 +62,7 @@ BUTIL_EXPORT void MD5Final(MD5Digest* digest, MD5Context* context);
 // operation.  Can be used to generate digests for the input seen thus far,
 // without affecting the digest generated for the entire input.
 BUTIL_EXPORT void MD5IntermediateFinal(MD5Digest* digest,
-                                      const MD5Context* context);
+                    const MD5Context* context);
 
 // Converts a digest into human-readable hexadecimal.
 BUTIL_EXPORT std::string MD5DigestToBase16(const MD5Digest& digest);

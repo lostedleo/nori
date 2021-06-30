@@ -19,7 +19,7 @@ namespace {
 
 // g_native_tls_key is the one native TLS that we use.  It stores our table.
 butil::subtle::AtomicWord g_native_tls_key =
-    PlatformThreadLocalStorage::TLS_KEY_OUT_OF_INDEXES;
+  PlatformThreadLocalStorage::TLS_KEY_OUT_OF_INDEXES;
 
 // g_last_used_tls_key is the high-water-mark of allocated thread local storage.
 // Each allocation is an index into our g_tls_destructors[].  Each such index is
@@ -47,7 +47,7 @@ const int kMaxDestructorIterations = kThreadLocalStorageSize;
 // (i.e., null out the destructor entry) that happens on a separate thread can't
 // hurt the racy calls to the destructors on another thread.
 volatile butil::ThreadLocalStorage::TLSDestructorFunc
-    g_tls_destructors[kThreadLocalStorageSize];
+  g_tls_destructors[kThreadLocalStorageSize];
 
 // This function is called to initialize our entire Chromium TLS system.
 // It may be called very early, and we need to complete most all of the setup
@@ -57,33 +57,33 @@ volatile butil::ThreadLocalStorage::TLSDestructorFunc
 // require memory allocations.
 void** ConstructTlsVector() {
   PlatformThreadLocalStorage::TLSKey key =
-      butil::subtle::NoBarrier_Load(&g_native_tls_key);
+    butil::subtle::NoBarrier_Load(&g_native_tls_key);
   if (key == PlatformThreadLocalStorage::TLS_KEY_OUT_OF_INDEXES) {
-    CHECK(PlatformThreadLocalStorage::AllocTLS(&key));
+  CHECK(PlatformThreadLocalStorage::AllocTLS(&key));
 
-    // The TLS_KEY_OUT_OF_INDEXES is used to find out whether the key is set or
-    // not in NoBarrier_CompareAndSwap, but Posix doesn't have invalid key, we
-    // define an almost impossible value be it.
-    // If we really get TLS_KEY_OUT_OF_INDEXES as value of key, just alloc
-    // another TLS slot.
-    if (key == PlatformThreadLocalStorage::TLS_KEY_OUT_OF_INDEXES) {
-      PlatformThreadLocalStorage::TLSKey tmp = key;
-      CHECK(PlatformThreadLocalStorage::AllocTLS(&key) &&
-            key != PlatformThreadLocalStorage::TLS_KEY_OUT_OF_INDEXES);
-      PlatformThreadLocalStorage::FreeTLS(tmp);
-    }
-    // Atomically test-and-set the tls_key.  If the key is
-    // TLS_KEY_OUT_OF_INDEXES, go ahead and set it.  Otherwise, do nothing, as
-    // another thread already did our dirty work.
-    if (PlatformThreadLocalStorage::TLS_KEY_OUT_OF_INDEXES !=
-        butil::subtle::NoBarrier_CompareAndSwap(&g_native_tls_key,
-            PlatformThreadLocalStorage::TLS_KEY_OUT_OF_INDEXES, key)) {
-      // We've been shortcut. Another thread replaced g_native_tls_key first so
-      // we need to destroy our index and use the one the other thread got
-      // first.
-      PlatformThreadLocalStorage::FreeTLS(key);
-      key = butil::subtle::NoBarrier_Load(&g_native_tls_key);
-    }
+  // The TLS_KEY_OUT_OF_INDEXES is used to find out whether the key is set or
+  // not in NoBarrier_CompareAndSwap, but Posix doesn't have invalid key, we
+  // define an almost impossible value be it.
+  // If we really get TLS_KEY_OUT_OF_INDEXES as value of key, just alloc
+  // another TLS slot.
+  if (key == PlatformThreadLocalStorage::TLS_KEY_OUT_OF_INDEXES) {
+    PlatformThreadLocalStorage::TLSKey tmp = key;
+    CHECK(PlatformThreadLocalStorage::AllocTLS(&key) &&
+      key != PlatformThreadLocalStorage::TLS_KEY_OUT_OF_INDEXES);
+    PlatformThreadLocalStorage::FreeTLS(tmp);
+  }
+  // Atomically test-and-set the tls_key.  If the key is
+  // TLS_KEY_OUT_OF_INDEXES, go ahead and set it.  Otherwise, do nothing, as
+  // another thread already did our dirty work.
+  if (PlatformThreadLocalStorage::TLS_KEY_OUT_OF_INDEXES !=
+    butil::subtle::NoBarrier_CompareAndSwap(&g_native_tls_key,
+      PlatformThreadLocalStorage::TLS_KEY_OUT_OF_INDEXES, key)) {
+    // We've been shortcut. Another thread replaced g_native_tls_key first so
+    // we need to destroy our index and use the one the other thread got
+    // first.
+    PlatformThreadLocalStorage::FreeTLS(key);
+    key = butil::subtle::NoBarrier_Load(&g_native_tls_key);
+  }
   }
   CHECK(!PlatformThreadLocalStorage::GetTLSValue(key));
 
@@ -123,42 +123,42 @@ void OnThreadExitInternal(void* value) {
   memcpy(stack_allocated_tls_data, tls_data, sizeof(stack_allocated_tls_data));
   // Ensure that any re-entrant calls change the temp version.
   PlatformThreadLocalStorage::TLSKey key =
-      butil::subtle::NoBarrier_Load(&g_native_tls_key);
+    butil::subtle::NoBarrier_Load(&g_native_tls_key);
   PlatformThreadLocalStorage::SetTLSValue(key, stack_allocated_tls_data);
   delete[] tls_data;  // Our last dependence on an allocator.
 
   int remaining_attempts = kMaxDestructorIterations;
   bool need_to_scan_destructors = true;
   while (need_to_scan_destructors) {
-    need_to_scan_destructors = false;
-    // Try to destroy the first-created-slot (which is slot 1) in our last
-    // destructor call.  That user was able to function, and define a slot with
-    // no other services running, so perhaps it is a basic service (like an
-    // allocator) and should also be destroyed last.  If we get the order wrong,
-    // then we'll itterate several more times, so it is really not that
-    // critical (but it might help).
-    butil::subtle::Atomic32 last_used_tls_key =
-        butil::subtle::NoBarrier_Load(&g_last_used_tls_key);
-    for (int slot = last_used_tls_key; slot > 0; --slot) {
-      void* value = stack_allocated_tls_data[slot];
-      if (value == NULL)
-        continue;
+  need_to_scan_destructors = false;
+  // Try to destroy the first-created-slot (which is slot 1) in our last
+  // destructor call.  That user was able to function, and define a slot with
+  // no other services running, so perhaps it is a basic service (like an
+  // allocator) and should also be destroyed last.  If we get the order wrong,
+  // then we'll itterate several more times, so it is really not that
+  // critical (but it might help).
+  butil::subtle::Atomic32 last_used_tls_key =
+    butil::subtle::NoBarrier_Load(&g_last_used_tls_key);
+  for (int slot = last_used_tls_key; slot > 0; --slot) {
+    void* value = stack_allocated_tls_data[slot];
+    if (value == NULL)
+    continue;
 
-      butil::ThreadLocalStorage::TLSDestructorFunc destructor =
-          g_tls_destructors[slot];
-      if (destructor == NULL)
-        continue;
-      stack_allocated_tls_data[slot] = NULL;  // pre-clear the slot.
-      destructor(value);
-      // Any destructor might have called a different service, which then set
-      // a different slot to a non-NULL value.  Hence we need to check
-      // the whole vector again.  This is a pthread standard.
-      need_to_scan_destructors = true;
-    }
-    if (--remaining_attempts <= 0) {
-      NOTREACHED();  // Destructors might not have been called.
-      break;
-    }
+    butil::ThreadLocalStorage::TLSDestructorFunc destructor =
+      g_tls_destructors[slot];
+    if (destructor == NULL)
+    continue;
+    stack_allocated_tls_data[slot] = NULL;  // pre-clear the slot.
+    destructor(value);
+    // Any destructor might have called a different service, which then set
+    // a different slot to a non-NULL value.  Hence we need to check
+    // the whole vector again.  This is a pthread standard.
+    need_to_scan_destructors = true;
+  }
+  if (--remaining_attempts <= 0) {
+    NOTREACHED();  // Destructors might not have been called.
+    break;
+  }
   }
 
   // Remove our stack allocated vector.
@@ -174,13 +174,13 @@ namespace internal {
 #if defined(OS_WIN)
 void PlatformThreadLocalStorage::OnThreadExit() {
   PlatformThreadLocalStorage::TLSKey key =
-      butil::subtle::NoBarrier_Load(&g_native_tls_key);
+    butil::subtle::NoBarrier_Load(&g_native_tls_key);
   if (key == PlatformThreadLocalStorage::TLS_KEY_OUT_OF_INDEXES)
-    return;
+  return;
   void *tls_data = GetTLSValue(key);
   // Maybe we have never initialized TLS for this thread.
   if (!tls_data)
-    return;
+  return;
   OnThreadExitInternal(tls_data);
 }
 #elif defined(OS_POSIX)
@@ -199,10 +199,10 @@ ThreadLocalStorage::Slot::Slot(TLSDestructorFunc destructor) {
 
 bool ThreadLocalStorage::StaticSlot::Initialize(TLSDestructorFunc destructor) {
   PlatformThreadLocalStorage::TLSKey key =
-      butil::subtle::NoBarrier_Load(&g_native_tls_key);
+    butil::subtle::NoBarrier_Load(&g_native_tls_key);
   if (key == PlatformThreadLocalStorage::TLS_KEY_OUT_OF_INDEXES ||
-      !PlatformThreadLocalStorage::GetTLSValue(key))
-    ConstructTlsVector();
+    !PlatformThreadLocalStorage::GetTLSValue(key))
+  ConstructTlsVector();
 
   // Grab a new slot.
   slot_ = butil::subtle::NoBarrier_AtomicIncrement(&g_last_used_tls_key, 1);
@@ -227,10 +227,10 @@ void ThreadLocalStorage::StaticSlot::Free() {
 
 void* ThreadLocalStorage::StaticSlot::Get() const {
   void** tls_data = static_cast<void**>(
-      PlatformThreadLocalStorage::GetTLSValue(
-          butil::subtle::NoBarrier_Load(&g_native_tls_key)));
+    PlatformThreadLocalStorage::GetTLSValue(
+      butil::subtle::NoBarrier_Load(&g_native_tls_key)));
   if (!tls_data)
-    tls_data = ConstructTlsVector();
+  tls_data = ConstructTlsVector();
   DCHECK_GT(slot_, 0);
   DCHECK_LT(slot_, kThreadLocalStorageSize);
   return tls_data[slot_];
@@ -238,10 +238,10 @@ void* ThreadLocalStorage::StaticSlot::Get() const {
 
 void ThreadLocalStorage::StaticSlot::Set(void* value) {
   void** tls_data = static_cast<void**>(
-      PlatformThreadLocalStorage::GetTLSValue(
-          butil::subtle::NoBarrier_Load(&g_native_tls_key)));
+    PlatformThreadLocalStorage::GetTLSValue(
+      butil::subtle::NoBarrier_Load(&g_native_tls_key)));
   if (!tls_data)
-    tls_data = ConstructTlsVector();
+  tls_data = ConstructTlsVector();
   DCHECK_GT(slot_, 0);
   DCHECK_LT(slot_, kThreadLocalStorageSize);
   tls_data[slot_] = value;

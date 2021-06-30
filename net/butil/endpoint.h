@@ -22,9 +22,9 @@
 #ifndef BUTIL_ENDPOINT_H
 #define BUTIL_ENDPOINT_H
 
-#include <netinet/in.h>                          // in_addr
-#include <iostream>                              // std::ostream
-#include "butil/containers/hash_tables.h"         // hashing functions
+#include <netinet/in.h>              // in_addr
+#include <iostream>                // std::ostream
+#include "butil/containers/hash_tables.h"     // hashing functions
 
 namespace butil {
 
@@ -39,8 +39,8 @@ inline in_addr_t ip2int(ip_t ip) { return ip.s_addr; }
 
 // Convert integral |ip_value| to an IP
 inline ip_t int2ip(in_addr_t ip_value) {
-    const ip_t ip = { ip_value };
-    return ip;
+  const ip_t ip = { ip_value };
+  return ip;
 }
 
 // Convert string `ip_str' to ip_t *ip.
@@ -49,8 +49,8 @@ inline ip_t int2ip(in_addr_t ip_value) {
 int str2ip(const char* ip_str, ip_t* ip);
 
 struct IPStr {
-    const char* c_str() const { return _buf; }
-    char _buf[INET_ADDRSTRLEN];
+  const char* c_str() const { return _buf; }
+  char _buf[INET_ADDRSTRLEN];
 };
 
 // Convert IP to c-style string. Notice that you can serialize ip_t to
@@ -81,18 +81,18 @@ const char* my_ip_cstr();
 
 // ipv4 + port
 struct EndPoint {
-    EndPoint() : ip(IP_ANY), port(0) {}
-    EndPoint(ip_t ip2, int port2) : ip(ip2), port(port2) {}
-    explicit EndPoint(const sockaddr_in& in)
-        : ip(in.sin_addr), port(ntohs(in.sin_port)) {}
-    
-    ip_t ip;
-    int port;
+  EndPoint() : ip(IP_ANY), port(0) {}
+  EndPoint(ip_t ip2, int port2) : ip(ip2), port(port2) {}
+  explicit EndPoint(const sockaddr_in& in)
+    : ip(in.sin_addr), port(ntohs(in.sin_port)) {}
+  
+  ip_t ip;
+  int port;
 };
 
 struct EndPointStr {
-    const char* c_str() const { return _buf; }
-    char _buf[INET_ADDRSTRLEN + 16];
+  const char* c_str() const { return _buf; }
+  char _buf[INET_ADDRSTRLEN + 16];
 };
 
 // Convert EndPoint to c-style string. Notice that you can serialize 
@@ -138,57 +138,57 @@ int get_remote_side(int fd, EndPoint *out);
 // Since ip_t is defined from in_addr which is globally defined, due to ADL
 // we have to put overloaded operators globally as well.
 inline bool operator<(butil::ip_t lhs, butil::ip_t rhs) {
-    return butil::ip2int(lhs) < butil::ip2int(rhs);
+  return butil::ip2int(lhs) < butil::ip2int(rhs);
 }
 inline bool operator>(butil::ip_t lhs, butil::ip_t rhs) {
-    return rhs < lhs;
+  return rhs < lhs;
 }
 inline bool operator>=(butil::ip_t lhs, butil::ip_t rhs) {
-    return !(lhs < rhs);
+  return !(lhs < rhs);
 }
 inline bool operator<=(butil::ip_t lhs, butil::ip_t rhs) {
-    return !(rhs < lhs); 
+  return !(rhs < lhs); 
 }
 inline bool operator==(butil::ip_t lhs, butil::ip_t rhs) {
-    return butil::ip2int(lhs) == butil::ip2int(rhs);
+  return butil::ip2int(lhs) == butil::ip2int(rhs);
 }
 inline bool operator!=(butil::ip_t lhs, butil::ip_t rhs) {
-    return !(lhs == rhs);
+  return !(lhs == rhs);
 }
 
 inline std::ostream& operator<<(std::ostream& os, const butil::IPStr& ip_str) {
-    return os << ip_str.c_str();
+  return os << ip_str.c_str();
 }
 inline std::ostream& operator<<(std::ostream& os, butil::ip_t ip) {
-    return os << butil::ip2str(ip);
+  return os << butil::ip2str(ip);
 }
 
 namespace butil {
 // Overload operators for EndPoint in the same namespace due to ADL.
 inline bool operator<(EndPoint p1, EndPoint p2) {
-    return (p1.ip != p2.ip) ? (p1.ip < p2.ip) : (p1.port < p2.port);
+  return (p1.ip != p2.ip) ? (p1.ip < p2.ip) : (p1.port < p2.port);
 }
 inline bool operator>(EndPoint p1, EndPoint p2) {
-    return p2 < p1;
+  return p2 < p1;
 }
 inline bool operator<=(EndPoint p1, EndPoint p2) { 
-    return !(p2 < p1); 
+  return !(p2 < p1); 
 }
 inline bool operator>=(EndPoint p1, EndPoint p2) { 
-    return !(p1 < p2); 
+  return !(p1 < p2); 
 }
 inline bool operator==(EndPoint p1, EndPoint p2) {
-    return p1.ip == p2.ip && p1.port == p2.port;
+  return p1.ip == p2.ip && p1.port == p2.port;
 }
 inline bool operator!=(EndPoint p1, EndPoint p2) {
-    return !(p1 == p2);
+  return !(p1 == p2);
 }
 
 inline std::ostream& operator<<(std::ostream& os, const EndPoint& ep) {
-    return os << ep.ip << ':' << ep.port;
+  return os << ep.ip << ':' << ep.port;
 }
 inline std::ostream& operator<<(std::ostream& os, const EndPointStr& ep_str) {
-    return os << ep_str.c_str();
+  return os << ep_str.c_str();
 }
 
 }  // namespace butil
@@ -202,15 +202,15 @@ namespace BUTIL_HASH_NAMESPACE {
 #if defined(COMPILER_MSVC)
 
 inline std::size_t hash_value(const butil::EndPoint& ep) {
-    return butil::HashPair(butil::ip2int(ep.ip), ep.port);
+  return butil::HashPair(butil::ip2int(ep.ip), ep.port);
 }
 
 #elif defined(COMPILER_GCC)
 template <>
 struct hash<butil::EndPoint> {
-    std::size_t operator()(const butil::EndPoint& ep) const {
-        return butil::HashPair(butil::ip2int(ep.ip), ep.port);
-    }
+  std::size_t operator()(const butil::EndPoint& ep) const {
+    return butil::HashPair(butil::ip2int(ep.ip), ep.port);
+  }
 };
 
 #else

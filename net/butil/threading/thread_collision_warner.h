@@ -16,11 +16,11 @@
 // safety of a class.
 //
 // Example: Queue implementation non thread-safe but still usable if clients
-//          are synchronized somehow.
+//      are synchronized somehow.
 //
-//          In this case the macro DFAKE_SCOPED_LOCK has to be
-//          used, it checks that if a thread is inside the push/pop then
-//          noone else is still inside the pop/push
+//      In this case the macro DFAKE_SCOPED_LOCK has to be
+//      used, it checks that if a thread is inside the push/pop then
+//      noone else is still inside the pop/push
 //
 // class NonThreadSafeQueue {
 //  public:
@@ -34,23 +34,23 @@
 //
 //
 // Example: Queue implementation non thread-safe but still usable if clients
-//          are synchronized somehow, it calls a method to "protect" from
-//          a "protected" method
+//      are synchronized somehow, it calls a method to "protect" from
+//      a "protected" method
 //
-//          In this case the macro DFAKE_SCOPED_RECURSIVE_LOCK
-//          has to be used, it checks that if a thread is inside the push/pop
-//          then noone else is still inside the pop/push
+//      In this case the macro DFAKE_SCOPED_RECURSIVE_LOCK
+//      has to be used, it checks that if a thread is inside the push/pop
+//      then noone else is still inside the pop/push
 //
 // class NonThreadSafeQueue {
 //  public:
 //   void push(int) {
-//     DFAKE_SCOPED_LOCK(push_pop_);
-//     ...
+//   DFAKE_SCOPED_LOCK(push_pop_);
+//   ...
 //   }
 //   int pop() {
-//     DFAKE_SCOPED_RECURSIVE_LOCK(push_pop_);
-//     bar();
-//     ...
+//   DFAKE_SCOPED_RECURSIVE_LOCK(push_pop_);
+//   bar();
+//   ...
 //   }
 //   void bar() { DFAKE_SCOPED_RECURSIVE_LOCK(push_pop_); ... }
 //   ...
@@ -60,13 +60,13 @@
 //
 //
 // Example: Queue implementation not usable even if clients are synchronized,
-//          so only one thread in the class life cycle can use the two members
-//          push/pop.
+//      so only one thread in the class life cycle can use the two members
+//      push/pop.
 //
-//          In this case the macro DFAKE_SCOPED_LOCK_THREAD_LOCKED pins the
-//          specified
-//          critical section the first time a thread enters push or pop, from
-//          that time on only that thread is allowed to execute push or pop.
+//      In this case the macro DFAKE_SCOPED_LOCK_THREAD_LOCKED pins the
+//      specified
+//      critical section the first time a thread enters push or pop, from
+//      that time on only that thread is allowed to execute push or pop.
 //
 // class NonThreadSafeQueue {
 //  public:
@@ -80,10 +80,10 @@
 //
 //
 // Example: Class that has to be constructed/destroyed on same thread, it has
-//          a "shareable" method (with external synchronization) and a not
-//          shareable method (even with external synchronization).
+//      a "shareable" method (with external synchronization) and a not
+//      shareable method (even with external synchronization).
 //
-//          In this case 3 Critical sections have to be defined
+//      In this case 3 Critical sections have to be defined
 //
 // class ExoticClass {
 //  public:
@@ -104,18 +104,18 @@
 // Defines a class member that acts like a mutex. It is used only as a
 // verification tool.
 #define DFAKE_MUTEX(obj) \
-     mutable butil::ThreadCollisionWarner obj
+   mutable butil::ThreadCollisionWarner obj
 // Asserts the call is never called simultaneously in two threads. Used at
 // member function scope.
 #define DFAKE_SCOPED_LOCK(obj) \
-     butil::ThreadCollisionWarner::ScopedCheck s_check_##obj(&obj)
+   butil::ThreadCollisionWarner::ScopedCheck s_check_##obj(&obj)
 // Asserts the call is never called simultaneously in two threads. Used at
 // member function scope. Same as DFAKE_SCOPED_LOCK but allows recursive locks.
 #define DFAKE_SCOPED_RECURSIVE_LOCK(obj) \
-     butil::ThreadCollisionWarner::ScopedRecursiveCheck sr_check_##obj(&obj)
+   butil::ThreadCollisionWarner::ScopedRecursiveCheck sr_check_##obj(&obj)
 // Asserts the code is always executed in the same thread.
 #define DFAKE_SCOPED_LOCK_THREAD_LOCKED(obj) \
-     butil::ThreadCollisionWarner::Check check_##obj(&obj)
+   butil::ThreadCollisionWarner::Check check_##obj(&obj)
 
 #else
 
@@ -146,12 +146,12 @@ class BUTIL_EXPORT ThreadCollisionWarner {
  public:
   // The parameter asserter is there only for test purpose
   explicit ThreadCollisionWarner(AsserterBase* asserter = new DCheckAsserter())
-      : valid_thread_id_(0),
-        counter_(0),
-        asserter_(asserter) {}
+    : valid_thread_id_(0),
+    counter_(0),
+    asserter_(asserter) {}
 
   ~ThreadCollisionWarner() {
-    delete asserter_;
+  delete asserter_;
   }
 
   // This class is meant to be used through the macro
@@ -161,55 +161,55 @@ class BUTIL_EXPORT ThreadCollisionWarner {
   // from one thread
   class BUTIL_EXPORT Check {
    public:
-    explicit Check(ThreadCollisionWarner* warner)
-        : warner_(warner) {
-      warner_->EnterSelf();
-    }
+  explicit Check(ThreadCollisionWarner* warner)
+    : warner_(warner) {
+    warner_->EnterSelf();
+  }
 
-    ~Check() {}
+  ~Check() {}
 
    private:
-    ThreadCollisionWarner* warner_;
+  ThreadCollisionWarner* warner_;
 
-    DISALLOW_COPY_AND_ASSIGN(Check);
+  DISALLOW_COPY_AND_ASSIGN(Check);
   };
 
   // This class is meant to be used through the macro
   // DFAKE_SCOPED_LOCK
   class BUTIL_EXPORT ScopedCheck {
    public:
-    explicit ScopedCheck(ThreadCollisionWarner* warner)
-        : warner_(warner) {
-      warner_->Enter();
-    }
+  explicit ScopedCheck(ThreadCollisionWarner* warner)
+    : warner_(warner) {
+    warner_->Enter();
+  }
 
-    ~ScopedCheck() {
-      warner_->Leave();
-    }
+  ~ScopedCheck() {
+    warner_->Leave();
+  }
 
    private:
-    ThreadCollisionWarner* warner_;
+  ThreadCollisionWarner* warner_;
 
-    DISALLOW_COPY_AND_ASSIGN(ScopedCheck);
+  DISALLOW_COPY_AND_ASSIGN(ScopedCheck);
   };
 
   // This class is meant to be used through the macro
   // DFAKE_SCOPED_RECURSIVE_LOCK
   class BUTIL_EXPORT ScopedRecursiveCheck {
    public:
-    explicit ScopedRecursiveCheck(ThreadCollisionWarner* warner)
-        : warner_(warner) {
-      warner_->EnterSelf();
-    }
+  explicit ScopedRecursiveCheck(ThreadCollisionWarner* warner)
+    : warner_(warner) {
+    warner_->EnterSelf();
+  }
 
-    ~ScopedRecursiveCheck() {
-      warner_->Leave();
-    }
+  ~ScopedRecursiveCheck() {
+    warner_->Leave();
+  }
 
    private:
-    ThreadCollisionWarner* warner_;
+  ThreadCollisionWarner* warner_;
 
-    DISALLOW_COPY_AND_ASSIGN(ScopedRecursiveCheck);
+  DISALLOW_COPY_AND_ASSIGN(ScopedRecursiveCheck);
   };
 
  private:

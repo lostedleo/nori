@@ -27,7 +27,7 @@
 // MSVC_PUSH_DISABLE_WARNING pushes |n| onto a stack of warnings to be disabled.
 // The warning remains disabled until popped by MSVC_POP_WARNING.
 #define MSVC_PUSH_DISABLE_WARNING(n) __pragma(warning(push)) \
-                                     __pragma(warning(disable:n))
+                   __pragma(warning(disable:n))
 
 // MSVC_PUSH_WARNING_LEVEL pushes |n| as the global warning level.  The level
 // remains in effect until popped by MSVC_POP_WARNING().  Use 0 to disable all
@@ -53,7 +53,7 @@
 // static data is done through derived classes or inline methods. For more info,
 // see http://msdn.microsoft.com/en-us/library/3tdb471s(VS.80).aspx
 #define NON_EXPORTED_BASE(code) MSVC_SUPPRESS_WARNING(4275) \
-                                code
+                code
 
 #else  // Not MSVC
 
@@ -79,7 +79,7 @@
 //
 // In .h file:
 //   struct Foo {
-//     static const int kBar = 5;
+//   static const int kBar = 5;
 //   };
 //
 // In .cc file:
@@ -114,7 +114,7 @@
 
 #ifndef BUTIL_FORCE_INLINE
 #if defined(COMPILER_MSVC)
-#define BUTIL_FORCE_INLINE    __forceinline
+#define BUTIL_FORCE_INLINE  __forceinline
 #else
 #define BUTIL_FORCE_INLINE inline __attribute__((always_inline))
 #endif
@@ -148,7 +148,7 @@
 #if defined(__clang__) || defined(COMPILER_MSVC)
 #define OVERRIDE override
 #elif defined(COMPILER_GCC) && __cplusplus >= 201103 && \
-      (__GNUC__ * 10000 + __GNUC_MINOR__ * 100) >= 40700
+    (__GNUC__ * 10000 + __GNUC_MINOR__ * 100) >= 40700
 // GCC 4.7 supports explicit virtual overrides when C++11 support is enabled.
 #define OVERRIDE override
 #else
@@ -163,7 +163,7 @@
 #if defined(__clang__) || defined(COMPILER_MSVC)
 #define FINAL final
 #elif defined(COMPILER_GCC) && __cplusplus >= 201103 && \
-      (__GNUC__ * 10000 + __GNUC_MINOR__ * 100) >= 40700
+    (__GNUC__ * 10000 + __GNUC_MINOR__ * 100) >= 40700
 // GCC 4.7 supports explicit virtual overrides when C++11 support is enabled.
 #define FINAL final
 #else
@@ -176,7 +176,7 @@
 // To explicitly ignore a result, see |ignore_result()| in "butil/basictypes.h".
 // FIXME(gejun): GCC 3.4 report "unused" variable incorrectly (actually used).
 #if defined(COMPILER_GCC) && __cplusplus >= 201103 && \
-      (__GNUC__ * 10000 + __GNUC_MINOR__ * 100) >= 40700
+    (__GNUC__ * 10000 + __GNUC_MINOR__ * 100) >= 40700
 #define WARN_UNUSED_RESULT __attribute__((warn_unused_result))
 #else
 #define WARN_UNUSED_RESULT
@@ -189,7 +189,7 @@
 // (This is undocumented but matches what the system C headers do.)
 #if defined(COMPILER_GCC)
 #define PRINTF_FORMAT(format_param, dots_param) \
-    __attribute__((format(printf, format_param, dots_param)))
+  __attribute__((format(printf, format_param, dots_param)))
 #else
 #define PRINTF_FORMAT(format_param, dots_param)
 #endif
@@ -227,11 +227,11 @@
 // namely kylin already has the macro.
 #if defined(COMPILER_GCC)
 #  if defined(__cplusplus)
-#    define BAIDU_LIKELY(expr) (__builtin_expect((bool)(expr), true))
-#    define BAIDU_UNLIKELY(expr) (__builtin_expect((bool)(expr), false))
+#  define BAIDU_LIKELY(expr) (__builtin_expect((bool)(expr), true))
+#  define BAIDU_UNLIKELY(expr) (__builtin_expect((bool)(expr), false))
 #  else
-#    define BAIDU_LIKELY(expr) (__builtin_expect(!!(expr), 1))
-#    define BAIDU_UNLIKELY(expr) (__builtin_expect(!!(expr), 0))
+#  define BAIDU_LIKELY(expr) (__builtin_expect(!!(expr), 1))
+#  define BAIDU_UNLIKELY(expr) (__builtin_expect(!!(expr), 0))
 #  endif
 #else
 #  define BAIDU_LIKELY(expr) (expr)

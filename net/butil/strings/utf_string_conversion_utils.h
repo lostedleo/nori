@@ -17,15 +17,15 @@ inline bool IsValidCodepoint(uint32_t code_point) {
   // codepoints larger than 0x10FFFF (the highest codepoint allowed).
   // Non-characters and unassigned codepoints are allowed.
   return code_point < 0xD800u ||
-         (code_point >= 0xE000u && code_point <= 0x10FFFFu);
+     (code_point >= 0xE000u && code_point <= 0x10FFFFu);
 }
 
 inline bool IsValidCharacter(uint32_t code_point) {
   // Excludes non-characters (U+FDD0..U+FDEF, and all codepoints ending in
   // 0xFFFE or 0xFFFF) from the set of valid code points.
   return code_point < 0xD800u || (code_point >= 0xE000u &&
-      code_point < 0xFDD0u) || (code_point > 0xFDEFu &&
-      code_point <= 0x10FFFFu && (code_point & 0xFFFEu) != 0xFFFEu);
+    code_point < 0xFDD0u) || (code_point > 0xFDEFu &&
+    code_point <= 0x10FFFFu && (code_point & 0xFFFEu) != 0xFFFEu);
 }
 
 // ReadUnicodeCharacter --------------------------------------------------------
@@ -38,22 +38,22 @@ inline bool IsValidCharacter(uint32_t code_point) {
 //
 // Returns true on success. On false, |*code_point| will be invalid.
 BUTIL_EXPORT bool ReadUnicodeCharacter(const char* src,
-                                      int32_t src_len,
-                                      int32_t* char_index,
-                                      uint32_t* code_point_out);
+                    int32_t src_len,
+                    int32_t* char_index,
+                    uint32_t* code_point_out);
 
 // Reads a UTF-16 character. The usage is the same as the 8-bit version above.
 BUTIL_EXPORT bool ReadUnicodeCharacter(const char16* src,
-                                      int32_t src_len,
-                                      int32_t* char_index,
-                                      uint32_t* code_point);
+                    int32_t src_len,
+                    int32_t* char_index,
+                    uint32_t* code_point);
 
 #if defined(WCHAR_T_IS_UTF32)
 // Reads UTF-32 character. The usage is the same as the 8-bit version above.
 BUTIL_EXPORT bool ReadUnicodeCharacter(const wchar_t* src,
-                                      int32_t src_len,
-                                      int32_t* char_index,
-                                      uint32_t* code_point);
+                    int32_t src_len,
+                    int32_t* char_index,
+                    uint32_t* code_point);
 #endif  // defined(WCHAR_T_IS_UTF32)
 
 // WriteUnicodeCharacter -------------------------------------------------------
@@ -62,7 +62,7 @@ BUTIL_EXPORT bool ReadUnicodeCharacter(const wchar_t* src,
 // bytes written.
 // TODO(brettw) Bug 79631: This function should not be exposed.
 BUTIL_EXPORT size_t WriteUnicodeCharacter(uint32_t code_point,
-                                         std::string* output);
+                     std::string* output);
 
 // Appends the given code point as a UTF-16 character to the given 16-bit
 // string.  Returns the number of 16-bit values written.

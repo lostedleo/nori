@@ -22,21 +22,21 @@ namespace {
 // true).
 NOINLINE void CorruptMemoryBlock(bool induce_crash) {
   // NOTE(sebmarchand): We intentionally corrupt a memory block here in order to
-  //     trigger an Address Sanitizer (ASAN) error report.
+  //   trigger an Address Sanitizer (ASAN) error report.
   static const int kArraySize = 5;
   int* array = new int[kArraySize];
   // Encapsulate the invalid memory access into a try-catch statement to prevent
   // this function from being instrumented. This way the underflow won't be
   // detected but the corruption will (as the allocator will still be hooked).
   try {
-    // Declares the dummy value as volatile to make sure it doesn't get
-    // optimized away.
-    int volatile dummy = array[-1]--;
-    butil::debug::Alias(const_cast<int*>(&dummy));
+  // Declares the dummy value as volatile to make sure it doesn't get
+  // optimized away.
+  int volatile dummy = array[-1]--;
+  butil::debug::Alias(const_cast<int*>(&dummy));
   } catch (...) {
   }
   if (induce_crash)
-    CHECK(false);
+  CHECK(false);
   delete[] array;
 }
 #endif
@@ -45,7 +45,7 @@ NOINLINE void CorruptMemoryBlock(bool induce_crash) {
 
 #if defined(ADDRESS_SANITIZER) || defined(SYZYASAN)
 // NOTE(sebmarchand): We intentionally perform some invalid heap access here in
-//     order to trigger an AddressSanitizer (ASan) error report.
+//   order to trigger an AddressSanitizer (ASan) error report.
 
 static const int kArraySize = 5;
 

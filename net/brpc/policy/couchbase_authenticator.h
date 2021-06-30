@@ -30,14 +30,14 @@ namespace policy {
 class CouchbaseAuthenticator : public Authenticator {
  public:
   CouchbaseAuthenticator(const std::string& bucket_name,
-                         const std::string& bucket_password)
-      : bucket_name_(bucket_name), bucket_password_(bucket_password) {}
+             const std::string& bucket_password)
+    : bucket_name_(bucket_name), bucket_password_(bucket_password) {}
 
   int GenerateCredential(std::string* auth_str) const;
 
   int VerifyCredential(const std::string&, const butil::EndPoint&,
-                       brpc::AuthContext*) const {
-    return 0;
+             brpc::AuthContext*) const {
+  return 0;
   }
 
  private:

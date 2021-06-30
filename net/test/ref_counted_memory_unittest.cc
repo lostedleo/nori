@@ -10,7 +10,7 @@ namespace butil {
 
 TEST(RefCountedMemoryUnitTest, RefCountedStaticMemory) {
   scoped_refptr<RefCountedMemory> mem = new RefCountedStaticMemory(
-      "static mem00", 10);
+    "static mem00", 10);
 
   EXPECT_EQ(10U, mem->size());
   EXPECT_EQ("static mem", std::string(mem->front_as<char>(), mem->size()));
@@ -30,8 +30,8 @@ TEST(RefCountedMemoryUnitTest, RefCountedBytes) {
 
   scoped_refptr<RefCountedMemory> mem2;
   {
-    unsigned char data2[] = { 12, 11, 99 };
-    mem2 = new RefCountedBytes(data2, 3);
+  unsigned char data2[] = { 12, 11, 99 };
+  mem2 = new RefCountedBytes(data2, 3);
   }
   EXPECT_EQ(3U, mem2->size());
   EXPECT_EQ(12U, mem2->front()[0]);

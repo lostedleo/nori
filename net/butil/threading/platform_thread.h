@@ -46,19 +46,19 @@ class PlatformThreadRef {
   typedef pthread_t RefType;
 #endif
   PlatformThreadRef()
-      : id_(0) {
+    : id_(0) {
   }
 
   explicit PlatformThreadRef(RefType id)
-      : id_(id) {
+    : id_(id) {
   }
 
   bool operator==(PlatformThreadRef other) const {
-    return id_ == other.id_;
+  return id_ == other.id_;
   }
 
   bool is_null() const {
-    return id_ == 0;
+  return id_ == 0;
   }
  private:
   RefType id_;
@@ -74,31 +74,31 @@ class PlatformThreadHandle {
 #endif
 
   PlatformThreadHandle()
-      : handle_(0),
-        id_(0) {
+    : handle_(0),
+    id_(0) {
   }
 
   explicit PlatformThreadHandle(Handle handle)
-      : handle_(handle),
-        id_(0) {
+    : handle_(handle),
+    id_(0) {
   }
 
   PlatformThreadHandle(Handle handle,
-                       PlatformThreadId id)
-      : handle_(handle),
-        id_(id) {
+             PlatformThreadId id)
+    : handle_(handle),
+    id_(id) {
   }
 
   bool is_equal(const PlatformThreadHandle& other) const {
-    return handle_ == other.handle_;
+  return handle_ == other.handle_;
   }
 
   bool is_null() const {
-    return !handle_;
+  return !handle_;
   }
 
   Handle platform_handle() const {
-    return handle_;
+  return handle_;
   }
 
  private:
@@ -128,10 +128,10 @@ class BUTIL_EXPORT PlatformThread {
   // ThreadMain method will be called on the newly created thread.
   class BUTIL_EXPORT Delegate {
    public:
-    virtual void ThreadMain() = 0;
+  virtual void ThreadMain() = 0;
 
    protected:
-    virtual ~Delegate() {}
+  virtual ~Delegate() {}
   };
 
   // Gets the current thread id, which may be useful for logging purposes.
@@ -167,7 +167,7 @@ class BUTIL_EXPORT PlatformThread {
   // release system resources associated with the thread.  You must ensure that
   // the Delegate object outlives the thread.
   static bool Create(size_t stack_size, Delegate* delegate,
-                     PlatformThreadHandle* thread_handle);
+           PlatformThreadHandle* thread_handle);
 
   // CreateWithPriority() does the same thing as Create() except the priority of
   // the thread is set based on |priority|.  Can be used in place of Create()
@@ -175,8 +175,8 @@ class BUTIL_EXPORT PlatformThread {
   // implemented on the Linux platform yet, this is the only way to get a high
   // priority thread on Linux.
   static bool CreateWithPriority(size_t stack_size, Delegate* delegate,
-                                 PlatformThreadHandle* thread_handle,
-                                 ThreadPriority priority);
+                 PlatformThreadHandle* thread_handle,
+                 ThreadPriority priority);
 
   // CreateNonJoinable() does the same thing as Create() except the thread
   // cannot be Join()'d.  Therefore, it also does not output a
@@ -189,7 +189,7 @@ class BUTIL_EXPORT PlatformThread {
   static void Join(PlatformThreadHandle thread_handle);
 
   static void SetThreadPriority(PlatformThreadHandle handle,
-                                ThreadPriority priority);
+                ThreadPriority priority);
 
  private:
   DISALLOW_IMPLICIT_CONSTRUCTORS(PlatformThread);

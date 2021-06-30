@@ -27,17 +27,17 @@ namespace detail {
 template <typename T>
 class ThreadLocalHelper {
 public:
-    inline static T* get() {
-        if (__builtin_expect(value != NULL, 1)) {
-            return value;
-        }
-        value = new (std::nothrow) T;
-        if (value != NULL) {
-            butil::thread_atexit(delete_object<T>, value);
-        }
-        return value;
+  inline static T* get() {
+    if (__builtin_expect(value != NULL, 1)) {
+      return value;
     }
-    static BAIDU_THREAD_LOCAL T* value;
+    value = new (std::nothrow) T;
+    if (value != NULL) {
+      butil::thread_atexit(delete_object<T>, value);
+    }
+    return value;
+  }
+  static BAIDU_THREAD_LOCAL T* value;
 };
 
 template <typename T> BAIDU_THREAD_LOCAL T* ThreadLocalHelper<T>::value = NULL;
@@ -45,7 +45,7 @@ template <typename T> BAIDU_THREAD_LOCAL T* ThreadLocalHelper<T>::value = NULL;
 }  // namespace detail
 
 template <typename T> inline T* get_thread_local() {
-    return detail::ThreadLocalHelper<T>::get();
+  return detail::ThreadLocalHelper<T>::get();
 }
 
 }  // namespace butil

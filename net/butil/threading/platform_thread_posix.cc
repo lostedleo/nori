@@ -39,11 +39,11 @@ namespace {
 
 struct ThreadParams {
   ThreadParams()
-      : delegate(NULL),
-        joinable(false),
-        priority(kThreadPriority_Normal),
-        handle(NULL),
-        handle_set(false, false) {
+    : delegate(NULL),
+    joinable(false),
+    priority(kThreadPriority_Normal),
+    handle(NULL),
+    handle_set(false, false) {
   }
 
   PlatformThread::Delegate* delegate;
@@ -59,37 +59,37 @@ void* ThreadFunc(void* params) {
 
   PlatformThread::Delegate* delegate = thread_params->delegate;
   if (!thread_params->joinable)
-    butil::ThreadRestrictions::SetSingletonAllowed(false);
+  butil::ThreadRestrictions::SetSingletonAllowed(false);
 
   if (thread_params->priority != kThreadPriority_Normal) {
-    PlatformThread::SetThreadPriority(PlatformThread::CurrentHandle(),
-                                      thread_params->priority);
+  PlatformThread::SetThreadPriority(PlatformThread::CurrentHandle(),
+                    thread_params->priority);
   }
 
   // Stash the id in the handle so the calling thread has a complete
   // handle, and unblock the parent thread.
   *(thread_params->handle) = PlatformThreadHandle(pthread_self(),
-                                                  PlatformThread::CurrentId());
+                          PlatformThread::CurrentId());
   thread_params->handle_set.Signal();
 
   ThreadIdNameManager::GetInstance()->RegisterThread(
-      PlatformThread::CurrentHandle().platform_handle(),
-      PlatformThread::CurrentId());
+    PlatformThread::CurrentHandle().platform_handle(),
+    PlatformThread::CurrentId());
 
   delegate->ThreadMain();
 
   ThreadIdNameManager::GetInstance()->RemoveName(
-      PlatformThread::CurrentHandle().platform_handle(),
-      PlatformThread::CurrentId());
+    PlatformThread::CurrentHandle().platform_handle(),
+    PlatformThread::CurrentId());
 
   butil::TerminateOnThread();
   return NULL;
 }
 
 bool CreateThread(size_t stack_size, bool joinable,
-                  PlatformThread::Delegate* delegate,
-                  PlatformThreadHandle* thread_handle,
-                  ThreadPriority priority) {
+          PlatformThread::Delegate* delegate,
+          PlatformThreadHandle* thread_handle,
+          ThreadPriority priority) {
   butil::InitThreading();
 
   bool success = false;
@@ -99,15 +99,15 @@ bool CreateThread(size_t stack_size, bool joinable,
   // Pthreads are joinable by default, so only specify the detached
   // attribute if the thread should be non-joinable.
   if (!joinable) {
-    pthread_attr_setdetachstate(&attributes, PTHREAD_CREATE_DETACHED);
+  pthread_attr_setdetachstate(&attributes, PTHREAD_CREATE_DETACHED);
   }
 
   // Get a better default if available.
   if (stack_size == 0)
-    stack_size = butil::GetDefaultThreadStackSize(attributes);
+  stack_size = butil::GetDefaultThreadStackSize(attributes);
 
   if (stack_size > 0)
-    pthread_attr_setstacksize(&attributes, stack_size);
+  pthread_attr_setstacksize(&attributes, stack_size);
 
   ThreadParams params;
   params.delegate = delegate;
@@ -117,15 +117,15 @@ bool CreateThread(size_t stack_size, bool joinable,
 
   pthread_t handle;
   int err = pthread_create(&handle,
-                           &attributes,
-                           ThreadFunc,
-                           &params);
+               &attributes,
+               ThreadFunc,
+               &params);
   success = !err;
   if (!success) {
-    // Value of |handle| is undefined if pthread_create fails.
-    handle = 0;
-    errno = err;
-    PLOG(ERROR) << "pthread_create";
+  // Value of |handle| is undefined if pthread_create fails.
+  handle = 0;
+  errno = err;
+  PLOG(ERROR) << "pthread_create";
   }
 
   pthread_attr_destroy(&attributes);
@@ -133,7 +133,7 @@ bool CreateThread(size_t stack_size, bool joinable,
   // Don't let this call complete until the thread id
   // is set in the handle.
   if (success)
-    params.handle_set.Wait();
+  params.handle_set.Wait();
   CHECK_EQ(handle, thread_handle->platform_handle());
 
   return success;
@@ -190,7 +190,7 @@ void PlatformThread::Sleep(TimeDelta duration) {
   sleep_time.tv_nsec = duration.InMicroseconds() * 1000;  // nanoseconds
 
   while (nanosleep(&sleep_time, &remaining) == -1 && errno == EINTR)
-    sleep_time = remaining;
+  sleep_time = remaining;
 }
 
 // static
@@ -200,19 +200,19 @@ const char* PlatformThread::GetName() {
 
 // static
 bool PlatformThread::Create(size_t stack_size, Delegate* delegate,
-                            PlatformThreadHandle* thread_handle) {
+              PlatformThreadHandle* thread_handle) {
   butil::ThreadRestrictions::ScopedAllowWait allow_wait;
   return CreateThread(stack_size, true /* joinable thread */,
-                      delegate, thread_handle, kThreadPriority_Normal);
+            delegate, thread_handle, kThreadPriority_Normal);
 }
 
 // static
 bool PlatformThread::CreateWithPriority(size_t stack_size, Delegate* delegate,
-                                        PlatformThreadHandle* thread_handle,
-                                        ThreadPriority priority) {
+                    PlatformThreadHandle* thread_handle,
+                    ThreadPriority priority) {
   butil::ThreadRestrictions::ScopedAllowWait allow_wait;
   return CreateThread(stack_size, true,  // joinable thread
-                      delegate, thread_handle, priority);
+            delegate, thread_handle, priority);
 }
 
 // static
@@ -221,7 +221,7 @@ bool PlatformThread::CreateNonJoinable(size_t stack_size, Delegate* delegate) {
 
   butil::ThreadRestrictions::ScopedAllowWait allow_wait;
   bool result = CreateThread(stack_size, false /* non-joinable thread */,
-                             delegate, &unused, kThreadPriority_Normal);
+               delegate, &unused, kThreadPriority_Normal);
   return result;
 }
 

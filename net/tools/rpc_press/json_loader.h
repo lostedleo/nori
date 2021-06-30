@@ -4,7 +4,7 @@
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 // 
-//     http://www.apache.org/licenses/LICENSE-2.0
+//   http://www.apache.org/licenses/LICENSE-2.0
 // 
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -27,32 +27,32 @@ namespace brpc {
 // This utility loads pb messages in json format from a file or string.
 class JsonLoader {
 public:
-    JsonLoader(google::protobuf::compiler::Importer* importer, 
-               google::protobuf::DynamicMessageFactory* factory,
-               const std::string& service_name,
-               const std::string& method_name);
-    ~JsonLoader() {}
+  JsonLoader(google::protobuf::compiler::Importer* importer, 
+         google::protobuf::DynamicMessageFactory* factory,
+         const std::string& service_name,
+         const std::string& method_name);
+  ~JsonLoader() {}
 
-    // TODO(gejun): messages should be lazily loaded.
-    
-    // Load jsons from fd or string, convert them into pb messages, then insert
-    // them into `out_msgs'.
-    void load_messages(int fd, std::deque<google::protobuf::Message*>* out_msgs);
-    void load_messages(const std::string& jsons,
-                       std::deque<google::protobuf::Message*>* out_msgs);
-    
+  // TODO(gejun): messages should be lazily loaded.
+  
+  // Load jsons from fd or string, convert them into pb messages, then insert
+  // them into `out_msgs'.
+  void load_messages(int fd, std::deque<google::protobuf::Message*>* out_msgs);
+  void load_messages(const std::string& jsons,
+             std::deque<google::protobuf::Message*>* out_msgs);
+  
 private:
-    class Reader;
+  class Reader;
 
-    void load_messages(
-        JsonLoader::Reader* ctx,
-        std::deque<google::protobuf::Message*>* out_msgs);
+  void load_messages(
+    JsonLoader::Reader* ctx,
+    std::deque<google::protobuf::Message*>* out_msgs);
 
-    google::protobuf::compiler::Importer* _importer;
-    google::protobuf::DynamicMessageFactory* _factory;
-    std::string _service_name;
-    std::string _method_name;
-    const google::protobuf::Message* _request_prototype;
+  google::protobuf::compiler::Importer* _importer;
+  google::protobuf::DynamicMessageFactory* _factory;
+  std::string _service_name;
+  std::string _method_name;
+  const google::protobuf::Message* _request_prototype;
 };
 
 } // namespace brpc

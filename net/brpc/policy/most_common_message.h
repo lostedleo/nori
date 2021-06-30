@@ -31,21 +31,21 @@ namespace policy {
 // you have to new the messages or use a separate ObjectPool (which is likely
 // to waste more memory)
 struct BAIDU_CACHELINE_ALIGNMENT MostCommonMessage : public InputMessageBase {
-    butil::IOBuf meta;
-    butil::IOBuf payload;
-    PipelinedInfo pi;
+  butil::IOBuf meta;
+  butil::IOBuf payload;
+  PipelinedInfo pi;
 
-    inline static MostCommonMessage* Get() {
-        return butil::get_object<MostCommonMessage>();
-    }
+  inline static MostCommonMessage* Get() {
+    return butil::get_object<MostCommonMessage>();
+  }
 
-    // @InputMessageBase
-    void DestroyImpl() {
-        meta.clear();
-        payload.clear();
-        pi.reset();
-        butil::return_object(this);
-    }
+  // @InputMessageBase
+  void DestroyImpl() {
+    meta.clear();
+    payload.clear();
+    pi.reset();
+    butil::return_object(this);
+  }
 };
 
 }  // namespace policy

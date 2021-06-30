@@ -35,49 +35,49 @@ class BUTIL_EXPORT FilePathWatcher {
   // Used internally to encapsulate different members on different platforms.
   class PlatformDelegate : public butil::RefCountedThreadSafe<PlatformDelegate> {
    public:
-    PlatformDelegate();
+  PlatformDelegate();
 
-    // Start watching for the given |path| and notify |delegate| about changes.
-    virtual bool Watch(const FilePath& path,
-                       bool recursive,
-                       const Callback& callback) WARN_UNUSED_RESULT = 0;
+  // Start watching for the given |path| and notify |delegate| about changes.
+  virtual bool Watch(const FilePath& path,
+             bool recursive,
+             const Callback& callback) WARN_UNUSED_RESULT = 0;
 
-    // Stop watching. This is called from FilePathWatcher's dtor in order to
-    // allow to shut down properly while the object is still alive.
-    // It can be called from any thread.
-    virtual void Cancel() = 0;
+  // Stop watching. This is called from FilePathWatcher's dtor in order to
+  // allow to shut down properly while the object is still alive.
+  // It can be called from any thread.
+  virtual void Cancel() = 0;
 
    protected:
-    friend class butil::RefCountedThreadSafe<PlatformDelegate>;
-    friend class FilePathWatcher;
+  friend class butil::RefCountedThreadSafe<PlatformDelegate>;
+  friend class FilePathWatcher;
 
-    virtual ~PlatformDelegate();
+  virtual ~PlatformDelegate();
 
-    // Stop watching. This is only called on the thread of the appropriate
-    // message loop. Since it can also be called more than once, it should
-    // check |is_cancelled()| to avoid duplicate work.
-    virtual void CancelOnMessageLoopThread() = 0;
+  // Stop watching. This is only called on the thread of the appropriate
+  // message loop. Since it can also be called more than once, it should
+  // check |is_cancelled()| to avoid duplicate work.
+  virtual void CancelOnMessageLoopThread() = 0;
 
-    scoped_refptr<butil::MessageLoopProxy> message_loop() const {
-      return message_loop_;
-    }
+  scoped_refptr<butil::MessageLoopProxy> message_loop() const {
+    return message_loop_;
+  }
 
-    void set_message_loop(butil::MessageLoopProxy* loop) {
-      message_loop_ = loop;
-    }
+  void set_message_loop(butil::MessageLoopProxy* loop) {
+    message_loop_ = loop;
+  }
 
-    // Must be called before the PlatformDelegate is deleted.
-    void set_cancelled() {
-      cancelled_ = true;
-    }
+  // Must be called before the PlatformDelegate is deleted.
+  void set_cancelled() {
+    cancelled_ = true;
+  }
 
-    bool is_cancelled() const {
-      return cancelled_;
-    }
+  bool is_cancelled() const {
+    return cancelled_;
+  }
 
    private:
-    scoped_refptr<butil::MessageLoopProxy> message_loop_;
-    bool cancelled_;
+  scoped_refptr<butil::MessageLoopProxy> message_loop_;
+  bool cancelled_;
   };
 
   FilePathWatcher();

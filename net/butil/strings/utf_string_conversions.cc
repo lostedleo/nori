@@ -20,19 +20,19 @@ namespace {
 // the result.
 template<typename SRC_CHAR, typename DEST_STRING>
 bool ConvertUnicode(const SRC_CHAR* src,
-                    size_t src_len,
-                    DEST_STRING* output) {
+          size_t src_len,
+          DEST_STRING* output) {
   // ICU requires 32-bit numbers.
   bool success = true;
   int32_t src_len32 = static_cast<int32_t>(src_len);
   for (int32_t i = 0; i < src_len32; i++) {
-    uint32_t code_point;
-    if (ReadUnicodeCharacter(src, src_len32, &i, &code_point)) {
-      WriteUnicodeCharacter(code_point, output);
-    } else {
-      WriteUnicodeCharacter(0xFFFD, output);
-      success = false;
-    }
+  uint32_t code_point;
+  if (ReadUnicodeCharacter(src, src_len32, &i, &code_point)) {
+    WriteUnicodeCharacter(code_point, output);
+  } else {
+    WriteUnicodeCharacter(0xFFFD, output);
+    success = false;
+  }
   }
 
   return success;

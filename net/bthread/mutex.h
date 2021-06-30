@@ -28,12 +28,12 @@
 
 __BEGIN_DECLS
 extern int bthread_mutex_init(bthread_mutex_t* __restrict mutex,
-                              const bthread_mutexattr_t* __restrict mutex_attr);
+                const bthread_mutexattr_t* __restrict mutex_attr);
 extern int bthread_mutex_destroy(bthread_mutex_t* mutex);
 extern int bthread_mutex_trylock(bthread_mutex_t* mutex);
 extern int bthread_mutex_lock(bthread_mutex_t* mutex);
 extern int bthread_mutex_timedlock(bthread_mutex_t* __restrict mutex,
-                                   const struct timespec* __restrict abstime);
+                   const struct timespec* __restrict abstime);
 extern int bthread_mutex_unlock(bthread_mutex_t* mutex);
 __END_DECLS
 
@@ -44,42 +44,42 @@ namespace bthread {
 // NOTE: Not aligned to cacheline as the container of Mutex is practically aligned
 class Mutex {
 public:
-    typedef bthread_mutex_t* native_handler_type;
-    Mutex() {
-        int ec = bthread_mutex_init(&_mutex, NULL);
-        if (ec != 0) {
-            throw std::system_error(std::error_code(ec, std::system_category()), "Mutex constructor failed");
-        }
+  typedef bthread_mutex_t* native_handler_type;
+  Mutex() {
+    int ec = bthread_mutex_init(&_mutex, NULL);
+    if (ec != 0) {
+      throw std::system_error(std::error_code(ec, std::system_category()), "Mutex constructor failed");
     }
-    ~Mutex() { CHECK_EQ(0, bthread_mutex_destroy(&_mutex)); }
-    native_handler_type native_handler() { return &_mutex; }
-    void lock() {
-        int ec = bthread_mutex_lock(&_mutex);
-        if (ec != 0) {
-            throw std::system_error(std::error_code(ec, std::system_category()), "Mutex lock failed");
-        }
+  }
+  ~Mutex() { CHECK_EQ(0, bthread_mutex_destroy(&_mutex)); }
+  native_handler_type native_handler() { return &_mutex; }
+  void lock() {
+    int ec = bthread_mutex_lock(&_mutex);
+    if (ec != 0) {
+      throw std::system_error(std::error_code(ec, std::system_category()), "Mutex lock failed");
     }
-    void unlock() { bthread_mutex_unlock(&_mutex); }
-    bool try_lock() { return !bthread_mutex_trylock(&_mutex); }
-    // TODO(chenzhangyi01): Complement interfaces for C++11
+  }
+  void unlock() { bthread_mutex_unlock(&_mutex); }
+  bool try_lock() { return !bthread_mutex_trylock(&_mutex); }
+  // TODO(chenzhangyi01): Complement interfaces for C++11
 private:
-    DISALLOW_COPY_AND_ASSIGN(Mutex);
-    bthread_mutex_t _mutex;   
+  DISALLOW_COPY_AND_ASSIGN(Mutex);
+  bthread_mutex_t _mutex;   
 };
 
 namespace internal {
 #ifdef BTHREAD_USE_FAST_PTHREAD_MUTEX
 class FastPthreadMutex {
 public:
-    FastPthreadMutex() : _futex(0) {}
-    ~FastPthreadMutex() {}
-    void lock();
-    void unlock();
-    bool try_lock();
+  FastPthreadMutex() : _futex(0) {}
+  ~FastPthreadMutex() {}
+  void lock();
+  void unlock();
+  bool try_lock();
 private:
-    DISALLOW_COPY_AND_ASSIGN(FastPthreadMutex);
-    int lock_contended();
-    unsigned _futex;
+  DISALLOW_COPY_AND_ASSIGN(FastPthreadMutex);
+  int lock_contended();
+  unsigned _futex;
 };
 #else
 typedef butil::Mutex FastPthreadMutex;
@@ -94,114 +94,114 @@ namespace std {
 
 template <> class lock_guard<bthread_mutex_t> {
 public:
-    explicit lock_guard(bthread_mutex_t & mutex) : _pmutex(&mutex) {
+  explicit lock_guard(bthread_mutex_t & mutex) : _pmutex(&mutex) {
 #if !defined(NDEBUG)
-        const int rc = bthread_mutex_lock(_pmutex);
-        if (rc) {
-            LOG(FATAL) << "Fail to lock bthread_mutex_t=" << _pmutex << ", " << berror(rc);
-            _pmutex = NULL;
-        }
+    const int rc = bthread_mutex_lock(_pmutex);
+    if (rc) {
+      LOG(FATAL) << "Fail to lock bthread_mutex_t=" << _pmutex << ", " << berror(rc);
+      _pmutex = NULL;
+    }
 #else
-        bthread_mutex_lock(_pmutex);
+    bthread_mutex_lock(_pmutex);
 #endif  // NDEBUG
-    }
+  }
 
-    ~lock_guard() {
+  ~lock_guard() {
 #ifndef NDEBUG
-        if (_pmutex) {
-            bthread_mutex_unlock(_pmutex);
-        }
-#else
-        bthread_mutex_unlock(_pmutex);
-#endif
+    if (_pmutex) {
+      bthread_mutex_unlock(_pmutex);
     }
+#else
+    bthread_mutex_unlock(_pmutex);
+#endif
+  }
 
 private:
-    DISALLOW_COPY_AND_ASSIGN(lock_guard);
-    bthread_mutex_t* _pmutex;
+  DISALLOW_COPY_AND_ASSIGN(lock_guard);
+  bthread_mutex_t* _pmutex;
 };
 
 template <> class unique_lock<bthread_mutex_t> {
-    DISALLOW_COPY_AND_ASSIGN(unique_lock);
+  DISALLOW_COPY_AND_ASSIGN(unique_lock);
 public:
-    typedef bthread_mutex_t         mutex_type;
-    unique_lock() : _mutex(NULL), _owns_lock(false) {}
-    explicit unique_lock(mutex_type& mutex)
-        : _mutex(&mutex), _owns_lock(false) {
-        lock();
-    }
-    unique_lock(mutex_type& mutex, defer_lock_t)
-        : _mutex(&mutex), _owns_lock(false)
-    {}
-    unique_lock(mutex_type& mutex, try_to_lock_t) 
-        : _mutex(&mutex), _owns_lock(bthread_mutex_trylock(&mutex) == 0)
-    {}
-    unique_lock(mutex_type& mutex, adopt_lock_t) 
-        : _mutex(&mutex), _owns_lock(true)
-    {}
+  typedef bthread_mutex_t     mutex_type;
+  unique_lock() : _mutex(NULL), _owns_lock(false) {}
+  explicit unique_lock(mutex_type& mutex)
+    : _mutex(&mutex), _owns_lock(false) {
+    lock();
+  }
+  unique_lock(mutex_type& mutex, defer_lock_t)
+    : _mutex(&mutex), _owns_lock(false)
+  {}
+  unique_lock(mutex_type& mutex, try_to_lock_t) 
+    : _mutex(&mutex), _owns_lock(bthread_mutex_trylock(&mutex) == 0)
+  {}
+  unique_lock(mutex_type& mutex, adopt_lock_t) 
+    : _mutex(&mutex), _owns_lock(true)
+  {}
 
-    ~unique_lock() {
-        if (_owns_lock) {
-            unlock();
-        }
+  ~unique_lock() {
+    if (_owns_lock) {
+      unlock();
     }
+  }
 
-    void lock() {
-        if (!_mutex) {
-            CHECK(false) << "Invalid operation";
-            return;
-        }
-        if (_owns_lock) {
-            CHECK(false) << "Detected deadlock issue";     
-            return;
-        }
-        bthread_mutex_lock(_mutex);
-        _owns_lock = true;
+  void lock() {
+    if (!_mutex) {
+      CHECK(false) << "Invalid operation";
+      return;
     }
-
-    bool try_lock() {
-        if (!_mutex) {
-            CHECK(false) << "Invalid operation";
-            return false;
-        }
-        if (_owns_lock) {
-            CHECK(false) << "Detected deadlock issue";     
-            return false;
-        }
-        _owns_lock = !bthread_mutex_trylock(_mutex);
-        return _owns_lock;
+    if (_owns_lock) {
+      CHECK(false) << "Detected deadlock issue";   
+      return;
     }
+    bthread_mutex_lock(_mutex);
+    _owns_lock = true;
+  }
 
-    void unlock() {
-        if (!_owns_lock) {
-            CHECK(false) << "Invalid operation";
-            return;
-        }
-        if (_mutex) {
-            bthread_mutex_unlock(_mutex);
-            _owns_lock = false;
-        }
+  bool try_lock() {
+    if (!_mutex) {
+      CHECK(false) << "Invalid operation";
+      return false;
     }
-
-    void swap(unique_lock& rhs) {
-        std::swap(_mutex, rhs._mutex);
-        std::swap(_owns_lock, rhs._owns_lock);
+    if (_owns_lock) {
+      CHECK(false) << "Detected deadlock issue";   
+      return false;
     }
+    _owns_lock = !bthread_mutex_trylock(_mutex);
+    return _owns_lock;
+  }
 
-    mutex_type* release() {
-        mutex_type* saved_mutex = _mutex;
-        _mutex = NULL;
-        _owns_lock = false;
-        return saved_mutex;
+  void unlock() {
+    if (!_owns_lock) {
+      CHECK(false) << "Invalid operation";
+      return;
     }
+    if (_mutex) {
+      bthread_mutex_unlock(_mutex);
+      _owns_lock = false;
+    }
+  }
 
-    mutex_type* mutex() { return _mutex; }
-    bool owns_lock() const { return _owns_lock; }
-    operator bool() const { return owns_lock(); }
+  void swap(unique_lock& rhs) {
+    std::swap(_mutex, rhs._mutex);
+    std::swap(_owns_lock, rhs._owns_lock);
+  }
+
+  mutex_type* release() {
+    mutex_type* saved_mutex = _mutex;
+    _mutex = NULL;
+    _owns_lock = false;
+    return saved_mutex;
+  }
+
+  mutex_type* mutex() { return _mutex; }
+  bool owns_lock() const { return _owns_lock; }
+  operator bool() const { return owns_lock(); }
 
 private:
-    mutex_type*                     _mutex;
-    bool                            _owns_lock;
+  mutex_type*           _mutex;
+  bool              _owns_lock;
 };
 
 }  // namespace std
@@ -210,16 +210,16 @@ namespace bvar {
 
 template <>
 struct MutexConstructor<bthread_mutex_t> {
-    bool operator()(bthread_mutex_t* mutex) const { 
-        return bthread_mutex_init(mutex, NULL) == 0;
-    }
+  bool operator()(bthread_mutex_t* mutex) const { 
+    return bthread_mutex_init(mutex, NULL) == 0;
+  }
 };
 
 template <>
 struct MutexDestructor<bthread_mutex_t> {
-    bool operator()(bthread_mutex_t* mutex) const { 
-        return bthread_mutex_destroy(mutex) == 0;
-    }
+  bool operator()(bthread_mutex_t* mutex) const { 
+    return bthread_mutex_destroy(mutex) == 0;
+  }
 };
 
 }  // namespace bvar

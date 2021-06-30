@@ -25,25 +25,25 @@ RetryPolicy::~RetryPolicy() {}
 
 class RpcRetryPolicy : public RetryPolicy {
 public:
-    bool DoRetry(const Controller* controller) const {
-        const int error_code = controller->ErrorCode();
-        if (!error_code) {
-            return false;
-        }
-        return (EFAILEDSOCKET == error_code
-                || EEOF == error_code 
-                || EHOSTDOWN == error_code 
-                || ELOGOFF == error_code
-                || ETIMEDOUT == error_code // This is not timeout of RPC.
-                || ELIMIT == error_code
-                || ENOENT == error_code
-                || EPIPE == error_code
-                || ECONNREFUSED == error_code
-                || ECONNRESET == error_code
-                || ENODATA == error_code
-                || EOVERCROWDED == error_code
-                || EH2RUNOUTSTREAMS == error_code);
+  bool DoRetry(const Controller* controller) const {
+    const int error_code = controller->ErrorCode();
+    if (!error_code) {
+      return false;
     }
+    return (EFAILEDSOCKET == error_code
+        || EEOF == error_code 
+        || EHOSTDOWN == error_code 
+        || ELOGOFF == error_code
+        || ETIMEDOUT == error_code // This is not timeout of RPC.
+        || ELIMIT == error_code
+        || ENOENT == error_code
+        || EPIPE == error_code
+        || ECONNREFUSED == error_code
+        || ECONNRESET == error_code
+        || ENODATA == error_code
+        || EOVERCROWDED == error_code
+        || EH2RUNOUTSTREAMS == error_code);
+  }
 };
 
 // NOTE(gejun): g_default_policy can't be deleted on process's exit because
@@ -51,11 +51,11 @@ public:
 static pthread_once_t g_default_policy_once = PTHREAD_ONCE_INIT;
 static RpcRetryPolicy* g_default_policy = NULL;
 static void init_default_policy() {
-    g_default_policy = new RpcRetryPolicy;
+  g_default_policy = new RpcRetryPolicy;
 }
 const RetryPolicy* DefaultRetryPolicy() {
-    pthread_once(&g_default_policy_once, init_default_policy);
-    return g_default_policy;
+  pthread_once(&g_default_policy_once, init_default_policy);
+  return g_default_policy;
 }
 
 } // namespace brpc

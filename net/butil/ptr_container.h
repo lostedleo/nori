@@ -28,41 +28,41 @@ namespace butil {
 template <typename T>
 class PtrContainer {
 public:
-    PtrContainer() : _ptr(NULL) {}
+  PtrContainer() : _ptr(NULL) {}
 
-    explicit PtrContainer(T* obj) : _ptr(obj) {}
+  explicit PtrContainer(T* obj) : _ptr(obj) {}
 
-    ~PtrContainer() {
-        delete _ptr;
+  ~PtrContainer() {
+    delete _ptr;
+  }
+
+  PtrContainer(const PtrContainer& rhs)
+    : _ptr(rhs._ptr ? new T(*rhs._ptr) : NULL) {}
+  
+  void operator=(const PtrContainer& rhs) {
+    if (rhs._ptr) {
+      if (_ptr) {
+        *_ptr = *rhs._ptr;
+      } else {
+        _ptr = new T(*rhs._ptr);
+      }
+    } else {
+      delete _ptr;
+      _ptr = NULL;
     }
+  }
 
-    PtrContainer(const PtrContainer& rhs)
-        : _ptr(rhs._ptr ? new T(*rhs._ptr) : NULL) {}
-    
-    void operator=(const PtrContainer& rhs) {
-        if (rhs._ptr) {
-            if (_ptr) {
-                *_ptr = *rhs._ptr;
-            } else {
-                _ptr = new T(*rhs._ptr);
-            }
-        } else {
-            delete _ptr;
-            _ptr = NULL;
-        }
-    }
+  T* get() const { return _ptr; }
 
-    T* get() const { return _ptr; }
+  void reset(T* ptr) {
+    delete _ptr;
+    _ptr = ptr;
+  }
 
-    void reset(T* ptr) {
-        delete _ptr;
-        _ptr = ptr;
-    }
-
-    operator void*() const { return _ptr; }
-    
+  operator void*() const { return _ptr; }
+  
 private:
-    T* _ptr;
+  T* _ptr;
 };
 
 }  // namespace butil

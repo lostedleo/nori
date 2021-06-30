@@ -17,8 +17,8 @@ class ThreadLocalTesterBase : public butil::DelegateSimpleThreadPool::Delegate {
   typedef butil::ThreadLocalPointer<ThreadLocalTesterBase> TLPType;
 
   ThreadLocalTesterBase(TLPType* tlp, butil::WaitableEvent* done)
-      : tlp_(tlp),
-        done_(done) {
+    : tlp_(tlp),
+    done_(done) {
   }
   virtual ~ThreadLocalTesterBase() {}
 
@@ -30,17 +30,17 @@ class ThreadLocalTesterBase : public butil::DelegateSimpleThreadPool::Delegate {
 class SetThreadLocal : public ThreadLocalTesterBase {
  public:
   SetThreadLocal(TLPType* tlp, butil::WaitableEvent* done)
-      : ThreadLocalTesterBase(tlp, done),
-        val_(NULL) {
+    : ThreadLocalTesterBase(tlp, done),
+    val_(NULL) {
   }
   virtual ~SetThreadLocal() {}
 
   void set_value(ThreadLocalTesterBase* val) { val_ = val; }
 
   virtual void Run() OVERRIDE {
-    DCHECK(!done_->IsSignaled());
-    tlp_->Set(val_);
-    done_->Signal();
+  DCHECK(!done_->IsSignaled());
+  tlp_->Set(val_);
+  done_->Signal();
   }
 
  private:
@@ -50,17 +50,17 @@ class SetThreadLocal : public ThreadLocalTesterBase {
 class GetThreadLocal : public ThreadLocalTesterBase {
  public:
   GetThreadLocal(TLPType* tlp, butil::WaitableEvent* done)
-      : ThreadLocalTesterBase(tlp, done),
-        ptr_(NULL) {
+    : ThreadLocalTesterBase(tlp, done),
+    ptr_(NULL) {
   }
   virtual ~GetThreadLocal() {}
 
   void set_ptr(ThreadLocalTesterBase** ptr) { ptr_ = ptr; }
 
   virtual void Run() OVERRIDE {
-    DCHECK(!done_->IsSignaled());
-    *ptr_ = tlp_->Get();
-    done_->Signal();
+  DCHECK(!done_->IsSignaled());
+  *ptr_ = tlp_->Get();
+  done_->Signal();
   }
 
  private:
@@ -80,7 +80,7 @@ TEST(ThreadLocalTest, Pointer) {
   butil::ThreadLocalPointer<ThreadLocalTesterBase> tlp;
 
   static ThreadLocalTesterBase* const kBogusPointer =
-      reinterpret_cast<ThreadLocalTesterBase*>(0x1234);
+    reinterpret_cast<ThreadLocalTesterBase*>(0x1234);
 
   ThreadLocalTesterBase* tls_val;
   butil::WaitableEvent done(true, false);
@@ -149,20 +149,20 @@ TEST(ThreadLocalTest, Pointer) {
 
 TEST(ThreadLocalTest, Boolean) {
   {
-    butil::ThreadLocalBoolean tlb;
-    EXPECT_FALSE(tlb.Get());
+  butil::ThreadLocalBoolean tlb;
+  EXPECT_FALSE(tlb.Get());
 
-    tlb.Set(false);
-    EXPECT_FALSE(tlb.Get());
+  tlb.Set(false);
+  EXPECT_FALSE(tlb.Get());
 
-    tlb.Set(true);
-    EXPECT_TRUE(tlb.Get());
+  tlb.Set(true);
+  EXPECT_TRUE(tlb.Get());
   }
 
   // Our slot should have been freed, we're all reset.
   {
-    butil::ThreadLocalBoolean tlb;
-    EXPECT_FALSE(tlb.Get());
+  butil::ThreadLocalBoolean tlb;
+  EXPECT_FALSE(tlb.Get());
   }
 }
 
