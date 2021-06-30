@@ -295,7 +295,7 @@ else ()
     --prefix=${GPERFTOOLS_CMAKE_ROOT}/install --enable-libunwind)
   set_target_properties(
     gperftools PROPERTIES
-    IMPORTED_LOCATION ${GPERFTOOLS_CMAKE_ROOT}/install/lib/libtcmalloc_and_profiler.${LIBRARY_SUFFIX}
+    IMPORTED_LOCATION ${GPERFTOOLS_CMAKE_ROOT}/install/lib/libtcmalloc_and_profiler${LIBRARY_SUFFIX}
     INTERFACE_INCLUDE_DIRECTORIES ${GPERFTOOLS_CMAKE_ROOT}/install/include)
 endif ()
 

@@ -1,6 +1,7 @@
 // Author: Zhenwei Zhu losted.leo@gmail.com
 
 #include <memory>
+#include <signal.h>
 
 #include <gflags/gflags.h>
 #include <readline/readline.h>
