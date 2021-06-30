@@ -15,8 +15,6 @@
 
 # URLs for each downloaded or bundled third-party dependency.
 #############################################################
-cmake_minimum_required(VERSION 3.10)
-
 project(third_party)
 
 set(FETCH_URL ${CMAKE_CURRENT_SOURCE_DIR})
@@ -44,8 +42,6 @@ include(ExternalProject)
 
 # Variables for current specified linkage.
 # NOTE: Not all third-party dependencies will respect this.
-#option(BUILD_SHARED_LIBS "build shared lib" ON)
-option(CMAKE_POSITION_INDEPENDENT_CODE "independent code" ON)
 if (BUILD_SHARED_LIBS)
   set(LIBRARY_LINKAGE SHARED)
   set(LIBRARY_SUFFIX ${CMAKE_SHARED_LIBRARY_SUFFIX})
@@ -69,7 +65,7 @@ else ()
   list(APPEND DEPS_CONFIG --without-shared)
 endif()
 set(DEFAULT_BUILD_CMD make)
-#set(DEFAULT_INSTALL_CMD make install)
+set(REAL_INSTALL_CMD make install)
 set(DEFAULT_INSTALL_CMD ${CMAKE_NOOP})
 
 # This `CMAKE_FORWARD_ARGS` variable is sent as the `CMAKE_ARGS` argument to
@@ -82,13 +78,8 @@ set(DEFAULT_INSTALL_CMD ${CMAKE_NOOP})
 # NOTE: The CMAKE_GENERATOR_TOOLSET is impliticly set by `ExternalProject_Add`,
 # and cannot be included twice.
 list(APPEND CMAKE_FORWARD_ARGS
-  # TODO(andschwa): Set the CMAKE_GENERATOR explicitly as an argmuent to
-  # `ExternalProject_Add`.
-  -G${CMAKE_GENERATOR}
-  -DCMAKE_POSITION_INDEPENDENT_CODE=${CMAKE_POSITION_INDEPENDENT_CODE}
   -DBUILD_SHARED_LIBS=${BUILD_SHARED_LIBS}
-  #-DCMAKE_INSTALL_PREFIX=${INSTALL_DIR}
-  -DCMAKE_CXX_FLAGS=-fPIC
+  # -DCMAKE_INSTALL_PREFIX=${INSTALL_DIR}
 )
 
 # This only matters for single-configuration generators.
@@ -97,18 +88,18 @@ if (NOT "${CMAKE_BUILD_TYPE}" STREQUAL "")
   list(APPEND CMAKE_FORWARD_ARGS -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE})
 endif ()
 
-foreach (lang C CXX)
-  list(APPEND CMAKE_FORWARD_ARGS
-    -DCMAKE_${lang}_COMPILER=${CMAKE_${lang}_COMPILER}
-    -DCMAKE_${lang}_COMPILER_LAUNCHER=${CMAKE_${lang}_COMPILER_LAUNCHER}
-    -DCMAKE_${lang}_FLAGS=${CMAKE_${lang}_FLAGS}
-)
-
-  foreach (config DEBUG RELEASE RELWITHDEBINFO MINSIZEREL)
-    list(APPEND CMAKE_FORWARD_ARGS
-      -DCMAKE_${lang}_FLAGS_${config}=${CMAKE_${lang}_FLAGS_${config}})
-  endforeach ()
-endforeach ()
+# foreach (lang C CXX)
+#   list(APPEND CMAKE_FORWARD_ARGS
+#     -DCMAKE_${lang}_COMPILER=${CMAKE_${lang}_COMPILER}
+#     -DCMAKE_${lang}_COMPILER_LAUNCHER=${CMAKE_${lang}_COMPILER_LAUNCHER}
+#     -DCMAKE_${lang}_FLAGS=${CMAKE_${lang}_FLAGS}
+# )
+#
+#   foreach (config DEBUG RELEASE RELWITHDEBINFO MINSIZEREL)
+#     list(APPEND CMAKE_FORWARD_ARGS
+#       -DCMAKE_${lang}_FLAGS_${config}=${CMAKE_${lang}_FLAGS_${config}})
+#   endforeach ()
+# endforeach ()
 
 # This function works around a CMake issue with setting include directories of
 # imported libraries built with `ExternalProject_Add`.
@@ -219,8 +210,9 @@ EXTERNAL(gflags ${GFLAGS_VERSION} ${CMAKE_CURRENT_BINARY_DIR})
 add_library(gflags ${LIBRARY_LINKAGE} IMPORTED GLOBAL)
 add_dependencies(gflags ${GFLAGS_TARGET})
 
-set(GFLAGS_ARGS ${CMAKE_FORWARD_ARGS} -DGFLAGS_NAMESPACE=google -DBUILD_TESTING=OFF
-  -DBUILD_STATIC_LIBS=ON -DINSTALL_STATIC_LIBS=ON)
+set(GFLAGS_ARGS ${CMAKE_FORWARD_ARGS}
+  -DCMAKE_INSTALL_PREFIX=${GFLAGS_CMAKE_ROOT}/install
+  -DGFLAGS_NAMESPACE=google -DBUILD_TESTING=OFF)
 
 set(GFLAGS_LIB_PATH ${GFLAGS_ROOT}-build/lib)
 set(GFLAGS_INCLUDE_PATH ${GFLAGS_ROOT}-build/include)
@@ -238,7 +230,7 @@ ExternalProject_Add(
   PREFIX            ${GFLAGS_CMAKE_ROOT}
   CMAKE_ARGS        ${GFLAGS_ARGS}
   BUILD_BYPRODUCTS  ${GFLAGS_BYPRODUCTS}
-  INSTALL_COMMAND   ${DEFAULT_INSTALL_CMD}
+  INSTALL_COMMAND   ${REAL_INSTALL_CMD}
   URL               ${GFLAGS_URL}
   URL_HASH          ${GFLAGS_HASH}
 )
@@ -257,7 +249,6 @@ set_target_properties(
   INTERFACE_INCLUDE_DIRECTORIES ${GLOG_ROOT}-build/include
 )
 
-#set(GLOG_CONFIG_CMD ${GLOG_ROOT}/configure ${DEPS_CONFIG} GTEST_CONFIG=no)
 set(GLOG_CONFIG_CMD ${GLOG_ROOT}/configure --with-pic GTEST_CONFIG=no
   --prefix=${GLOG_ROOT}-build CPPFLAGS=-I${GFLAGS_INCLUDE_PATH}
   LDFLAGS=-L${GFLAGS_LIB_PATH}
@@ -278,7 +269,7 @@ ExternalProject_Add(
   #CMAKE_ARGS        ${GLOG_CMAKE_ARGS}
   CONFIGURE_COMMAND ${GLOG_CONFIG_CMD}
   BUILD_COMMAND     ${DEFAULT_BUILD_CMD}
-  INSTALL_COMMAND   make install
+  INSTALL_COMMAND   ${REAL_INSTALL_CMD}
   URL               ${GLOG_URL}
   URL_HASH          ${GLOG_HASH}
 )
@@ -291,17 +282,22 @@ add_library(gperftools ${LIBRARY_LINKAGE} IMPORTED GLOBAL)
 
 if (APPLE)
   add_dependencies(gperftools ${GPERFTOOLS_TARGET})
-  set(GPERFTOOLS_CONFIG_CMD ${GPERFTOOLS_ROOT}/configure ${DEPS_CONFIG})
+  set(GPERFTOOLS_CONFIG_CMD ${GPERFTOOLS_ROOT}/configure ${DEPS_CONFIG}
+    --prefix=${GPERFTOOLS_CMAKE_ROOT}/install)
+  # MACOS must use static library
+  set_target_properties(
+    gperftools PROPERTIES
+    IMPORTED_LOCATION ${GPERFTOOLS_CMAKE_ROOT}/install/lib/libtcmalloc_and_profiler.a
+    INTERFACE_INCLUDE_DIRECTORIES ${GPERFTOOLS_CMAKE_ROOT}/install/include)
 else ()
   add_dependencies(gperftools ${GPERFTOOLS_TARGET} unwind)
-  set(GPERFTOOLS_CONFIG_CMD ${GPERFTOOLS_ROOT}/configure ${DEPS_CONFIG} --enable-libunwind)
+  set(GPERFTOOLS_CONFIG_CMD ${GPERFTOOLS_ROOT}/configure ${DEPS_CONFIG}
+    --prefix=${GPERFTOOLS_CMAKE_ROOT}/install --enable-libunwind)
+  set_target_properties(
+    gperftools PROPERTIES
+    IMPORTED_LOCATION ${GPERFTOOLS_CMAKE_ROOT}/install/lib/libtcmalloc_and_profiler.${LIBRARY_SUFFIX}
+    INTERFACE_INCLUDE_DIRECTORIES ${GPERFTOOLS_CMAKE_ROOT}/install/include)
 endif ()
-
-
-set_target_properties(
-  gperftools PROPERTIES
-  IMPORTED_LOCATION ${GPERFTOOLS_ROOT}-build/.libs/libtcmalloc_and_profiler${LIBRARY_SUFFIX}
-  INTERFACE_INCLUDE_DIRECTORIES ${GPERFTOOLS_ROOT}-build/include)
 
 MAKE_INCLUDE_DIR(gperftools)
 GET_BYPRODUCTS(gperftools)
@@ -312,7 +308,7 @@ ExternalProject_Add(
   CONFIGURE_COMMAND ${GPERFTOOLS_CONFIG_CMD}
   BUILD_BYPRODUCTS  ${GPERFTOOLS_BYPRODUCTS}
   BUILD_COMMAND     ${DEFAULT_BUILD_CMD}
-  INSTALL_COMMAND   ${DEFAULT_INSTALL_CMD}
+  INSTALL_COMMAND   ${REAL_INSTALL_CMD}
   URL               ${GPERFTOOLS_URL}
   URL_HASH          ${GPERFTOOLS_HASH}
 )
@@ -356,24 +352,24 @@ add_dependencies(protoc ${PROTOBUF_TARGET})
 
 set_target_properties(
   protobuf PROPERTIES
-  INTERFACE_INCLUDE_DIRECTORIES ${PROTOBUF_ROOT}/src
-  IMPORTED_LOCATION ${PROTOBUF_ROOT}-build/src/.libs/libprotobuf${LIBRARY_SUFFIX}
+  INTERFACE_INCLUDE_DIRECTORIES ${PROTOBUF_CMAKE_ROOT}/install/include
+  IMPORTED_LOCATION ${PROTOBUF_CMAKE_ROOT}/install/lib/libprotobuf${LIBRARY_SUFFIX}
 )
 
 set_target_properties(
   libprotoc PROPERTIES
-  IMPORTED_LOCATION ${PROTOBUF_ROOT}-build/src/.libs/libprotoc${LIBRARY_SUFFIX}
+  IMPORTED_LOCATION ${PROTOBUF_CMAKE_ROOT}/install/lib/libprotoc${LIBRARY_SUFFIX}
 )
 
 set_target_properties(
   protoc PROPERTIES
-  IMPORTED_LOCATION ${PROTOBUF_ROOT}-build/src/protoc
+  IMPORTED_LOCATION ${PROTOBUF_CMAKE_ROOT}/install/bin/protoc
 )
 
 MAKE_INCLUDE_DIR(protobuf)
 GET_BYPRODUCTS(protobuf)
 
-set(PROTOBUF_CONFIG_CMD ${PROTOBUF_ROOT}/configure ${DEPS_CONFIG})
+set(PROTOBUF_CONFIG_CMD ${PROTOBUF_ROOT}/configure ${DEPS_CONFIG} --prefix=${PROTOBUF_CMAKE_ROOT}/install)
 ExternalProject_Add(
   ${PROTOBUF_TARGET}
   PREFIX            ${PROTOBUF_CMAKE_ROOT}
@@ -381,7 +377,7 @@ ExternalProject_Add(
   #CMAKE_ARGS        ${CMAKE_FORWARD_ARGS};-Dprotobuf_BUILD_TESTS=OFF
   #SOURCE_SUBDIR     cmake
   CONFIGURE_COMMAND ${PROTOBUF_CONFIG_CMD}
-  INSTALL_COMMAND   ${DEFAULT_INSTALL_CMD}
+  INSTALL_COMMAND   ${REAL_INSTALL_CMD}
   URL               ${PROTOBUF_URL}
   URL_HASH          ${PROTOBUF_HASH}
 )
@@ -402,14 +398,22 @@ set_target_properties(
 MAKE_INCLUDE_DIR(leveldb)
 GET_BYPRODUCTS(leveldb)
 
+set(LEVELDB_ROOT_PATH ${LEVELDB_CMAKE_ROOT}/src)
+set(LEVELDB_CMAKE_ARGS ${CMAKE_FORWARD_ARGS} -DLEVELDB_BUILD_TESTS=OFF
+  -DLEVELDB_BUILD_BENCHMARKS=OFF
+  -DCMAKE_INSTALL_PREFIX=${LEVELDB_ROOT_PATH}
+  )
+
+set(LEVELDB_INSTALL_CMD COMMAND
+  bash -c "ln -s ${LEVELDB_ROOT_PATH}/leveldb-${LEVELDB_VERSION} ${LEVELDB_ROOT_PATH}/lib")
 ExternalProject_Add(
   ${LEVELDB_TARGET}
   PREFIX            ${LEVELDB_CMAKE_ROOT}
-  CMAKE_ARGS        ${CMAKE_FORWARD_ARGS};-DLEVELDB_BUILD_TESTS=OFF
+  CMAKE_ARGS        ${LEVELDB_CMAKE_ARGS}
   BUILD_BYPRODUCTS  ${LEVELDB_BYPRODUCTS}
   BUILD_IN_SOURCE   1
   BUILD_COMMAND     ${DEFAULT_BUILD_CMD}
-  INSTALL_COMMAND   ${DEFAULT_INSTALL_CMD}
+  INSTALL_COMMAND   ${LEVELDB_INSTALL_CMD}
   URL               ${LEVELDB_URL}
   URL_HASH          ${LEVELDB_HASH}
 )

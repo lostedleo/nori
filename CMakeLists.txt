@@ -18,6 +18,12 @@
 #############################################################
 cmake_minimum_required(VERSION 3.10...3.21)
 
+if (APPLE)
+  set(CMAKE_C_COMPILER clang)
+  set(CMAKE_CXX_COMPILER clang++)
+else ()
+endif()
+
 project(NORI)
 
 # CMAKE MODULE SETUP.
@@ -62,3 +68,4 @@ add_subdirectory(base)
 add_subdirectory(net)
 add_subdirectory(raft)
 add_subdirectory(storage)
+add_subdirectory(test)

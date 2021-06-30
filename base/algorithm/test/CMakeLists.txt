@@ -3,8 +3,6 @@ project(kmeans_test C CXX)
 option(EXAMPLE_LINK_SO "Whether examples are linked dynamically" OFF)
 option(LINK_TCMALLOC "Link tcmalloc if possible" ON)
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CPP_FLAGS} -DNDEBUG -O2 -g2 -D__const__= -pipe -W -Wall -Wno-unused-parameter -fPIC -fno-omit-frame-pointer")
-
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
 if(EXAMPLE_LINK_SO)
