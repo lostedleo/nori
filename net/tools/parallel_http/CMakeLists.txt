@@ -1,2 +1,7 @@
 add_executable(parallel_http parallel_http.cpp)
-target_link_libraries(parallel_http brpc-static ${DYNAMIC_LIB})
+
+if (BUILD_SHARED_LIBS)
+  target_link_libraries(parallel_http brpc-shared)
+else ()
+  target_link_libraries(parallel_http brpc-static)
+endif ()
