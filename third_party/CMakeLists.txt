@@ -150,6 +150,7 @@ target_link_libraries(googletest INTERFACE gmock gtest)
 # following open issue when using shared libraries, on both Windows and Linux:
 # https://github.com/google/googletest/issues/930
 add_library(gmock STATIC IMPORTED GLOBAL)
+add_library(gmock_main STATIC IMPORTED GLOBAL)
 add_library(gtest STATIC IMPORTED GLOBAL)
 add_library(gtest_main STATIC IMPORTED GLOBAL)
 
@@ -167,17 +168,22 @@ set(GOOGLETEST_CMAKE_FORWARD_ARGS ${CMAKE_FORWARD_ARGS})
 
 set_target_properties(
   gmock PROPERTIES
-  IMPORTED_LOCATION ${GOOGLETEST_ROOT}-build/googlemock/libgmock${CMAKE_STATIC_LIBRARY_SUFFIX}
+  IMPORTED_LOCATION ${GOOGLETEST_ROOT}-build/lib/libgmock${CMAKE_STATIC_LIBRARY_SUFFIX}
+)
+
+set_target_properties(
+  gmock_main PROPERTIES
+  IMPORTED_LOCATION ${GOOGLETEST_ROOT}-build/lib/libgmock_main${CMAKE_STATIC_LIBRARY_SUFFIX}
 )
 
 set_target_properties(
   gtest PROPERTIES
-  IMPORTED_LOCATION ${GOOGLETEST_ROOT}-build/googlemock/gtest/libgtest${CMAKE_STATIC_LIBRARY_SUFFIX}
+  IMPORTED_LOCATION ${GOOGLETEST_ROOT}-build/lib/libgtest${CMAKE_STATIC_LIBRARY_SUFFIX}
 )
 
 set_target_properties(
   gtest_main PROPERTIES
-  IMPORTED_LOCATION ${GOOGLETEST_ROOT}-build/googlemock/gtest/libgtest_main${CMAKE_STATIC_LIBRARY_SUFFIX}
+  IMPORTED_LOCATION ${GOOGLETEST_ROOT}-build/lib/libgtest_main${CMAKE_STATIC_LIBRARY_SUFFIX}
 )
 
 MAKE_INCLUDE_DIR(gmock)
@@ -214,8 +220,8 @@ set(GFLAGS_ARGS ${CMAKE_FORWARD_ARGS}
   -DCMAKE_INSTALL_PREFIX=${GFLAGS_CMAKE_ROOT}/install
   -DGFLAGS_NAMESPACE=google -DBUILD_TESTING=OFF)
 
-set(GFLAGS_LIB_PATH ${GFLAGS_ROOT}-build/lib)
-set(GFLAGS_INCLUDE_PATH ${GFLAGS_ROOT}-build/include)
+set(GFLAGS_LIB_PATH ${GFLAGS_CMAKE_ROOT}/install/lib)
+set(GFLAGS_INCLUDE_PATH ${GFLAGS_CMAKE_ROOT}/install/include)
 set_target_properties(
   gflags PROPERTIES
   IMPORTED_LOCATION ${GFLAGS_LIB_PATH}/libgflags${LIBRARY_SUFFIX}
@@ -241,20 +247,18 @@ ExternalProject_Add(
 EXTERNAL(glog ${GLOG_VERSION} ${CMAKE_CURRENT_BINARY_DIR})
 add_library(glog ${LIBRARY_LINKAGE} IMPORTED GLOBAL)
 add_dependencies(glog ${GFLAGS_TARGET})
-add_dependencies(glog ${GLOG_TARGET})
-
 set_target_properties(
   glog PROPERTIES
-  IMPORTED_LOCATION ${GLOG_ROOT}-build/.libs/libglog${LIBRARY_SUFFIX}
-  INTERFACE_INCLUDE_DIRECTORIES ${GLOG_ROOT}-build/include
+  IMPORTED_LOCATION ${GLOG_CMAKE_ROOT}/install/lib/libglog${LIBRARY_SUFFIX}
+  INTERFACE_INCLUDE_DIRECTORIES ${GLOG_CMAKE_ROOT}/install/include
 )
 
 set(GLOG_CONFIG_CMD ${GLOG_ROOT}/configure --with-pic GTEST_CONFIG=no
-  --prefix=${GLOG_ROOT}-build CPPFLAGS=-I${GFLAGS_INCLUDE_PATH}
+  --prefix=${GLOG_CMAKE_ROOT}/install CPPFLAGS=-I${GFLAGS_INCLUDE_PATH}
   LDFLAGS=-L${GFLAGS_LIB_PATH}
 )
 
-set(GLOG_CMAKE_ARGS ${CMAKE_FORWARD_ARGS} -DCMAKE_INSTALL_PREFIX=${GLOG_ROOT}-build
+set(GLOG_CMAKE_ARGS ${CMAKE_FORWARD_ARGS} -DCMAKE_INSTALL_PREFIX=${GLOG_CMAKE_ROOT}/install
   -DBUILD_TESTING=OFF -DCMAKE_INCLUDE_PATH="${GFLAGS_INCLUDE_PATH}"
   -DCMAKE_LIBRARY_PATH="${GFLAGS_LIB_PATH}")
 
@@ -266,8 +270,8 @@ ExternalProject_Add(
   DEPENDS           ${GFLAGS_TARGET}
   PREFIX            ${GLOG_CMAKE_ROOT}
   BUILD_BYPRODUCTS  ${GLOG_BYPRODUCTS}
-  #CMAKE_ARGS        ${GLOG_CMAKE_ARGS}
-  CONFIGURE_COMMAND ${GLOG_CONFIG_CMD}
+  CMAKE_ARGS        ${GLOG_CMAKE_ARGS}
+  # CONFIGURE_COMMAND ${GLOG_CONFIG_CMD}
   BUILD_COMMAND     ${DEFAULT_BUILD_CMD}
   INSTALL_COMMAND   ${REAL_INSTALL_CMD}
   URL               ${GLOG_URL}
