@@ -11,10 +11,12 @@
 #include "braft/util.h"
 #include "braft/raft.h"
 
+butil::AtExitManager exit_manager;
+
 namespace braft {
 
 class SnapshotExecutorTest : public testing::Test {
-protected:
+ protected:
   void SetUp() {
     system("rm -rf .data");
     bool server_started = false;

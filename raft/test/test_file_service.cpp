@@ -14,15 +14,17 @@
 #include "braft/remote_file_copier.h"
 #include "braft/file_system_adaptor.h"
 
+butil::AtExitManager exit_manager;
+
 namespace braft {
-DECLARE_bool(raft_file_check_hole);
+  DECLARE_bool(raft_file_check_hole);
 }
 
 int g_port = 0;
 class FileServiceTest : public testing::Test {
-protected:
+ protected:
   void SetUp() {
-    ASSERT_EQ(0, _server.AddService(braft::file_service(), 
+    ASSERT_EQ(0, _server.AddService(braft::file_service(),
                     brpc::SERVER_DOESNT_OWN_SERVICE));
 	for (int i = 10000; i < 60000; i++) {
       if (0 == _server.Start(i, NULL)) {

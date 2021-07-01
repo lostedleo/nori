@@ -21,13 +21,15 @@
 #include "braft/lease.h"
 #include "util.h"
 
+butil::AtExitManager exit_manager;
+
 namespace braft {
-DECLARE_bool(raft_enable_leader_lease);
-DECLARE_int32(raft_election_heartbeat_factor);
+  DECLARE_bool(raft_enable_leader_lease);
+  DECLARE_int32(raft_election_heartbeat_factor);
 }
 
 class BaseLeaseTest : public testing::Test {
-protected:
+ protected:
   void SetUp() {
     ::system("rm -rf data");
     //logging::FLAGS_v = 90;

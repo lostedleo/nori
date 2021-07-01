@@ -11,6 +11,8 @@
 #include "braft/cli.h"
 #include "braft/node.h"
 
+butil::AtExitManager exit_manager;
+
 class CliTest : public testing::Test {
  public:
   void SetUp() {

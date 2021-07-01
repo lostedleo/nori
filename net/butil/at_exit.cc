@@ -30,7 +30,7 @@ AtExitManager::AtExitManager() : next_manager_(g_top_manager) {
 
 AtExitManager::~AtExitManager() {
   if (!g_top_manager) {
-  NOTREACHED() << "Tried to ~AtExitManager without an AtExitManager";
+    NOTREACHED() << "Tried to ~AtExitManager without an AtExitManager";
   return;
   }
   DCHECK_EQ(this, g_top_manager);
@@ -43,7 +43,7 @@ AtExitManager::~AtExitManager() {
 void AtExitManager::RegisterCallback(AtExitCallbackType func, void* param) {
   DCHECK(func);
   if (!g_top_manager) {
-  NOTREACHED() << "Tried to RegisterCallback without an AtExitManager";
+    NOTREACHED() << "Tried to RegisterCallback without an AtExitManager";
   return;
   }
 
