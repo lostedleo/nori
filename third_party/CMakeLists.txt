@@ -247,6 +247,8 @@ ExternalProject_Add(
 EXTERNAL(glog ${GLOG_VERSION} ${CMAKE_CURRENT_BINARY_DIR})
 add_library(glog ${LIBRARY_LINKAGE} IMPORTED GLOBAL)
 add_dependencies(glog ${GFLAGS_TARGET})
+add_dependencies(glog ${GLOG_TARGET})
+
 set_target_properties(
   glog PROPERTIES
   IMPORTED_LOCATION ${GLOG_ROOT}-build/libglog${LIBRARY_SUFFIX}
