@@ -7,7 +7,7 @@ set(GFLAGS_HASH           "SHA256=34af2f15cf7367513b352bdcd2493ab14ce43692d2dcd9
 
 # glog
 set(GLOG_VERSION          "0.5.0")
-set(GLOG_HASH             "SHA256=eede71f28371bf39aa69b45de23b329d37214016e2055269b3b5e7cfd40b59f5")
+set(GLOG_HASH             "SHA256=afe36b2629524c4218009e49e2d3cdea4dfed98232cd76343d23f35aa868ab5b")
 
 # googletest
 set(GOOGLETEST_VERSION    "1.11.0")
