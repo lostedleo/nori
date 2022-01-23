@@ -1,11 +1,11 @@
 // Copyright (c) 2014 Baidu, Inc.
-// 
+//
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
-// 
+//
 //   http://www.apache.org/licenses/LICENSE-2.0
-// 
+//
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -46,10 +46,10 @@ public:
       static_cast<brpc::Controller*>(cntl_base);
 
     // The purpose of following logs is to help you to understand
-    // how clients interact with servers more intuitively. You should 
+    // how clients interact with servers more intuitively. You should
     // remove these logs in performance-sensitive servers.
-    LOG(INFO) << "Received request[log_id=" << cntl->log_id() 
-          << "] from " << cntl->remote_side() 
+    LOG(INFO) << "Received request[log_id=" << cntl->log_id()
+          << "] from " << cntl->remote_side()
           << " to " << cntl->local_side()
           << ": " << request->message()
           << " (attached=" << cntl->request_attachment() << ")";
@@ -83,7 +83,7 @@ int main(int argc, char* argv[]) {
   // Add the service into server. Notice the second parameter, because the
   // service is put on stack, we don't want server to delete it, otherwise
   // use brpc::SERVER_OWNS_SERVICE.
-  if (server.AddService(&echo_service_impl, 
+  if (server.AddService(&echo_service_impl,
               brpc::SERVER_DOESNT_OWN_SERVICE) != 0) {
     LOG(ERROR) << "Fail to add service";
     return -1;

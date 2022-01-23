@@ -3,5 +3,6 @@
 *.lib
 *.a
 build
+builds
 bld
 bugs

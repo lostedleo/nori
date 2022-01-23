@@ -60,6 +60,9 @@
 	#elif defined (__x86_64__)
 	  #define BTHREAD_CONTEXT_PLATFORM_apple_x86_64
 	  #define BTHREAD_CONTEXT_CALL_CONVENTION
+	#elif defined (__aarch64__)
+	  #define BTHREAD_CONTEXT_PLATFORM_apple_arm64
+	  #define BTHREAD_CONTEXT_CALL_CONVENTION
 	#endif
   #endif
 #endif

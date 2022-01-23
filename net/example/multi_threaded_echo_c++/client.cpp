@@ -1,11 +1,11 @@
 // Copyright (c) 2014 Baidu, Inc.
-// 
+//
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
-// 
+//
 //   http://www.apache.org/licenses/LICENSE-2.0
-// 
+//
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -31,7 +31,7 @@ DEFINE_string(connection_type, "", "Connection type. Available values: single, p
 DEFINE_string(server, "0.0.0.0:8002", "IP Address of server");
 DEFINE_string(load_balancer, "", "The algorithm for load balancing");
 DEFINE_int32(timeout_ms, 100, "RPC timeout in milliseconds");
-DEFINE_int32(max_retry, 3, "Max retries(not including the first RPC)"); 
+DEFINE_int32(max_retry, 3, "Max retries(not including the first RPC)");
 DEFINE_bool(dont_fail, false, "Print fatal when some call failed");
 DEFINE_int32(dummy_port, -1, "Launch dummy server at this port");
 DEFINE_string(http_content_type, "application/json", "Content type of http request");
@@ -58,7 +58,7 @@ static void* sender(void* arg) {
     request.set_message(g_request);
     cntl.set_log_id(log_id++);  // set by user
     if (FLAGS_protocol != "http" && FLAGS_protocol != "h2c") {
-      // Set attachment which is wired to network directly instead of 
+      // Set attachment which is wired to network directly instead of
       // being serialized into protobuf messages.
       cntl.request_attachment().append(g_attachment);
     } else {
@@ -71,12 +71,12 @@ static void* sender(void* arg) {
     if (!cntl.Failed()) {
       g_latency_recorder << cntl.latency_us();
     } else {
-      g_error_count << 1; 
+      g_error_count << 1;
       CHECK(brpc::IsAskedToQuit() || !FLAGS_dont_fail)
         << "error=" << cntl.ErrorText() << " latency=" << cntl.latency_us();
       // We can't connect to the server, sleep a while. Notice that this
       // is a specific sleeping to prevent this thread from spinning too
-      // fast. You should continue the business logic in a production 
+      // fast. You should continue the business logic in a production
       // server rather than sleeping.
       bthread_usleep(50000);
     }
@@ -88,10 +88,10 @@ int main(int argc, char* argv[]) {
   // Parse gflags. We recommend you to use gflags as well.
   google::ParseCommandLineFlags(&argc, &argv, true);
 
-  // A Channel represents a communication line to a Server. Notice that 
+  // A Channel represents a communication line to a Server. Notice that
   // Channel is thread-safe and can be shared by all threads in your program.
   brpc::Channel channel;
-  
+
   // Initialize the channel, NULL means using default options.
   brpc::ChannelOptions options;
   options.protocol = FLAGS_protocol;
@@ -119,6 +119,7 @@ int main(int argc, char* argv[]) {
 
   std::vector<bthread_t> tids;
   tids.resize(FLAGS_thread_num);
+#if defined(OS_LINUX)
   if (!FLAGS_use_bthread) {
     for (int i = 0; i < FLAGS_thread_num; ++i) {
       if (pthread_create(&tids[i], NULL, sender, &channel) != 0) {
@@ -128,13 +129,20 @@ int main(int argc, char* argv[]) {
     }
   } else {
     for (int i = 0; i < FLAGS_thread_num; ++i) {
-      if (bthread_start_background(
-          &tids[i], NULL, sender, &channel) != 0) {
+      if (bthread_start_background(&tids[i], NULL, sender, &channel) != 0) {
         LOG(ERROR) << "Fail to create bthread";
         return -1;
       }
     }
   }
+#elif defined(OS_MACOSX)
+  for (int i = 0; i < FLAGS_thread_num; ++i) {
+    if (bthread_start_background(&tids[i], NULL, sender, &channel) != 0) {
+      LOG(ERROR) << "Fail to create bthread";
+      return -1;
+    }
+  }
+#endif
 
   while (!brpc::IsAskedToQuit()) {
     sleep(1);
@@ -143,6 +151,7 @@ int main(int argc, char* argv[]) {
   }
 
   LOG(INFO) << "EchoClient is going to quit";
+#if defined(OS_LINUX)
   for (int i = 0; i < FLAGS_thread_num; ++i) {
     if (!FLAGS_use_bthread) {
       pthread_join(tids[i], NULL);
@@ -150,6 +159,11 @@ int main(int argc, char* argv[]) {
       bthread_join(tids[i], NULL);
     }
   }
+#elif defined(OS_MACOSX)
+  for (int i = 0; i < FLAGS_thread_num; ++i) {
+    bthread_join(tids[i], NULL);
+  }
+#endif
 
   return 0;
 }

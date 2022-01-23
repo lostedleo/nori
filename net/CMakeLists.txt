@@ -28,7 +28,7 @@ get_target_property(PROTOBUF_INCLUDE_DIR protobuf INTERFACE_INCLUDE_DIRECTORIES)
 option(BRPC_WITH_GLOG "With glog" ON)
 option(DEBUG "Print debug logs" OFF)
 option(WITH_THRIFT "With thrift framed protocol supported" OFF)
-option(WITH_DEBUG_SYMBOLS "With debug symbols" OFF)
+option(WITH_DEBUG_SYMBOLS "With debug symbols" ON)
 option(BUILD_UNIT_TESTS "Whether to build unit tests" OFF)
 option(BUILD_EXAMPLES "Whether to build examples" ON)
 
@@ -81,7 +81,7 @@ endif()
 set(CMAKE_CPP_FLAGS "${CMAKE_CPP_FLAGS} ${DEFINE_CLOCK_GETTIME} -DBRPC_WITH_GLOG=${WITH_GLOG_VAL} -DGFLAGS_NS=${GFLAGS_NS}")
 set(CMAKE_CPP_FLAGS "${CMAKE_CPP_FLAGS} -DBTHREAD_USE_FAST_PTHREAD_MUTEX -D__const__= -D_GNU_SOURCE -DUSE_SYMBOLIZE -D__STDC_FORMAT_MACROS -D__STDC_LIMIT_MACROS -D__STDC_CONSTANT_MACROS -DBRPC_REVISION=\\\"${BRPC_REVISION}\\\" -D__STRICT_ANSI__")
 set(CMAKE_CPP_FLAGS "${CMAKE_CPP_FLAGS} ${DEBUG_SYMBOL} ${THRIFT_CPP_FLAG}")
-set(CMAKE_CPP_FLAGS "${CMAKE_CPP_FLAGS} -O2 -pipe -Wall -W -fPIC -fstrict-aliasing -Wno-unused-function -Wno-deprecated-declarations -Wno-unused-variable  -Wno-unused-parameter -fno-omit-frame-pointer")
+set(CMAKE_CPP_FLAGS "${CMAKE_CPP_FLAGS} -pipe -O2 -Wall -W -fPIC -fstrict-aliasing -Wno-unused-function -Wno-deprecated-declarations -Wno-unused-variable  -Wno-unused-parameter -fno-omit-frame-pointer")
 set(CMAKE_CXX_FLAGS "${CMAKE_CPP_FLAGS} -Wno-invalid-offsetof")
 set(CMAKE_C_FLAGS "${CMAKE_CPP_FLAGS}")
 
@@ -250,19 +250,21 @@ set(BUTIL_SOURCES
   )
 
 if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
-    set(BUTIL_SOURCES ${BUTIL_SOURCES}
-        ${CMAKE_SOURCE_DIR}/net/butil/file_util_linux.cc
-        ${CMAKE_SOURCE_DIR}/net/butil/threading/platform_thread_linux.cc
-        ${CMAKE_SOURCE_DIR}/net/butil/strings/sys_string_conversions_posix.cc)
+  set(BUTIL_SOURCES ${BUTIL_SOURCES}
+      ${CMAKE_SOURCE_DIR}/net/butil/file_util_linux.cc
+      ${CMAKE_SOURCE_DIR}/net/butil/threading/platform_thread_linux.cc
+      ${CMAKE_SOURCE_DIR}/net/butil/strings/sys_string_conversions_posix.cc)
 elseif(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
-    set(BUTIL_SOURCES ${BUTIL_SOURCES}
-        ${CMAKE_SOURCE_DIR}/net/butil/mac/bundle_locations.mm
-        ${CMAKE_SOURCE_DIR}/net/butil/mac/foundation_util.mm
-        ${CMAKE_SOURCE_DIR}/net/butil/file_util_mac.mm
-        ${CMAKE_SOURCE_DIR}/net/butil/threading/platform_thread_mac.mm
-        ${CMAKE_SOURCE_DIR}/net/butil/strings/sys_string_conversions_mac.mm
-        ${CMAKE_SOURCE_DIR}/net/butil/time/time_mac.cc
-        ${CMAKE_SOURCE_DIR}/net/butil/mac/scoped_mach_port.cc)
+  set(BUTIL_SOURCES ${BUTIL_SOURCES}
+      ${CMAKE_SOURCE_DIR}/net/butil/mac/bundle_locations.mm
+      ${CMAKE_SOURCE_DIR}/net/butil/mac/foundation_util.mm
+      ${CMAKE_SOURCE_DIR}/net/butil/file_util_mac.mm
+      ${CMAKE_SOURCE_DIR}/net/butil/threading/platform_thread_mac.mm
+      ${CMAKE_SOURCE_DIR}/net/butil/strings/sys_string_conversions_mac.mm
+      ${CMAKE_SOURCE_DIR}/net/butil/time/time_mac.cc
+      ${CMAKE_SOURCE_DIR}/net/butil/mac/scoped_mach_port.cc)
+  if((CMAKE_SYSTEM_PROCESSOR MATCHES "arm64"))
+  endif()
 endif()
 
 file(GLOB_RECURSE BVAR_SOURCES "${CMAKE_SOURCE_DIR}/net/bvar/*.cpp")
@@ -272,13 +274,13 @@ file(GLOB_RECURSE BRPC_SOURCES "${CMAKE_SOURCE_DIR}/net/brpc/*.cpp")
 file(GLOB_RECURSE THRIFT_SOURCES "${CMAKE_SOURCE_DIR}/net/brpc/thrift*.cpp")
 
 if(WITH_THRIFT)
-    message("brpc compile with thrift protocol")
+  message("brpc compile with thrift protocol")
 else()
-    # Remove thrift sources
-    foreach(v ${THRIFT_SOURCES})
-        list(REMOVE_ITEM BRPC_SOURCES ${v})
-    endforeach()
-    set(THRIFT_SOURCES "")
+  # Remove thrift sources
+  foreach(v ${THRIFT_SOURCES})
+    list(REMOVE_ITEM BRPC_SOURCES ${v})
+  endforeach()
+  set(THRIFT_SOURCES "")
 endif()
 
 set(MCPACK2PB_SOURCES

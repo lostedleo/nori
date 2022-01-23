@@ -67,7 +67,7 @@ inline void timespec_add(timespec *tm, const timespec& span) {
   timespec_normalize(tm);
 }
 
-// Minus timespec |span| from timespec |*tm|. 
+// Minus timespec |span| from timespec |*tm|.
 // tm->tv_nsec will be inside [0, 1,000,000,000)
 inline void timespec_minus(timespec *tm, const timespec& span) {
   tm->tv_sec -= span.tv_sec;
@@ -165,7 +165,7 @@ inline timespec seconds_to_timespec(int64_t s) {
 }
 
 // ---------------------------------------------------------------------
-// Convert timeval to and from a single integer.                       
+// Convert timeval to and from a single integer.
 // For conversions between timespec and timeval, use TIMEVAL_TO_TIMESPEC
 // and TIMESPEC_TO_TIMEVAL defined in <sys/time.h>
 // ---------------------------------------------------------------------
@@ -201,12 +201,12 @@ inline timeval seconds_to_timeval(int64_t s) {
 // ---------------------------------------------------------------
 extern int64_t monotonic_time_ns();
 
-inline int64_t monotonic_time_us() { 
-  return monotonic_time_ns() / 1000L; 
+inline int64_t monotonic_time_us() {
+  return monotonic_time_ns() / 1000L;
 }
 
 inline int64_t monotonic_time_ms() {
-  return monotonic_time_ns() / 1000000L; 
+  return monotonic_time_ns() / 1000000L;
 }
 
 inline int64_t monotonic_time_s() {
@@ -215,6 +215,7 @@ inline int64_t monotonic_time_s() {
 
 namespace detail {
 inline uint64_t clock_cycles() {
+#if defined(__x86_64__) || defined(__amd64__)
   unsigned int lo = 0;
   unsigned int hi = 0;
   // We cannot use "=A", since this would use %rax on x86_64
@@ -223,6 +224,27 @@ inline uint64_t clock_cycles() {
     : "=a" (lo), "=d" (hi)
     );
   return ((uint64_t)hi << 32) | lo;
+#elif defined(__aarch64__)
+  uint64_t virtual_timer_value;
+  asm volatile("mrs %0, cntvct_el0" : "=r"(virtual_timer_value));
+  return virtual_timer_value;
+#elif defined(__ARM_ARCH)
+#if (__ARM_ARCH >= 6)
+  unsigned int pmccntr;
+  unsigned int pmuseren;
+  unsigned int pmcntenset;
+  // Read the user mode perf monitor counter access permissions.
+  asm volatile ("mrc p15, 0, %0, c9, c14, 0" : "=r" (pmuseren));
+  if (pmuseren & 1) {  // Allows reading perfmon counters for user mode code.
+    asm volatile ("mrc p15, 0, %0, c9, c12, 1" : "=r" (pmcntenset));
+    if (pmcntenset & 0x80000000ul) {  // Is it counting?
+      asm volatile ("mrc p15, 0, %0, c9, c13, 0" : "=r" (pmccntr));
+      // The counter is set up to count every 64th cycle
+      return static_cast<uint64_t>(pmccntr) * 64;  // Should optimize to << 6
+    }
+  }
+#endif
+#endif
 }
 extern int64_t read_invariant_cpu_frequency();
 // Be positive iff:
@@ -273,7 +295,7 @@ inline int64_t cpuwide_time_us() {
   return cpuwide_time_ns() / 1000L;
 }
 
-inline int64_t cpuwide_time_ms() { 
+inline int64_t cpuwide_time_ms() {
   return cpuwide_time_ns() / 1000000L;
 }
 
@@ -282,8 +304,8 @@ inline int64_t cpuwide_time_s() {
 }
 
 // --------------------------------------------------------------------
-// Get elapse since the Epoch.                      
-// No gettimeofday_ns() because resolution of timeval is microseconds.  
+// Get elapse since the Epoch.
+// No gettimeofday_ns() because resolution of timeval is microseconds.
 // Cost ~40ns on 2.6.32_1-12-0-0, Intel(R) Xeon(R) CPU E5620 @ 2.40GHz
 // --------------------------------------------------------------------
 inline int64_t gettimeofday_us() {
@@ -316,7 +338,7 @@ public:
   explicit EveryManyUS(int64_t interval_us)
     : _last_time_us(cpuwide_time_us())
     , _interval_us(interval_us) {}
-  
+
   operator bool() {
     const int64_t now_us = cpuwide_time_us();
     if (now_us < _last_time_us + _interval_us) {
@@ -335,7 +357,7 @@ private:
 //  Count elapses
 // ---------------
 class Timer {
-public:
+ public:
 
   enum TimerType {
     STARTED,
@@ -351,7 +373,7 @@ public:
     _start = cpuwide_time_ns();
     _stop = _start;
   }
-  
+
   // Stop this timer
   void stop() {
     _stop = cpuwide_time_ns();
@@ -367,7 +389,7 @@ public:
   double u_elapsed(double) const { return (double)n_elapsed() / 1000.0; }
   double m_elapsed(double) const { return (double)u_elapsed() / 1000.0; }
   double s_elapsed(double) const { return (double)m_elapsed() / 1000.0; }
-  
+
 private:
   int64_t _stop;
   int64_t _start;
