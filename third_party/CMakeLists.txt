@@ -31,6 +31,8 @@ set(GPERFTOOLS_URL      ${FETCH_URL}/gperftools-${GPERFTOOLS_VERSION}.tar.gz)
 set(JSONCPP_URL         ${FETCH_URL}/jsoncpp-${JSONCPP_VERSION}.tar.gz)
 set(PROTOBUF_URL        ${FETCH_URL}/protobuf-${PROTOBUF_VERSION}.tar.gz)
 set(LEVELDB_URL         ${FETCH_URL}/leveldb-${LEVELDB_VERSION}.tar.gz)
+set(PYBIND11_URL        ${FETCH_URL}/pybind11-${PYBIND11_VERSION}.tar.gz)
+set(ABSL_URL            ${FETCH_URL}/absl-${ABSL_VERSION}.tar.gz)
 set(BOOST_URL           ${FETCH_URL}/boost-${BOOST_VERSION}.tar.gz)
 set(CURL_URL            ${FETCH_URL}/curl-${CURL_VERSION}.tar.gz)
 set(HIREDIS_URL         ${FETCH_URL}/hiredis-${HIREDIS_VERSION}.tar.gz)
@@ -422,6 +424,69 @@ ExternalProject_Add(
   INSTALL_COMMAND   ${LEVELDB_INSTALL_CMD}
   URL               ${LEVELDB_URL}
   URL_HASH          ${LEVELDB_HASH}
+)
+
+# pybind11: pybind11 — Seamless operability between C++11 and Python
+# https://github.com/pybind/pybind11
+################################
+EXTERNAL(pybind11 ${PYBIND11_VERSION} ${CMAKE_CURRENT_BINARY_DIR})
+add_library(pybind11 ${LIBRARY_LINKAGE} IMPORTED GLOBAL)
+add_dependencies(pybind11 ${PYBIND11_TARGET})
+
+set_target_properties(
+  pybind11 PROPERTIES
+  INTERFACE_INCLUDE_DIRECTORIES ${PYBIND11_ROOT}/include
+)
+
+MAKE_INCLUDE_DIR(pybind11)
+GET_BYPRODUCTS(pybind11)
+
+set(PYBIND11_ROOT_PATH ${PYBIND11_CMAKE_ROOT}/src)
+set(PYBIND11_CMAKE_ARGS ${CMAKE_FORWARD_ARGS}
+  -DCMAKE_INSTALL_PREFIX=${PYBIND11_ROOT_PATH}
+  )
+
+ExternalProject_Add(
+  ${PYBIND11_TARGET}
+  PREFIX            ${PYBIND11_CMAKE_ROOT}
+  CMAKE_ARGS        ${PYBIND11_CMAKE_ARGS}
+  BUILD_BYPRODUCTS  ${PYBIND11_BYPRODUCTS}
+  BUILD_IN_SOURCE   1
+  BUILD_COMMAND     ${DEFAULT_BUILD_CMD}
+  INSTALL_COMMAND   ${DEFAULT_INSTALL_CMD}
+  URL               ${PYBIND11_URL}
+  URL_HASH          ${PYBIND11_HASH}
+)
+
+# pybind11: pybind11 — Seamless operability between C++11 and Python
+# https://github.com/pybind/pybind11
+################################
+EXTERNAL(absl ${ABSL_VERSION} ${CMAKE_CURRENT_BINARY_DIR})
+add_library(absl ${LIBRARY_LINKAGE} IMPORTED GLOBAL)
+add_dependencies(absl ${ABSL_TARGET})
+
+set(ABSL_ARGS ${CMAKE_FORWARD_ARGS}
+  -DCMAKE_INSTALL_PREFIX=${ABSL_CMAKE_ROOT}/install
+  -DABSL_PROPAGATE_CXX_STD=ON )
+
+set(ABSL_LIB_PATH ${ABSL_CMAKE_ROOT}/install/lib)
+set(ABSL_INCLUDE_PATH ${ABSL_CMAKE_ROOT}/install/include)
+set_target_properties(
+  absl PROPERTIES
+  INTERFACE_INCLUDE_DIRECTORIES ${ABSL_INCLUDE_PATH}
+)
+
+MAKE_INCLUDE_DIR(absl)
+GET_BYPRODUCTS(absl)
+
+ExternalProject_Add(
+  ${ABSL_TARGET}
+  PREFIX            ${ABSL_CMAKE_ROOT}
+  CMAKE_ARGS        ${ABSL_ARGS}
+  BUILD_BYPRODUCTS  ${ABSL_BYPRODUCTS}
+  INSTALL_COMMAND   ${REAL_INSTALL_CMD}
+  URL               ${ABSL_URL}
+  URL_HASH          ${ABSL_HASH}
 )
 
 # cURL: Command line tool and library for transferring data with URLs.

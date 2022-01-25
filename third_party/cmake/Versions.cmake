@@ -29,6 +29,14 @@ set(LEVELDB_HASH          "SHA256=9a37f8a6174f09bd622bc723b55881dc541cd50747cbd0
 set(JSONCPP_VERSION       "1.8.4")
 set(JSONCPP_HASH          "SHA256=c49deac9e0933bcb7044f08516861a2d560988540b23de2ac1ad443b219afdb6")
 
+# pybind11
+set(PYBIND11_VERSION      "2.9.0")
+set(PYBIND11_HASH         "SHA256=057fb68dafd972bc13afb855f3b0d8cf0fa1a78ef053e815d9af79be7ff567cb")
+
+# abseil
+set(ABSL_VERSION          "20211102.0")
+set(ABSL_HASH             "SHA256=dcf71b9cba8dc0ca9940c4b316a0c796be8fab42b070bb6b7cab62b48f0e66c4")
+
 # curl
 set(CURL_VERSION          "7.58.0")
 set(CURL_HASH             "SHA256=cc245bf9a1a42a45df491501d97d5593392a03f7b4f07b952793518d97666115")
