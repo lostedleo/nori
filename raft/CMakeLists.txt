@@ -52,13 +52,13 @@ execute_process(
   OUTPUT_VARIABLE BRAFT_REVISION
   )
 
-if(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
+if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
     include(CheckFunctionExists)
     CHECK_FUNCTION_EXISTS(clock_gettime HAVE_CLOCK_GETTIME)
     if(NOT HAVE_CLOCK_GETTIME)
         set(DEFINE_CLOCK_GETTIME "-DNO_CLOCK_GETTIME_IN_MAC")
     endif()
-    set(CMAKE_CPP_FLAGS "${CMAKE_CPP_FLAGS} -Wno-unused-variable -Wno-deprecated-copy -Wno-deprecated-declarations -Wno-inconsistent-missing-override")
+    set(CMAKE_CPP_FLAGS "${CMAKE_CPP_FLAGS} -Wno-unused-variable -Wno-deprecated-declarations -Wno-inconsistent-missing-override")
 endif()
 
 if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
