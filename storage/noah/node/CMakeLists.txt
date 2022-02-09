@@ -12,4 +12,4 @@ add_library(node ${SOURCES})
 target_link_libraries(node noah_common node_proto)
 
 add_executable(node_server ${MAIN_FILE})
-target_link_libraries(node_server node)
+target_link_libraries(node_server node ${DYNAMIC_LIB})

@@ -12,11 +12,7 @@ else()
 endif()
 
 if (LINK_TCMALLOC)
-  if (APPLE)
-    set(GPERFTOOLS_LIBRARIES gperftools pthread)
-  else ()
-    set(GPERFTOOLS_LIBRARIES gperftools pthread unwind)
-  endif ()
+  set(GPERFTOOLS_LIBRARIES gperftools pthread)
 endif ()
 
 add_executable(kmeans_test kmeans_test.cpp)

@@ -62,7 +62,7 @@ if(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
   if(NOT HAVE_CLOCK_GETTIME)
     set(DEFINE_CLOCK_GETTIME "-DNO_CLOCK_GETTIME_IN_MAC")
   endif()
-  set(CMAKE_CPP_FLAGS "${CMAKE_CPP_FLAGS} -Wno-unused-local-typedef -Wno-sign-compare -Wno-inconsistent-missing-override")
+  set(CMAKE_CPP_FLAGS "${CMAKE_CPP_FLAGS} -Wno-unused-local-typedef -Wno-deprecated-copy -Wno-sign-compare -Wno-inconsistent-missing-override")
 endif()
 
 if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
@@ -117,7 +117,7 @@ if(BRPC_WITH_GLOG)
 endif()
 
 if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
-  set(DYNAMIC_LIB ${DYNAMIC_LIB} rt unwind snappy)
+  set(DYNAMIC_LIB ${DYNAMIC_LIB} rt snappy)
 elseif(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
   set(DYNAMIC_LIB ${DYNAMIC_LIB}
       pthread

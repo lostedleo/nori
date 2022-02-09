@@ -16,4 +16,4 @@ set_target_properties(noah_test_client PROPERTIES
 )
 
 add_executable(test_client_tool ${TEST_CLIENT_TOOL})
-target_link_libraries(test_client_tool noah_test_client)
+target_link_libraries(test_client_tool noah_test_client ${DYNAMIC_LIB})

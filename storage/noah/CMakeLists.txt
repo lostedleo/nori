@@ -17,6 +17,11 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${DEBUG_SYMBOL} -DBRPC_ENABLE_CPU_PROFIL
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
+set(DYNAMIC_LIB "")
+if(NOT BUILD_SHARED_LIBS)
+  set(DYNAMIC_LIB pthread z)
+endif()
+
 add_subdirectory(common)
 add_subdirectory(client)
 add_subdirectory(node)

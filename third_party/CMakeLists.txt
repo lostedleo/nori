@@ -1,4 +1,3 @@
-
 # distributed with this work for additional information
 # regarding copyright ownership.  The ASF licenses this file
 # to you under the Apache License, Version 2.0 (the
@@ -65,8 +64,11 @@ set(DEPS_CONFIG --with-pic)
 if(BUILD_SHARED_LIBS)
 else ()
   list(APPEND DEPS_CONFIG --without-shared)
+  list(APPEND CMAKE_FORWARD_ARGS -DCMAKE_CXX_FLAGS=-fPIC)
 endif()
-set(DEFAULT_BUILD_CMD make)
+
+execute_process(COMMAND bash -c "echo ${npoc}" OUTPUT_VARIABLE PROC_NUM)
+set(DEFAULT_BUILD_CMD make -j${PROC_NUM})
 set(REAL_INSTALL_CMD make install)
 set(DEFAULT_INSTALL_CMD ${CMAKE_NOOP})
 
@@ -90,18 +92,17 @@ if (NOT "${CMAKE_BUILD_TYPE}" STREQUAL "")
   list(APPEND CMAKE_FORWARD_ARGS -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE})
 endif ()
 
-# foreach (lang C CXX)
-#   list(APPEND CMAKE_FORWARD_ARGS
-#     -DCMAKE_${lang}_COMPILER=${CMAKE_${lang}_COMPILER}
-#     -DCMAKE_${lang}_COMPILER_LAUNCHER=${CMAKE_${lang}_COMPILER_LAUNCHER}
-#     -DCMAKE_${lang}_FLAGS=${CMAKE_${lang}_FLAGS}
-# )
-#
-#   foreach (config DEBUG RELEASE RELWITHDEBINFO MINSIZEREL)
-#     list(APPEND CMAKE_FORWARD_ARGS
-#       -DCMAKE_${lang}_FLAGS_${config}=${CMAKE_${lang}_FLAGS_${config}})
-#   endforeach ()
-# endforeach ()
+foreach (lang C CXX)
+  list(APPEND CMAKE_FORWARD_ARGS
+    -DCMAKE_${lang}_COMPILER=${CMAKE_${lang}_COMPILER}
+    -DCMAKE_${lang}_COMPILER_LAUNCHER=${CMAKE_${lang}_COMPILER_LAUNCHER}
+)
+
+#  foreach (config DEBUG RELEASE RELWITHDEBINFO MINSIZEREL)
+#    list(APPEND CMAKE_FORWARD_ARGS
+#      -DCMAKE_${lang}_FLAGS_${config}=${CMAKE_${lang}_FLAGS_${config}})
+#  endforeach ()
+endforeach ()
 
 # This function works around a CMake issue with setting include directories of
 # imported libraries built with `ExternalProject_Add`.
@@ -263,7 +264,7 @@ set(GLOG_CONFIG_CMD ${GLOG_ROOT}/configure --with-pic GTEST_CONFIG=no
 )
 
 set(GLOG_CMAKE_ARGS ${CMAKE_FORWARD_ARGS} -DCMAKE_INSTALL_PREFIX=${GLOG_CMAKE_ROOT}/install
-  -DBUILD_TESTING=OFF -DGFLAGS_PATH=${GFLAGS_CMAKE_ROOT}/install
+  -DWITH_UNWIND=OFF -DBUILD_TESTING=OFF -DGFLAGS_PATH=${GFLAGS_CMAKE_ROOT}/install
   )
 
 MAKE_INCLUDE_DIR(glog)
@@ -298,9 +299,9 @@ if (APPLE)
     IMPORTED_LOCATION ${GPERFTOOLS_CMAKE_ROOT}/install/lib/libtcmalloc_and_profiler.a
     INTERFACE_INCLUDE_DIRECTORIES ${GPERFTOOLS_CMAKE_ROOT}/install/include)
 else ()
-  add_dependencies(gperftools ${GPERFTOOLS_TARGET} unwind)
+  add_dependencies(gperftools ${GPERFTOOLS_TARGET})
   set(GPERFTOOLS_CONFIG_CMD ${GPERFTOOLS_ROOT}/configure ${DEPS_CONFIG}
-    --prefix=${GPERFTOOLS_CMAKE_ROOT}/install --enable-libunwind)
+    --prefix=${GPERFTOOLS_CMAKE_ROOT}/install --enable-libunwind=no)
   set_target_properties(
     gperftools PROPERTIES
     IMPORTED_LOCATION ${GPERFTOOLS_CMAKE_ROOT}/install/lib/libtcmalloc_and_profiler${LIBRARY_SUFFIX}

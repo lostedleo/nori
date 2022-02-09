@@ -21,5 +21,6 @@ foreach(NOAH_UT ${TEST_SRCS})
                         meta
                         node
                         noah_client
+                        ${DYNAMIC_LIB}
   )
 endforeach()
