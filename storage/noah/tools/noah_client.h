@@ -9,7 +9,7 @@
 namespace noah {
 namespace common {
 class Table;
-class MetaInfo;
+struct MetaInfo;
 }
 
 namespace meta {

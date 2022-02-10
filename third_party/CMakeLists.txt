@@ -60,15 +60,8 @@ endif ()
 # steps by giving it a noop command to run instead.
 set(CMAKE_NOOP ${CMAKE_COMMAND} -E echo)
 set(INSTALL_DIR ${CMAKE_SOURCE_DIR}/third_party_install)
-set(DEPS_CONFIG --with-pic)
-if(BUILD_SHARED_LIBS)
-else ()
-  list(APPEND DEPS_CONFIG --without-shared)
-  list(APPEND CMAKE_FORWARD_ARGS -DCMAKE_CXX_FLAGS=-fPIC)
-endif()
-
 execute_process(COMMAND bash -c "echo ${npoc}" OUTPUT_VARIABLE PROC_NUM)
-set(DEFAULT_BUILD_CMD make -j${PROC_NUM})
+set(DEFAULT_BUILD_CMD $(MAKE))
 set(REAL_INSTALL_CMD make install)
 set(DEFAULT_INSTALL_CMD ${CMAKE_NOOP})
 
@@ -85,6 +78,13 @@ list(APPEND CMAKE_FORWARD_ARGS
   -DBUILD_SHARED_LIBS=${BUILD_SHARED_LIBS}
   # -DCMAKE_INSTALL_PREFIX=${INSTALL_DIR}
 )
+
+set(DEPS_CONFIG --with-pic CC=${CMAKE_C_COMPILER} CXX=${CMAK_CXX_COMPIKER})
+if(BUILD_SHARED_LIBS)
+else ()
+  list(APPEND DEPS_CONFIG --without-shared)
+  list(APPEND CMAKE_FORWARD_ARGS -DCMAKE_CXX_FLAGS=-fPIC)
+endif()
 
 # This only matters for single-configuration generators.
 # E.g. Makefile, but not Visual Studio.

@@ -2,7 +2,6 @@ project(echo_c++ C CXX)
 
 option(EXAMPLE_LINK_SO "Whether examples are linked dynamically" OFF)
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CPP_FLAGS} -DNDEBUG -O2 -D__const__= -pipe -W -Wall -Wno-unused-parameter -fPIC -fno-omit-frame-pointer")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DBRPC_ENABLE_CPU_PROFILER")
 
 nori_protobuf_generate(PROTO_SRC PROTO_HEADER echo.proto)
