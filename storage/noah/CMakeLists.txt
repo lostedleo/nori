@@ -7,16 +7,14 @@ if(WITH_DEBUG_SYMBOLS)
   set(DEBUG_SYMBOL "-g")
 endif()
 
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${CMAKE_CPP_FLAGS} ${DEBUG_SYMBOL} -DBRPC_ENABLE_CPU_PROFILER -Wno-unused-private-field")
 if(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
-  set(CMAKE_CPP_FLAGS "${CMAKE_CPP_FLAGS} -Wno-sign-compare -Wno-deprecated-declarations -Wno-inconsistent-missing-override")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-deprecated-copy -Wno-format-security")
 endif()
-
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${CMAKE_CPP_FLAGS} ${DEBUG_SYMBOL} -DBRPC_ENABLE_CPU_PROFILER")
 
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
-set(DYNAMIC_LIB "")
 if(NOT BUILD_SHARED_LIBS)
   set(DYNAMIC_LIB pthread z)
 endif()

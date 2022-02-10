@@ -56,8 +56,8 @@ use_cxx11()
 
 # Set CXX_FLAGS
 set(GFLAGS_NS google)
-if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
-  set(CMAKE_CPP_FLAGS "${CMAKE_CPP_FLAGS} -Wno-unused-local-typedef -Wno-sign-compare -Wno-inconsistent-missing-override")
+if((CMAKE_CXX_COMPILER_ID STREQUAL "Clang") OR (CMAKE_CXX_COMPILER_ID STREQUAL "AppleClang"))
+  set(CMAKE_CPP_FLAGS "-Wno-unused-local-typedef -Wno-inconsistent-missing-override")
 endif()
 
 if(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
@@ -65,12 +65,13 @@ if(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
   CHECK_FUNCTION_EXISTS(clock_gettime HAVE_CLOCK_GETTIME)
   if(NOT HAVE_CLOCK_GETTIME)
     set(DEFINE_CLOCK_GETTIME "-DNO_CLOCK_GETTIME_IN_MAC")
+    set(CMAKE_CPP_FLAGS "${CMAKE_CPP_FLAGS} ${DEFINE_CLOCK_GETTIME}")
   endif()
 endif()
 
-set(CMAKE_CPP_FLAGS "${CMAKE_CPP_FLAGS} ${DEFINE_CLOCK_GETTIME} -DGFLAGS_NS=${GFLAGS_NS}")
-set(CMAKE_CPP_FLAGS "${CMAKE_CPP_FLAGS} -pipe -O2 -Wall -W -fPIC -fstrict-aliasing -Wno-unused-function -Wno-deprecated-declarations -Wno-unused-variable  -Wno-unused-parameter -fno-omit-frame-pointer")
-set(CMAKE_CXX_FLAGS "${CMAKE_CPP_FLAGS} -Wno-invalid-offsetof")
+set(CMAKE_CPP_FLAGS "${CMAKE_CPP_FLAGS} -pipe -O2 -Wall -W -fPIC -fstrict-aliasing -Wno-unused-function -Wno-deprecated-declarations -Wno-unused-variable -Wno-unused-parameter -fno-omit-frame-pointer")
+set(CMAKE_CPP_FLAGS "${CMAKE_CPP_FLAGS} -Wno-invalid-offsetof -Wno-sign-compare")
+set(CMAKE_CPP_FLAGS "${CMAKE_CPP_FLAGS} -DGFLAGS_NS=${GFLAGS_NS}")
 
 if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
   #required by butil/crc32.cc to boost performance for 10x
@@ -81,7 +82,7 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
       set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-gcse")
   endif()
   if(NOT (CMAKE_CXX_COMPILER_VERSION VERSION_LESS 7.0))
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-aligned-new -Wno-format-security -Wno-sign-compare -Wno-implicit-fallthrough")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-aligned-new -Wno-format-security -Wno-implicit-fallthrough")
   endif()
 endif()
 
