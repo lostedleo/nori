@@ -56,7 +56,7 @@ use_cxx11()
 
 # Set CXX_FLAGS
 set(GFLAGS_NS google)
-if((CMAKE_CXX_COMPILER_ID STREQUAL "Clang") OR (CMAKE_CXX_COMPILER_ID STREQUAL "AppleClang"))
+if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   set(CMAKE_CPP_FLAGS "-Wno-unused-local-typedef -Wno-inconsistent-missing-override")
 endif()
 
