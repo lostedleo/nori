@@ -72,8 +72,10 @@ elseif(NOT DEBUG)
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DNDEBUG")
 endif()
 
-add_library(braft-shared SHARED ${SOURCES})
-add_library(braft-static STATIC ${SOURCES})
+add_library(BRAFT_LIB OBJECT ${SOURCES})
+target_link_libraries(BRAFT_LIB brpc-static)
+add_library(braft-shared SHARED $<TARGET_OBJECTS:BRAFT_LIB>)
+add_library(braft-static STATIC $<TARGET_OBJECTS:BRAFT_LIB>)
 target_link_libraries(braft-shared brpc-shared)
 target_link_libraries(braft-static brpc-static)
 

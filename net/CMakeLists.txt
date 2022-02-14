@@ -330,8 +330,11 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${BRPC_OUTPUT_LIB})
 # for *.a
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${BRPC_OUTPUT_LIB})
 
-add_library(butil-shared SHARED ${BUTIL_SOURCES})
-add_library(butil-static STATIC ${BUTIL_SOURCES})
+add_library(BUTIL_LIB OBJECT ${BUTIL_SOURCES})
+target_link_libraries(BUTIL_LIB ${DYNAMIC_LIB})
+
+add_library(butil-shared SHARED $<TARGET_OBJECTS:BUTIL_LIB>)
+add_library(butil-static STATIC $<TARGET_OBJECTS:BUTIL_LIB>)
 SET_TARGET_PROPERTIES(butil-static PROPERTIES OUTPUT_NAME butil CLEAN_DIRECT_OUTPUT 1
   INTERFACE_INCLUDE_DIRECTORIES ${BRPC_OUTPUT_INCLUDE}
 )
@@ -341,8 +344,10 @@ SET_TARGET_PROPERTIES(butil-shared PROPERTIES OUTPUT_NAME butil CLEAN_DIRECT_OUT
 target_link_libraries(butil-static ${DYNAMIC_LIB})
 target_link_libraries(butil-shared ${DYNAMIC_LIB})
 
-add_library(brpc-shared SHARED ${SOURCES})
-add_library(brpc-static STATIC ${SOURCES})
+add_library(BRPC_LIB OBJECT ${SOURCES})
+target_link_libraries(BRPC_LIB ${DYNAMIC_LIB})
+add_library(brpc-shared SHARED $<TARGET_OBJECTS:BRPC_LIB>)
+add_library(brpc-static STATIC $<TARGET_OBJECTS:BRPC_LIB>)
 SET_TARGET_PROPERTIES(brpc-static PROPERTIES OUTPUT_NAME brpc CLEAN_DIRECT_OUTPUT 1
   INTERFACE_INCLUDE_DIRECTORIES ${BRPC_OUTPUT_INCLUDE}
 )
