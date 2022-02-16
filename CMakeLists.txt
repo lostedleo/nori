@@ -67,6 +67,9 @@ if(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
     set(DEFINE_CLOCK_GETTIME "-DNO_CLOCK_GETTIME_IN_MAC")
     set(CMAKE_CPP_FLAGS "${CMAKE_CPP_FLAGS} ${DEFINE_CLOCK_GETTIME}")
   endif()
+
+  # Homebrew installed OpenSSL
+  set(OPENSSL_ROOT_DIR "/usr/local/opt/openssl")
 endif()
 
 set(CMAKE_CPP_FLAGS "${CMAKE_CPP_FLAGS} -pipe -O2 -Wall -W -fPIC -fstrict-aliasing -Wno-unused-function -Wno-deprecated-declarations -Wno-unused-variable -Wno-unused-parameter -fno-omit-frame-pointer")

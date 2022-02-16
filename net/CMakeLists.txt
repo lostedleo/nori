@@ -62,12 +62,6 @@ set(CMAKE_CPP_FLAGS "${CMAKE_CPP_FLAGS} ${DEBUG_SYMBOL} ${THRIFT_CPP_FLAG}")
 set(CMAKE_C_FLAGS "${CMAKE_CPP_FLAGS}")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${CMAKE_CPP_FLAGS}")
 
-if(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
-  set(OPENSSL_ROOT_DIR
-    "/usr/local/opt/openssl"    # Homebrew installed OpenSSL
-  )
-endif()
-
 find_package(OpenSSL)
 
 include_directories(

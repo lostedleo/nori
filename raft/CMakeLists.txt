@@ -10,13 +10,6 @@ set(BRAFT_OUTPUT_INCLUDE ${BRAFT_OUTPUT}/include)
 set(BRAFT_OUTPUT_LIB ${BRAFT_OUTPUT}/lib)
 set(BRAFT_OUTPUT_BIN ${BRAFT_OUTPUT}/bin)
 
-if(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
-    set(OPENSSL_ROOT_DIR
-        "/usr/local/opt/openssl"    # Homebrew installed OpenSSL
-        )
-endif()
-include(FindOpenSSL)
-
 include_directories(
   ${CMAKE_SOURCE_DIR}/raft
   ${BRAFT_OUTPUT_INCLUDE}
