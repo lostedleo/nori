@@ -1,0 +1,27 @@
+import("//testing/test.gni")
+
+static_library("nrai") {
+  sources = [
+    "core.cc",
+    "sense.cc",
+    "logic.cc"
+  ]
+
+  configs -= ["//build/config/gcc:no_exceptions"]
+  public_deps = [
+    "//third_party/gflags",
+  ]
+  deps = [
+    "//extend:extend",
+  ]
+}
+
+executable("main") {
+  output_name = "ai_main"
+  sources = [ "main.cc",]
+  configs -= ["//build/config/gcc:no_exceptions"]
+  deps = [ ":nrai",
+  ]
+}
+
+
