@@ -10,8 +10,8 @@
 #include "logic.h"
 
 int main(int argc, char** argv) {
-  nrai::Logic logic;
-  logic.Learn(NULL);
+  // nrai::Logic logic;
+  // logic.Learn(NULL);
 
   return 0;
 }

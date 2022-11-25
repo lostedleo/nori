@@ -14,7 +14,7 @@ Logic::Logic() {
 Logic::~Logic() {
 }
 
-bool Logic::Study(void* information) {
+bool Logic::Learn(void* information) {
   return true;
 }
 

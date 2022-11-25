@@ -34,6 +34,12 @@ include(NoriProtobufGenerate)
 
 option(BUILD_SHARED_LIBS "build shared lib" OFF)
 
+# for cmake3.24 CMP0135
+if(POLICY CMP0135)
+  cmake_policy(SET CMP0135 NEW)
+  set(CMAKE_POLICY_DEFAULT_CMP0135 NEW)
+endif()
+
 if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
   # require at least gcc 4.8
   if(CMAKE_CXX_COMPILER_VERSION VERSION_LESS 4.8)
@@ -46,13 +52,13 @@ elseif(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
   endif()
 endif()
 
-# Use C++11
-macro(use_cxx11)
-  set(CMAKE_CXX_STANDARD 11)
+# Use C++20
+macro(use_cxx20)
+  set(CMAKE_CXX_STANDARD 20)
   set(CMAKE_CXX_STANDARD_REQUIRED ON)
-endmacro(use_cxx11)
+endmacro(use_cxx20)
 
-use_cxx11()
+use_cxx20()
 
 # Set CXX_FLAGS
 set(GFLAGS_NS google)
@@ -69,7 +75,7 @@ if(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
   endif()
 
   # Homebrew installed OpenSSL
-  set(OPENSSL_ROOT_DIR "/usr/local/opt/openssl")
+  set(OPENSSL_ROOT_DIR "/opt/homebrew/opt/openssl@1.1/")
 endif()
 
 set(CMAKE_CPP_FLAGS "${CMAKE_CPP_FLAGS} -pipe -O2 -Wall -W -fPIC -fstrict-aliasing -Wno-unused-function -Wno-deprecated-declarations -Wno-unused-variable -Wno-unused-parameter -fno-omit-frame-pointer")
@@ -95,5 +101,6 @@ add_subdirectory(third_party)
 add_subdirectory(base)
 add_subdirectory(net)
 add_subdirectory(raft)
+add_subdirectory(ai)
 add_subdirectory(storage)
 add_subdirectory(test)
