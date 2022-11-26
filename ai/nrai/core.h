@@ -75,12 +75,12 @@ class Balance {
     born();
   }
 
-  const T& connection() {
+  const T connection() {
     T ret;
     if  (BT_SUM == type_) {
-      ret = x_ - y_;
+      ret = y_ - x_;
     } else if  (BT_PROD == type_) {
-      ret = x_ / y_;
+      ret = y_ / x_;
     } else if  (BT_CALC == type_) {
       // calculus of x_, y_
     }
@@ -129,5 +129,5 @@ class Balance {
 class Core {
 };
 
-}// namespace nrai
+} // namespace nrai
 #endif
