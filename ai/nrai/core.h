@@ -75,6 +75,18 @@ class Balance {
     born();
   }
 
+  const T& connection() {
+    T ret;
+    if  (BT_SUM == type_) {
+      ret = x_ - y_;
+    } else if  (BT_PROD == type_) {
+      ret = x_ / y_;
+    } else if  (BT_CALC == type_) {
+      // calculus of x_, y_
+    }
+    return ret;
+  }
+
   void grow() {
     if  (BT_SUM == type_) {
       x_ = x_ - coeff_;
