@@ -17,6 +17,10 @@ int main(int argc, char** argv) {
   init_count = int(width * height * coeff);
   bool print = true;
   if (argc > 1) {
+    if ((strcmp(argv[1], "-h") == 0) or (strcmp(argv[1], "--help") == 0)) {
+      printf("Usage: %s initialization_counter width height print[or not]\n", argv[0]);
+      exit(0);
+    }
     init_count = atoi(argv[1]);
   }
   if (argc > 3) {
