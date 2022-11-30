@@ -56,6 +56,11 @@ TEST(BalanceTest, SimpleTest) {
   ASSERT_EQ(8, balance2.y());
   ASSERT_EQ(64, balance2.connection());
 
+  balance2.swap();
+  ASSERT_EQ(8, balance2.x());
+  ASSERT_EQ(0.125, balance2.y());
+  ASSERT_EQ(0.015625, balance2.connection());
+
   balance2.die();
   ASSERT_EQ(1, balance2.x());
   ASSERT_EQ(1, balance2.y());
