@@ -8,4 +8,9 @@
 #include "sense.h"
 
 namespace nrai {
+Sense::Sense() {
+}
+
+Sense::~Sense() {
+}
 } // namespace nrai

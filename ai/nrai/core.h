@@ -126,6 +126,10 @@ class Balance {
   int coeff_; // the coefficient of pair paras x_, y_
 };
 
+using BalanceInt = Balance<int>;
+using BalanceFloat = Balance<float>;
+using BalanceDouble = Balance<double>;
+
 class Core {
 };
 

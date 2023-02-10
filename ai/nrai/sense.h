@@ -10,6 +10,9 @@
 namespace nrai {
 
 class Sense {
+ public:
+  Sense();
+  ~Sense();
 };
 
 }
