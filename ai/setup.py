@@ -16,9 +16,9 @@ else:
 
 nrai_module =  Pybind11Extension(
     "_nrai",
-    sources=["nrai/core.cc"],
+    sources=["nrai/pybind11_module.cc"],
     extra_compile_args=['-std=c++14', '-Wno-reorder-ctor', '-Wno-sometimes-uninitialized',
-        '-Wno-non-c-typedef-for-linkage'],
+        '-Wno-reorder', '-Wno-maybe-uninitialized'],
     libraries=depend_libs,
 )
 
