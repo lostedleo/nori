@@ -1,7 +1,6 @@
 file(GLOB SOURCES *.cc *.h)
 add_style_check_target(nrai_lint "${SOURCES}")
 get_target_property(PYBIND11_INCLUDE_DIR pybind11 INTERFACE_INCLUDE_DIRECTORIES)
-message("dir: "${PYBIND11_INCLUDE_DIR})
 
 include_directories(${PYBIND11_INCLUDE_DIR})
 
