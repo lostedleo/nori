@@ -1,6 +1,6 @@
 file(GLOB SOURCES *.cc *.h)
 add_style_check_target(nrai_lint "${SOURCES}")
-get_target_property(PYBIND11_INCLUDE_DIR pybind11 INTERFACE_INCLUDE_DIRECTORIES)
+set(PYBIND11_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/third_party/pybind11/include)
 
 include_directories(${PYBIND11_INCLUDE_DIR})
 
@@ -17,7 +17,7 @@ set(NRAI_MAIN
 add_library(nrai ${NRAI})
 target_link_libraries(nrai)
 
-set(pybind11_DIR ${CMAKE_BINARY_DIR}/output_third_party/share/cmake/pybind11)
+set(pybind11_DIR ${CMAKE_SOURCE_DIR}/third_party/pybind11/share/cmake/pybind11)
 find_package(pybind11 REQUIRED)
 pybind11_add_module(_nrai ${CMAKE_CURRENT_SOURCE_DIR}/pybind11_module.cc)
 

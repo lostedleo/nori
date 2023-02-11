@@ -9,7 +9,5 @@
 #include "core.h"
 
 
-
 namespace nrai {
 } // namespace nrai
-}
