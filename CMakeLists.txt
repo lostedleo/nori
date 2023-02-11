@@ -53,12 +53,12 @@ elseif(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
 endif()
 
 # Use C++20
-macro(use_cxx20)
-  set(CMAKE_CXX_STANDARD 20)
+macro(use_cxx11)
+  set(CMAKE_CXX_STANDARD 11)
   set(CMAKE_CXX_STANDARD_REQUIRED ON)
-endmacro(use_cxx20)
+endmacro(use_cxx11)
 
-use_cxx20()
+use_cxx11()
 
 # Set CXX_FLAGS
 set(GFLAGS_NS google)
@@ -79,7 +79,7 @@ if(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
 endif()
 
 set(CMAKE_CPP_FLAGS "${CMAKE_CPP_FLAGS} -pipe -O2 -Wall -W -fPIC -fstrict-aliasing -Wno-unused-function -Wno-deprecated-declarations -Wno-unused-variable -Wno-unused-parameter -fno-omit-frame-pointer")
-set(CMAKE_CPP_FLAGS "${CMAKE_CPP_FLAGS} -Wno-invalid-offsetof -Wno-sign-compare")
+set(CMAKE_CPP_FLAGS "${CMAKE_CPP_FLAGS} -Wno-sign-compare")
 set(CMAKE_CPP_FLAGS "${CMAKE_CPP_FLAGS} -DGFLAGS_NS=${GFLAGS_NS}")
 
 if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")

@@ -7,6 +7,7 @@
 
 #include "life_game.h"
 #include <iostream>
+#include <string.h>
 
 double coeff = 0.283;
 

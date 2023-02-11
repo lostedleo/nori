@@ -81,7 +81,7 @@ set(DYNAMIC_LIB
   leveldb
   dl
   z
-  )
+)
 
 if(BRPC_WITH_GLOG)
   set(DYNAMIC_LIB ${DYNAMIC_LIB} glog)
