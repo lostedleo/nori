@@ -23,9 +23,9 @@ nrai_module =  Pybind11Extension(
 )
 
 setup(
-    name="shared-memory",
+    name="nrai",
     version="1.0.0",
-    description="Shared Memory for python",
+    description="NuoRui for python",
     packages=find_packages(),
     ext_modules=[nrai_module]
     if platform.system() == "Linux"

@@ -14,5 +14,10 @@ def main():
     balance2.grow()
     print(balance2.x(), balance2.y(), balance2.connection())
 
+    balance3 = BalanceDouble(2, 2)
+    print(balance3.x(), balance3.y(), balance3.connection())
+    balance3.grow()
+    print(balance3.x(), balance3.y(), balance3.connection())
+
 if __name__ == '__main__':
     main()
