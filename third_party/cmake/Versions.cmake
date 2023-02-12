@@ -30,8 +30,8 @@ set(JSONCPP_VERSION       "1.8.4")
 set(JSONCPP_HASH          "SHA256=c49deac9e0933bcb7044f08516861a2d560988540b23de2ac1ad443b219afdb6")
 
 # pybind11
-set(PYBIND11_VERSION      "2.9.0")
-set(PYBIND11_HASH         "SHA256=057fb68dafd972bc13afb855f3b0d8cf0fa1a78ef053e815d9af79be7ff567cb")
+set(PYBIND11_VERSION      "2.10.3")
+set(PYBIND11_HASH         "SHA256=5d8c4c5dda428d3a944ba3d2a5212cb988c2fae4670d58075a5a49075a6ca315")
 
 # abseil
 set(ABSL_VERSION          "20211102.0")
