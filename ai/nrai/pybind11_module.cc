@@ -34,9 +34,9 @@ PYBIND11_MODULE(_nrai, m) {
     _nrai python interface
   )pbdoc";
 
-PYBalance(Int)
-PYBalance(Float)
-PYBalance(Double)
+  PYBalance(Int)
+  PYBalance(Float)
+  PYBalance(Double)
 }
 
 } // namespace nrai
