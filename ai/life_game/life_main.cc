@@ -17,6 +17,7 @@ int main(int argc, char** argv) {
   int init_count = 1000;
   init_count = int(width * height * coeff);
   bool print = true;
+  int thread_num = 2;
   if (argc > 1) {
     if ((strcmp(argv[1], "-h") == 0) or (strcmp(argv[1], "--help") == 0)) {
       printf("Usage: %s initialization_counter width height print[or not]\n", argv[0]);
@@ -31,11 +32,14 @@ int main(int argc, char** argv) {
   if (argc > 4) {
     print = bool(atoi(argv[4]));
   }
+  if (argc > 5) {
+    thread_num = atoi(argv[5]);
+  }
   // (314, 68);
   YiNuo::LifeGame life_game(width, height);
   life_game.Init(init_count);
   // life_game.Start(print);
-  YiNuo::LifeGameRunner runner(&life_game, 4);
+  YiNuo::LifeGameRunner runner(&life_game, thread_num);
   runner.LifeThread(print);
 
   return 0;
