@@ -18,7 +18,7 @@ static bool stop = false;
 
 void sig_handler(int signum){
   stop = true;
-  printf("Exiting LifeGame...! Please waiting...! sinagl: %d.\n", signum);
+  printf("Exiting LifeGame...! Please waiting...! signal: %d.\n", signum);
 }
 
 int main(int argc, char** argv) {
