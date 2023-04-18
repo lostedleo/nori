@@ -26,28 +26,55 @@ static bool first = true;
 }
 
 namespace YiNuo {
+
 class CheckRunner : public butil::DelegateSimpleThread::Delegate {
  public:
   explicit CheckRunner(LifeGame* game, int index, int thread_num) :
-    game_(game), index_(index), thread_num_(thread_num) { }
+    game_(game), index_(index), thread_num_(thread_num) {
+     int x = game_->x();
+     start_ = (x / thread_num_) * index_;
+     if (index_ != thread_num_ - 1) {
+       end_ = (x / thread_num_) * (index_ + 1);
+     } else {
+       end_ = x;
+     }
+   }
 
   virtual void Run() OVERRIDE {
-    int x = game_->x();
-    int start = (x / thread_num_) * index_;
-    int end;
-    if (index_ != thread_num_ - 1) {
-      end = (x / thread_num_) * (index_ + 1);
-    } else {
-      end = x;
-    }
-
-    game_->CheckLifesByIndex(start, end);
+    game_->CheckLifesByIndex(start_, end_);
   }
 
  private:
   LifeGame* game_;
   int index_;
   int thread_num_;
+  int start_;
+  int end_;
+};
+
+class TransRunner : public butil::DelegateSimpleThread::Delegate {
+ public:
+  explicit TransRunner(LifeGame* game, int index, int thread_num) :
+   game_(game), index_(index), thread_num_(thread_num) {
+     int x = game_->x();
+     start_ = (x / thread_num_) * index_;
+     if (index_ != thread_num_ - 1) {
+       end_ = (x / thread_num_) * (index_ + 1);
+     } else {
+       end_ = x;
+     }
+   }
+
+  virtual void Run() OVERRIDE {
+    game_->TransformLifes(start_, end_);
+  }
+
+ private:
+  LifeGame* game_;
+  int index_;
+  int thread_num_;
+  int start_;
+  int end_;
 };
 
 LifeGame::LifeGame(int x, int y)
@@ -65,6 +92,7 @@ LifeGame::LifeGame(int x, int y)
       matrix_[i][j] = 0;
     }
   }
+
   time_point_ = std::chrono::steady_clock::now();
 }
 
@@ -159,6 +187,25 @@ void LifeGame::TransformLifes(int start, int end) {
     }
 }
 
+bool LifeGame::CheckAllExpired() {
+  int lived = 0;
+  for (int i = 0; i < y_; ++i)
+    for (int j = 0; j < x_; j++) {
+      if (matrix_[i][j])
+        lived++;
+    }
+  if (lived_ == lived) {
+    same_count_++;
+  } else {
+    lived_ = lived;
+    same_count_ = 0;
+  }
+  if (same_count_ >= 10) {
+    return true;
+  }
+  return false;
+}
+
 void LifeGame::CheckLifeEx(int x, int y, int life_condition) {
   int count = 0;
   for (int i = std::max(x - 1, 0); i < std::min(x + 2, x_); ++i)
@@ -181,25 +228,6 @@ void LifeGame::CheckLife(int x, int y, int life_condition) {
     matrix_[y][x] |= 2;
 }
 
-bool LifeGame::CheckAllExpired() {
-  int lived = 0;
-  for (int i = 0; i < y_; ++i)
-    for (int j = 0; j < x_; j++) {
-      if (matrix_[i][j])
-        lived++;
-    }
-  if (lived_ == lived) {
-    same_count_++;
-  } else {
-    lived_ = lived;
-    same_count_ = 0;
-  }
-  if (same_count_ >= 10) {
-    return true;
-  }
-  return false;
-}
-
 void LifeGame::LifeThread(bool print) {
   while (started_) {
     if (CheckAllExpired()) {
@@ -214,6 +242,7 @@ void LifeGame::LifeThread(bool print) {
 
     CheckLifesByIndex(0, x_);
     TransformLifes(0, x_);
+
     generation_++;
     if (print) {
       Print();
@@ -224,12 +253,16 @@ void LifeGame::LifeThread(bool print) {
   }
 }
 
-LifeGameRunner::LifeGameRunner(LifeGame* game, int thread_num) :
+LifeGameRunner::LifeGameRunner(LifeGame* game, int thread_num, int sleep_ms/*=0*/) :
   game_(game), thread_num_(thread_num) {
+  sleep_time_ = sleep_ms * 1000;
   thread_pool_ = new butil::DelegateSimpleThreadPool("work_pool", thread_num_);
   for (int i = 0; i < thread_num_; ++i) {
     auto check_runner = new CheckRunner(game_, i, thread_num_);
     check_delegates_.push_back(check_runner);
+
+    auto trans_runner = new TransRunner(game_, i, thread_num_);
+    trans_delegates_.push_back(trans_runner);
   }
 }
 
@@ -237,34 +270,45 @@ LifeGameRunner::~LifeGameRunner() {
   delete thread_pool_;
   for (int i = 0; i < thread_num_; ++i) {
     delete check_delegates_[i];
+    delete trans_delegates_[i];
   }
   check_delegates_.clear();
+  trans_delegates_.clear();
 }
 
-void LifeGameRunner::LifeThread(bool print) {
-  while (true) {
-    if (game_->CheckAllExpired()) {
-      // life_condition = butil::RandInt(2, 8);
-      auto end_point = std::chrono::steady_clock::now();
-      double costed_time = std::chrono::duration<double>(end_point - game_->time_point_).count();
-      printf("LifeGame had experienced %d generation cost %.3fs\n", game_->generation_, costed_time);
-      usleep(1000 * 1000);
-      game_->time_point_ = end_point;
-      game_->InitRandom(game_->init_number_);
-    }
-    for (int i = 0; i < thread_num_; ++i) {
-      thread_pool_->AddWork(check_delegates_[i], 1);
-    }
-    thread_pool_->Start();
-    thread_pool_->JoinAll();
+void LifeGameRunner::Run(bool print) {
+  if (game_->CheckAllExpired()) {
+    // life_condition = butil::RandInt(2, 8);
+    auto end_point = std::chrono::steady_clock::now();
+    double costed_time = std::chrono::duration<double>(end_point - game_->point()).count();
+    printf("LifeGame had experienced %d generation cost %.3fs\n", game_->generation(), costed_time);
+    usleep(1000 * 1000);
+    game_->set_point(end_point);
+    game_->InitRandom(game_->init_number());
+  }
 
-    game_->TransformLifes(0, game_->x());
-    game_->generation_++;
-    if (print) {
-      game_->Print();
-    } else {
-      std::cout << "generation:" << game_->generation_ << " lived:" << game_->lived_ << " \n";
-    }
+  // parallel CheckLifes
+  for (int i = 0; i < thread_num_; ++i) {
+    thread_pool_->AddWork(check_delegates_[i], 1);
+  }
+  thread_pool_->Start();
+  thread_pool_->JoinAll();
+
+  // parallel TransformLifes
+  for (int i = 0; i < thread_num_; ++i) {
+    thread_pool_->AddWork(trans_delegates_[i], 1);
+  }
+  thread_pool_->Start();
+  thread_pool_->JoinAll();
+
+  game_->inc_generation();
+  if (print) {
+    game_->Print();
+  } else {
+    std::cout << "generation:" << game_->generation() << " lived:" << game_->lived() << " \n";
+  }
+  if (sleep_time_) {
+    usleep(sleep_time_);
   }
 }
 

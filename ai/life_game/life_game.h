@@ -15,8 +15,11 @@
 
 namespace YiNuo {
 
+typedef std::chrono::steady_clock::time_point time_point;
+
 class LifeGame {
  public:
+
   explicit LifeGame(int x, int y);
   ~LifeGame();
 
@@ -28,38 +31,45 @@ class LifeGame {
   void CheckLifesByIndex(int start, int end);
   void TransformLifes(int start, int end);
   bool CheckAllExpired();
+
   int x() {return x_;}
   int y() {return y_;}
-
-  int   generation_;
-  std::chrono::steady_clock::time_point time_point_;
-  int   lived_;
-  int   init_number_;
+  int generation() {return generation_;}
+  void inc_generation() {generation_++;}
+  int init_number() {return init_number_;}
+  int lived() {return lived_;}
+  time_point point() {return time_point_;}
+  void set_point(time_point point) {time_point_ = point;}
 
  private:
-  void CheckLifeEx(int x, int y, int life_condition);
-  void CheckLife(int x, int y, int life_condition);
-  void LifeThread(bool print);
-  bool  started_;
+  void CheckLifeEx(int x, int y, int life_condition); void CheckLife(int x, int y, int life_condition); void LifeThread(bool print); bool  started_;
   int   life_condition_;
+  int   init_number_;
   int   same_count_;
+  int   lived_;
+  int   generation_;
   int   x_;
   int   y_;
   int** matrix_;
+  time_point time_point_;
   butil::Lock lock_;
 };
 
 class LifeGameRunner {
  public:
-  LifeGameRunner(LifeGame* game, int thread_num);
+  typedef butil::DelegateSimpleThread::Delegate Delegate;
+  LifeGameRunner(LifeGame* game, int thread_num, int sleep_ms=0);
   ~LifeGameRunner();
-  void LifeThread(bool print);
+  void Run(bool print);
 
  private:
+
   LifeGame* game_;
+  int sleep_time_;
   int thread_num_;
   butil::DelegateSimpleThreadPool* thread_pool_;
-  std::vector<butil::DelegateSimpleThread::Delegate*> check_delegates_;
+  std::vector<Delegate*> check_delegates_;
+  std::vector<Delegate*> trans_delegates_;
 };
 
 } // namespace YiNuo
