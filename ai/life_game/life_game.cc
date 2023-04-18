@@ -185,9 +185,9 @@ void LifeGame::LifeThread(bool print) {
     if (print) {
       Print();
     } else {
-      std::cout << "generation:" << generation_ << " lived:" << lived_ << " \n";
+      std::cout << "Generation:" << generation_ << " lived:" << lived_ << " \n";
     }
-    usleep(10 * 1000);
+    // usleep(10 * 1000);
   }
 }
 }
