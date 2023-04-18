@@ -8,6 +8,8 @@
 #ifndef LIFE_GAME_H_
 #define LIFE_GAME_H_
 
+#include <chrono>
+
 namespace YiNuo {
 
 class LifeGame {
@@ -35,7 +37,8 @@ class LifeGame {
   int   x_;
   int   y_;
   int** matrix_;
+  std::chrono::steady_clock::time_point time_point_;
 };
 
-}
+} // namespace YiNuo
 #endif

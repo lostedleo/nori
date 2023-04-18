@@ -52,7 +52,7 @@ elseif(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
   endif()
 endif()
 
-# Use C++20
+# Use C++11
 macro(use_cxx11)
   set(CMAKE_CXX_STANDARD 11)
   set(CMAKE_CXX_STANDARD_REQUIRED ON)

@@ -7,14 +7,22 @@
 
 #include "life_game.h"
 
-#include "butil/rand_util.h"
-
 #include <time.h>
 #include <iostream>
 #include <unistd.h>
 #include <map>
 #include <sstream>
 #include <string>
+
+uint64_t RandGenerator(uint64_t min, uint64_t max) {
+static bool first = true;
+   if (first) {
+      srand(time(NULL)); //seeding for the first time only!
+      first = false;
+   }
+   return min + rand() % (( max + 1 ) - min);
+
+}
 
 namespace YiNuo {
 LifeGame::LifeGame(int x, int y)
@@ -31,6 +39,7 @@ LifeGame::LifeGame(int x, int y)
       matrix_[i][j] = 0;
     }
   }
+  time_point_ = std::chrono::steady_clock::now();
 }
 
 LifeGame::~LifeGame() {
@@ -49,8 +58,8 @@ void LifeGame::Init(int number) {
 void LifeGame::InitRandom(int number) {
   int x, y;
   for (int i = 0; i < number; ++i) {
-    x = butil::RandGenerator(x_);
-    y = butil::RandGenerator(y_);
+    x = RandGenerator(0, x_-1);
+    y = RandGenerator(0, y_-1);
     matrix_[y][x] = 1;
   }
   generation_ = 0;
@@ -154,6 +163,11 @@ void LifeGame::LifeThread(bool print) {
     int life_condition = 3;
     if (CheckAllExpired()) {
       // life_condition = butil::RandInt(2, 8);
+      auto end_point = std::chrono::steady_clock::now();
+      double costed_time = std::chrono::duration<double>(end_point - time_point_).count();
+      printf("LifeGame had experienced %d generation cost %.3fs\n", generation_, costed_time);
+      usleep(1000 * 1000);
+      time_point_ = end_point;
       InitRandom(init_number_);
     }
     for (int j = 0; j < y_; ++j) {
@@ -171,7 +185,7 @@ void LifeGame::LifeThread(bool print) {
     if (print) {
       Print();
     } else {
-      std::cout << " generation:" << generation_ << " lived:" << lived_ << " \n";
+      std::cout << "generation:" << generation_ << " lived:" << lived_ << " \n";
     }
     usleep(10 * 1000);
   }
