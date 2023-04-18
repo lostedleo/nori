@@ -80,7 +80,7 @@ endif()
 
 set(CMAKE_CPP_FLAGS "${CMAKE_CPP_FLAGS} -pipe -O2 -Wall -W -fPIC -fstrict-aliasing -Wno-unused-function -Wno-deprecated-declarations -Wno-unused-variable -Wno-unused-parameter -fno-omit-frame-pointer")
 set(CMAKE_CPP_FLAGS "${CMAKE_CPP_FLAGS} -Wno-sign-compare")
-set(CMAKE_CPP_FLAGS "${CMAKE_CPP_FLAGS} -DGFLAGS_NS=${GFLAGS_NS}")
+set(CMAKE_CXX_FLAGS "${CMAKE_CPP_FLAGS} -DGFLAGS_NS=${GFLAGS_NS}")
 
 if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
   #required by butil/crc32.cc to boost performance for 10x

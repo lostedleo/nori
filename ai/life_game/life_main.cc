@@ -34,7 +34,9 @@ int main(int argc, char** argv) {
   // (314, 68);
   YiNuo::LifeGame life_game(width, height);
   life_game.Init(init_count);
-  life_game.Start(print);
+  // life_game.Start(print);
+  YiNuo::LifeGameRunner runner(&life_game, 4);
+  runner.LifeThread(print);
 
   return 0;
 }
