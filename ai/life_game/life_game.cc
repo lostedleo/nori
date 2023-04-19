@@ -8,6 +8,7 @@
 #include "life_game.h"
 #include "butil/threading/simple_thread.h"
 
+#include <numeric>
 #include <time.h>
 #include <iostream>
 #include <unistd.h>
@@ -26,56 +27,6 @@ static bool first = true;
 }
 
 namespace YiNuo {
-
-class CheckRunner : public butil::DelegateSimpleThread::Delegate {
- public:
-  explicit CheckRunner(LifeGame* game, int index, int thread_num) :
-    game_(game), index_(index), thread_num_(thread_num) {
-     int x = game_->x();
-     start_ = (x / thread_num_) * index_;
-     if (index_ != thread_num_ - 1) {
-       end_ = (x / thread_num_) * (index_ + 1);
-     } else {
-       end_ = x;
-     }
-   }
-
-  virtual void Run() OVERRIDE {
-    game_->CheckLifesByIndex(start_, end_);
-  }
-
- private:
-  LifeGame* game_;
-  int index_;
-  int thread_num_;
-  int start_;
-  int end_;
-};
-
-class TransRunner : public butil::DelegateSimpleThread::Delegate {
- public:
-  explicit TransRunner(LifeGame* game, int index, int thread_num) :
-   game_(game), index_(index), thread_num_(thread_num) {
-     int x = game_->x();
-     start_ = (x / thread_num_) * index_;
-     if (index_ != thread_num_ - 1) {
-       end_ = (x / thread_num_) * (index_ + 1);
-     } else {
-       end_ = x;
-     }
-   }
-
-  virtual void Run() OVERRIDE {
-    game_->TransformLifes(start_, end_);
-  }
-
- private:
-  LifeGame* game_;
-  int index_;
-  int thread_num_;
-  int start_;
-  int end_;
-};
 
 LifeGame::LifeGame(int x, int y)
   : x_(x), y_(y) {
@@ -147,7 +98,7 @@ void LifeGame::Print() {
         ss << "|";
       }
       if (matrix_[i][j]) {
-        ss << "x";
+        ss << "*";
       } else {
         ss << " ";
       }
@@ -187,13 +138,18 @@ void LifeGame::TransformLifes(int start, int end) {
     }
 }
 
-bool LifeGame::CheckAllExpired() {
-  int lived = 0;
+uint64_t LifeGame::CountLifes(int start, int end) {
+  uint64_t lived = 0;
   for (int i = 0; i < y_; ++i)
-    for (int j = 0; j < x_; j++) {
+    for (int j = start; j < end; j++) {
       if (matrix_[i][j])
         lived++;
     }
+  return lived;
+}
+
+bool LifeGame::CheckAllExpired() {
+  uint64_t lived = CountLifes(0, x_);
   if (lived_ == lived) {
     same_count_++;
   } else {
@@ -253,9 +209,87 @@ void LifeGame::LifeThread(bool print) {
   }
 }
 
+class CheckRunner : public butil::DelegateSimpleThread::Delegate {
+ public:
+  explicit CheckRunner(LifeGame* game, int index, int thread_num) :
+    game_(game), index_(index), thread_num_(thread_num) {
+     int x = game_->x();
+     start_ = (x / thread_num_) * index_;
+     if (index_ != thread_num_ - 1) {
+       end_ = (x / thread_num_) * (index_ + 1);
+     } else {
+       end_ = x;
+     }
+   }
+
+  virtual void Run() OVERRIDE {
+    game_->CheckLifesByIndex(start_, end_);
+  }
+
+ private:
+  LifeGame* game_;
+  int index_;
+  int thread_num_;
+  int start_;
+  int end_;
+};
+
+class TransRunner : public butil::DelegateSimpleThread::Delegate {
+ public:
+  explicit TransRunner(LifeGame* game, int index, int thread_num) :
+   game_(game), index_(index), thread_num_(thread_num) {
+     int x = game_->x();
+     start_ = (x / thread_num_) * index_;
+     if (index_ != thread_num_ - 1) {
+       end_ = (x / thread_num_) * (index_ + 1);
+     } else {
+       end_ = x;
+     }
+   }
+
+  virtual void Run() OVERRIDE {
+    game_->TransformLifes(start_, end_);
+  }
+
+ private:
+  LifeGame* game_;
+  int index_;
+  int thread_num_;
+  int start_;
+  int end_;
+};
+
+class CounterRunner : public butil::DelegateSimpleThread::Delegate {
+ public:
+  explicit CounterRunner(LifeGame* game, int index, int thread_num, uint64_t* lifes) :
+   game_(game), index_(index), thread_num_(thread_num), lifes_(lifes) {
+     int x = game_->x();
+     start_ = (x / thread_num_) * index_;
+     if (index_ != thread_num_ - 1) {
+       end_ = (x / thread_num_) * (index_ + 1);
+     } else {
+       end_ = x;
+     }
+   }
+
+  virtual void Run() OVERRIDE {
+    *lifes_ = game_->CountLifes(start_, end_);
+  }
+
+ private:
+  LifeGame* game_;
+  int index_;
+  int thread_num_;
+  int start_;
+  int end_;
+  uint64_t *lifes_;
+};
+
 LifeGameRunner::LifeGameRunner(LifeGame* game, int thread_num, int sleep_ms/*=0*/) :
   game_(game), thread_num_(thread_num) {
   sleep_time_ = sleep_ms * 1000;
+  counter_.resize(thread_num_);
+
   thread_pool_ = new butil::DelegateSimpleThreadPool("work_pool", thread_num_);
   for (int i = 0; i < thread_num_; ++i) {
     auto check_runner = new CheckRunner(game_, i, thread_num_);
@@ -263,6 +297,9 @@ LifeGameRunner::LifeGameRunner(LifeGame* game, int thread_num, int sleep_ms/*=0*
 
     auto trans_runner = new TransRunner(game_, i, thread_num_);
     trans_delegates_.push_back(trans_runner);
+
+    auto count_runner = new CounterRunner(game_, i, thread_num_, &counter_[i]);
+    count_delegates_.push_back(count_runner);
   }
 }
 
@@ -277,7 +314,7 @@ LifeGameRunner::~LifeGameRunner() {
 }
 
 void LifeGameRunner::Run(bool print) {
-  if (game_->CheckAllExpired()) {
+  if (CheckAllExpired()) {
     // life_condition = butil::RandInt(2, 8);
     auto end_point = std::chrono::steady_clock::now();
     double costed_time = std::chrono::duration<double>(end_point - game_->point()).count();
@@ -305,11 +342,33 @@ void LifeGameRunner::Run(bool print) {
   if (print) {
     game_->Print();
   } else {
-    std::cout << "generation:" << game_->generation() << " lived:" << game_->lived() << " \n";
+    if (game_->generation() % 100 == 0)
+      std::cout << "generation:" << game_->generation() << " lived:" << game_->lived() << " \n";
   }
   if (sleep_time_) {
     usleep(sleep_time_);
   }
+}
+
+bool LifeGameRunner::CheckAllExpired() {
+  // paralled CountLifes
+  for (int i = 0; i < thread_num_; ++i) {
+    thread_pool_->AddWork(count_delegates_[i], 1);
+  }
+  thread_pool_->Start();
+  thread_pool_->JoinAll();
+
+  uint64_t lived = std::accumulate(counter_.begin(), counter_.end(), 0);
+  if (game_->lived() == lived) {
+    game_->inc_same_count();
+  } else {
+    game_->set_lived(lived);
+    game_->set_same_count(0);
+  }
+  if (game_->same_count() >= 10) {
+    return true;
+  }
+  return false;
 }
 
 } // namespace YiNuo

@@ -99,9 +99,9 @@ DelegateSimpleThreadPool::~DelegateSimpleThreadPool() {
 void DelegateSimpleThreadPool::Start() {
   DCHECK(threads_.empty()) << "Start() called with outstanding threads.";
   for (int i = 0; i < num_threads_; ++i) {
-  DelegateSimpleThread* thread = new DelegateSimpleThread(this, name_prefix_);
-  thread->Start();
-  threads_.push_back(thread);
+    DelegateSimpleThread* thread = new DelegateSimpleThread(this, name_prefix_);
+    thread->Start();
+    threads_.push_back(thread);
   }
 }
 
