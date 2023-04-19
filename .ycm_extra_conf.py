@@ -47,6 +47,7 @@ flags = [
 '-I./base',
 '-I./ai',
 '-I./third_party',
+'-I./bld/output_third_party/include',
 '-I',
 './bld/output_third_party/include',
 '-I',
