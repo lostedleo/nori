@@ -285,32 +285,34 @@ class CounterRunner : public butil::DelegateSimpleThread::Delegate {
   uint64_t *lifes_;
 };
 
-LifeGameRunner::LifeGameRunner(LifeGame* game, int thread_num, int sleep_ms/*=0*/) :
-  game_(game), thread_num_(thread_num) {
+LifeGameRunner::LifeGameRunner(LifeGame* game, int thread_num, int work_num, int sleep_ms/*=0*/) :
+  game_(game), thread_num_(thread_num), work_num_(work_num) {
   sleep_time_ = sleep_ms * 1000;
-  counter_.resize(thread_num_);
+  counter_.resize(work_num_);
 
   thread_pool_ = new butil::DelegateSimpleThreadPool("work_pool", thread_num_);
-  for (int i = 0; i < thread_num_; ++i) {
-    auto check_runner = new CheckRunner(game_, i, thread_num_);
+  for (int i = 0; i < work_num_; ++i) {
+    auto check_runner = new CheckRunner(game_, i, work_num_);
     check_delegates_.push_back(check_runner);
 
-    auto trans_runner = new TransRunner(game_, i, thread_num_);
+    auto trans_runner = new TransRunner(game_, i, work_num_);
     trans_delegates_.push_back(trans_runner);
 
-    auto count_runner = new CounterRunner(game_, i, thread_num_, &counter_[i]);
+    auto count_runner = new CounterRunner(game_, i, work_num_, &counter_[i]);
     count_delegates_.push_back(count_runner);
   }
 }
 
 LifeGameRunner::~LifeGameRunner() {
   delete thread_pool_;
-  for (int i = 0; i < thread_num_; ++i) {
+  for (int i = 0; i < work_num_; ++i) {
     delete check_delegates_[i];
     delete trans_delegates_[i];
+    delete count_delegates_[i];
   }
   check_delegates_.clear();
   trans_delegates_.clear();
+  count_delegates_.clear();
 }
 
 void LifeGameRunner::Run(bool print) {
@@ -325,14 +327,14 @@ void LifeGameRunner::Run(bool print) {
   }
 
   // parallel CheckLifes
-  for (int i = 0; i < thread_num_; ++i) {
+  for (int i = 0; i < work_num_; ++i) {
     thread_pool_->AddWork(check_delegates_[i], 1);
   }
   thread_pool_->Start();
   thread_pool_->JoinAll();
 
   // parallel TransformLifes
-  for (int i = 0; i < thread_num_; ++i) {
+  for (int i = 0; i < work_num_; ++i) {
     thread_pool_->AddWork(trans_delegates_[i], 1);
   }
   thread_pool_->Start();
@@ -352,7 +354,7 @@ void LifeGameRunner::Run(bool print) {
 
 bool LifeGameRunner::CheckAllExpired() {
   // paralled CountLifes
-  for (int i = 0; i < thread_num_; ++i) {
+  for (int i = 0; i < work_num_; ++i) {
     thread_pool_->AddWork(count_delegates_[i], 1);
   }
   thread_pool_->Start();

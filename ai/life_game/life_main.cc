@@ -10,6 +10,7 @@
 #include <iostream>
 #include <string.h>
 #include <time.h>
+#include <sys/signal.h>
 
 double coeff = 0.283;
 
@@ -30,10 +31,11 @@ int main(int argc, char** argv) {
   init_count = int(width * height * coeff);
   bool print = true;
   int thread_num = 2;
+  int work_num = 4;
   int sleep_ms = 0;
   if (argc > 1) {
     if ((strcmp(argv[1], "-h") == 0) or (strcmp(argv[1], "--help") == 0)) {
-      printf("Usage: %s initialization_counter width height print[or not] thread_num sleep_time\n", argv[0]);
+      printf("Usage: %s initialization_counter width height print[or not] thread_num work_num sleep_time\n", argv[0]);
       exit(0);
     }
     init_count = atoi(argv[1]);
@@ -50,14 +52,17 @@ int main(int argc, char** argv) {
     thread_num = atoi(argv[5]);
   }
   if (argc > 6) {
-    sleep_ms = atoi(argv[6]);
+    work_num = atoi(argv[6]);
+  }
+  if (argc > 7) {
+    sleep_ms = atoi(argv[7]);
   }
   // (314, 68);
   YiNuo::LifeGame life_game(width, height);
   life_game.Init(init_count);
   // life_game.Start(print);
 
-  YiNuo::LifeGameRunner runner(&life_game, thread_num, sleep_ms);
+  YiNuo::LifeGameRunner runner(&life_game, thread_num, work_num, sleep_ms);
   while (!stop) {
     runner.Run(print);
   }

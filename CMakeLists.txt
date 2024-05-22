@@ -75,7 +75,7 @@ if(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
   endif()
 
   # Homebrew installed OpenSSL
-  set(OPENSSL_ROOT_DIR "/opt/homebrew/opt/openssl@1.1/")
+  set(OPENSSL_ROOT_DIR "/opt/homebrew/opt/openssl")
 endif()
 
 set(CMAKE_CPP_FLAGS "${CMAKE_CPP_FLAGS} -pipe -O2 -Wall -W -fPIC -fstrict-aliasing -Wno-unused-function -Wno-deprecated-declarations -Wno-unused-variable -Wno-unused-parameter -fno-omit-frame-pointer")

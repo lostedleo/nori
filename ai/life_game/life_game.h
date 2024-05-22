@@ -66,7 +66,7 @@ class LifeGame {
 class LifeGameRunner {
  public:
   typedef butil::DelegateSimpleThread::Delegate Delegate;
-  LifeGameRunner(LifeGame* game, int thread_num, int sleep_ms=0);
+  LifeGameRunner(LifeGame* game, int thread_num, int work_num, int sleep_ms=0);
   ~LifeGameRunner();
   void Run(bool print);
 
@@ -76,6 +76,7 @@ class LifeGameRunner {
   LifeGame* game_;
   int sleep_time_;
   int thread_num_;
+  int work_num_;
   butil::DelegateSimpleThreadPool* thread_pool_;
   std::vector<Delegate*> check_delegates_;
   std::vector<Delegate*> trans_delegates_;
