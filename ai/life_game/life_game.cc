@@ -36,7 +36,7 @@ LifeGame::LifeGame(int x, int y)
   life_condition_ = 3;
   lived_ = 0;
   same_count_ = 0;
-  int* matrix = new int[y_ * x_];
+  int* matrix = (int*) malloc(sizeof(int) * y_ * x_);
   matrix_ = new int*[y_];
   for (int j = 0; j < y_; ++j) {
     matrix_[j] = matrix + x_ * j;
@@ -50,7 +50,7 @@ LifeGame::LifeGame(int x, int y)
 
 LifeGame::~LifeGame() {
   Stop();
-  delete matrix_[0];
+  free(matrix_[0]);
   delete matrix_;
 }
 
