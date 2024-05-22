@@ -36,11 +36,12 @@ LifeGame::LifeGame(int x, int y)
   life_condition_ = 3;
   lived_ = 0;
   same_count_ = 0;
+  int* matrix = new int[y_ * x_];
   matrix_ = new int*[y_];
-  for (int i = 0; i < y_; ++i) {
-    matrix_[i] = new int[x_];
-    for (int j = 0; j < x_; ++j) {
-      matrix_[i][j] = 0;
+  for (int j = 0; j < y_; ++j) {
+    matrix_[j] = matrix + x_ * j;
+    for (int i = 0; i < x_; ++i) {
+      matrix_[j][i] = 0;
     }
   }
 
@@ -49,10 +50,8 @@ LifeGame::LifeGame(int x, int y)
 
 LifeGame::~LifeGame() {
   Stop();
-  for (int i = 0; i < y_; ++i) {
-    delete []matrix_[i];
-  }
-  delete []matrix_;
+  delete matrix_[0];
+  delete matrix_;
 }
 
 void LifeGame::Init(int number) {
@@ -123,26 +122,26 @@ void LifeGame::Print() {
 }
 
 void LifeGame::CheckLifesByIndex(int start, int end) {
-  for (int j = 0; j < y_; ++j) {
-    for (int i = start; i < end; ++i) {
+  for (int j = start; j < end; ++j) {
+    for (int i = 0; i < x_; ++i) {
       CheckLife(i, j, life_condition_);
     }
   }
 }
 
 void LifeGame::TransformLifes(int start, int end) {
-    for (int j = 0; j < y_; ++j) {
-      for (int i = start; i < end; ++i) {
-        matrix_[j][i] >>= 1;
-      }
+  for (int j = start; j < end; ++j) {
+    for (int i = 0; i < x_; ++i) {
+      matrix_[j][i] >>= 1;
     }
+  }
 }
 
 uint64_t LifeGame::CountLifes(int start, int end) {
   uint64_t lived = 0;
-  for (int i = 0; i < y_; ++i)
-    for (int j = start; j < end; j++) {
-      if (matrix_[i][j])
+  for (int j = start; j < end; ++j)
+    for (int i = 0; i < x_; i++) {
+      if (matrix_[j][i])
         lived++;
     }
   return lived;
@@ -213,12 +212,12 @@ class CheckRunner : public butil::DelegateSimpleThread::Delegate {
  public:
   explicit CheckRunner(LifeGame* game, int index, int thread_num) :
     game_(game), index_(index), thread_num_(thread_num) {
-     int x = game_->x();
-     start_ = (x / thread_num_) * index_;
+     int y = game_->y();
+     start_ = (y / thread_num_) * index_;
      if (index_ != thread_num_ - 1) {
-       end_ = (x / thread_num_) * (index_ + 1);
+       end_ = (y / thread_num_) * (index_ + 1);
      } else {
-       end_ = x;
+       end_ = y;
      }
    }
 
@@ -238,12 +237,12 @@ class TransRunner : public butil::DelegateSimpleThread::Delegate {
  public:
   explicit TransRunner(LifeGame* game, int index, int thread_num) :
    game_(game), index_(index), thread_num_(thread_num) {
-     int x = game_->x();
-     start_ = (x / thread_num_) * index_;
+     int y = game_->y();
+     start_ = (y / thread_num_) * index_;
      if (index_ != thread_num_ - 1) {
-       end_ = (x / thread_num_) * (index_ + 1);
+       end_ = (y / thread_num_) * (index_ + 1);
      } else {
-       end_ = x;
+       end_ = y;
      }
    }
 
@@ -263,12 +262,12 @@ class CounterRunner : public butil::DelegateSimpleThread::Delegate {
  public:
   explicit CounterRunner(LifeGame* game, int index, int thread_num, uint64_t* lifes) :
    game_(game), index_(index), thread_num_(thread_num), lifes_(lifes) {
-     int x = game_->x();
-     start_ = (x / thread_num_) * index_;
+     int y = game_->y();
+     start_ = (y / thread_num_) * index_;
      if (index_ != thread_num_ - 1) {
-       end_ = (x / thread_num_) * (index_ + 1);
+       end_ = (y / thread_num_) * (index_ + 1);
      } else {
-       end_ = x;
+       end_ = y;
      }
    }
 
