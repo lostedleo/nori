@@ -56,12 +56,20 @@ int main(int argc, char** argv) {
     sleep_ms = atoi(argv[7]);
   }
   // (314, 68);
+  auto start_point = std::chrono::steady_clock::now();
   YiNuo::LifeGame life_game(width, height);
+  auto end_point = std::chrono::steady_clock::now();
+  double costed_time = std::chrono::duration<double>(end_point - start_point).count();
+  printf("LifeGame consturct cost %.3fs\n", costed_time);
   life_game.Init(init_count, false);
   // life_game.Start(print);
 
   YiNuo::LifeGameRunner runner(&life_game, thread_num, work_num, sleep_ms);
+  start_point = std::chrono::steady_clock::now();
   runner.InitGame();
+  end_point = std::chrono::steady_clock::now();
+  costed_time = std::chrono::duration<double>(end_point - start_point).count();
+  printf("LifeGame init cost %.3fs\n", costed_time);
   while (!stop) {
     runner.Run(print);
   }
