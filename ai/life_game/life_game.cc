@@ -54,16 +54,18 @@ LifeGame::~LifeGame() {
   delete matrix_;
 }
 
-void LifeGame::Init(int number) {
+void LifeGame::Init(int number, bool init/*=true*/) {
   init_number_ = number;
-  InitRandom(init_number_);
+  if (init) {
+    InitRandom(init_number_, 0, y_);
+  }
 }
 
-void LifeGame::InitRandom(int number) {
+void LifeGame::InitRandom(int number, int start, int end) {
   int x, y;
   for (int i = 0; i < number; ++i) {
     x = RandGenerator(0, x_-1);
-    y = RandGenerator(0, y_-1);
+    y = RandGenerator(start, end-1);
     matrix_[y][x] = 1;
   }
   generation_ = 0;
@@ -192,7 +194,7 @@ void LifeGame::LifeThread(bool print) {
       printf("LifeGame had experienced %d generation cost %.3fs\n", generation_, costed_time);
       usleep(1000 * 1000);
       time_point_ = end_point;
-      InitRandom(init_number_);
+      InitRandom(init_number_, 0, y_);
     }
 
     CheckLifesByIndex(0, x_);
@@ -284,10 +286,41 @@ class CounterRunner : public butil::DelegateSimpleThread::Delegate {
   uint64_t *lifes_;
 };
 
+struct Args {
+ public:
+  LifeGame* game_;
+  int index_;
+  int work_num_;
+  int start_;
+  int end_;
+  uint64_t *lifes_;
+  uint64_t init_number_;
+
+  explicit Args(LifeGame* game, int index, int work_num, uint64_t* lifes) :
+   game_(game), index_(index), work_num_(work_num), lifes_(lifes) {
+     int y = game_->y();
+     int init_number = game_->init_number();
+     start_ = (y / work_num_) * index_;
+     if (index_ != work_num_ - 1) {
+       end_ = (y / work_num_) * (index_ + 1);
+       init_number_ = init_number / work_num_;
+     } else {
+       end_ = y;
+       init_number_ = init_number - (init_number / work_num_) * (work_num_ - 1);
+     }
+   }
+};
+
+static void* init_game(void* arg) {
+  Args* args = (Args*)arg;
+  args->game_->InitRandom(args->init_number_, args->start_, args->end_);
+}
+
 LifeGameRunner::LifeGameRunner(LifeGame* game, int thread_num, int work_num, int sleep_ms/*=0*/) :
   game_(game), thread_num_(thread_num), work_num_(work_num) {
   sleep_time_ = sleep_ms * 1000;
   counter_.resize(work_num_);
+  tids_.resize(work_num_);
 
   thread_pool_ = new butil::DelegateSimpleThreadPool("work_pool", thread_num_);
   for (int i = 0; i < work_num_; ++i) {
@@ -299,6 +332,9 @@ LifeGameRunner::LifeGameRunner(LifeGame* game, int thread_num, int work_num, int
 
     auto count_runner = new CounterRunner(game_, i, work_num_, &counter_[i]);
     count_delegates_.push_back(count_runner);
+
+    auto args = new Args(game_, i, work_num_, &counter_[i]);
+    args_.push_back(args);
   }
 }
 
@@ -308,10 +344,12 @@ LifeGameRunner::~LifeGameRunner() {
     delete check_delegates_[i];
     delete trans_delegates_[i];
     delete count_delegates_[i];
+    delete args_[i];
   }
   check_delegates_.clear();
   trans_delegates_.clear();
   count_delegates_.clear();
+  args_.clear();
 }
 
 void LifeGameRunner::Run(bool print) {
@@ -322,7 +360,7 @@ void LifeGameRunner::Run(bool print) {
     printf("LifeGame had experienced %d generation cost %.3fs\n", game_->generation(), costed_time);
     usleep(1000 * 1000);
     game_->set_point(end_point);
-    game_->InitRandom(game_->init_number());
+    InitGame();
   }
 
   // parallel CheckLifes
@@ -370,6 +408,16 @@ bool LifeGameRunner::CheckAllExpired() {
     return true;
   }
   return false;
+}
+
+void LifeGameRunner::InitGame() {
+  for (int i = 0; i < work_num_; ++i) {
+    bthread_start_background(&tids_[i], NULL, init_game, args_[i]);
+  }
+
+  for (int i = 0; i < work_num_; ++i) {
+    bthread_join(tids_[i], NULL);
+  }
 }
 
 } // namespace YiNuo

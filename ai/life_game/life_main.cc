@@ -59,10 +59,11 @@ int main(int argc, char** argv) {
   }
   // (314, 68);
   YiNuo::LifeGame life_game(width, height);
-  life_game.Init(init_count);
+  life_game.Init(init_count, false);
   // life_game.Start(print);
 
   YiNuo::LifeGameRunner runner(&life_game, thread_num, work_num, sleep_ms);
+  runner.InitGame();
   while (!stop) {
     runner.Run(print);
   }

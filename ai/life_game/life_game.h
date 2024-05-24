@@ -12,10 +12,14 @@
 #include "butil/threading/simple_thread.h"
 
 #include <chrono>
+#include <bthread/bthread.h>
+#include <vector>
 
 namespace YiNuo {
 
 typedef std::chrono::steady_clock::time_point time_point;
+
+struct Args;
 
 class LifeGame {
  public:
@@ -23,8 +27,8 @@ class LifeGame {
   explicit LifeGame(int x, int y);
   ~LifeGame();
 
-  void Init(int number);
-  void InitRandom(int number);
+  void Init(int number, bool init=true);
+  void InitRandom(int number, int start, int end);
   void Start(bool print=false);
   void Stop();
   void Print();
@@ -36,7 +40,7 @@ class LifeGame {
   int y() {return y_;}
   int generation() {return generation_;}
   void inc_generation() {generation_++;}
-  int init_number() {return init_number_;}
+  uint64_t init_number() {return init_number_;}
   uint64_t lived() {return lived_;}
   void set_lived(uint64_t lived) {lived_ = lived;}
   int same_count() {return same_count_;}
@@ -52,8 +56,8 @@ class LifeGame {
 
   bool  started_;
   int   life_condition_;
-  int   init_number_;
   int   same_count_;
+  uint64_t init_number_;
   uint64_t lived_;
   int   generation_;
   int   x_;
@@ -69,6 +73,7 @@ class LifeGameRunner {
   LifeGameRunner(LifeGame* game, int thread_num, int work_num, int sleep_ms=0);
   ~LifeGameRunner();
   void Run(bool print);
+  void InitGame();
 
  private:
   bool CheckAllExpired();
@@ -82,6 +87,8 @@ class LifeGameRunner {
   std::vector<Delegate*> trans_delegates_;
   std::vector<Delegate*> count_delegates_;
   std::vector<uint64_t> counter_;
+  std::vector<bthread_t> tids_;
+  std::vector<Args*> args_;
 };
 
 } // namespace YiNuo
