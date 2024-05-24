@@ -49,8 +49,6 @@ flags = [
 '-I./third_party',
 '-I./bld/output_third_party/include',
 '-I',
-'./bld/output_third_party/include',
-'-I',
 './bld/storage/noah/',
 '-isystem',
 '../llvm/include',

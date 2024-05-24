@@ -314,6 +314,7 @@ struct Args {
 static void* init_game(void* arg) {
   Args* args = (Args*)arg;
   args->game_->InitRandom(args->init_number_, args->start_, args->end_);
+  return NULL;
 }
 
 LifeGameRunner::LifeGameRunner(LifeGame* game, int thread_num, int work_num, int sleep_ms/*=0*/) :
