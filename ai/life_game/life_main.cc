@@ -13,8 +13,6 @@
 #include <sys/signal.h>
 
 double coeff = 0.283;
-
-
 static bool stop = false;
 
 void sig_handler(int signum){

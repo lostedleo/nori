@@ -7,6 +7,7 @@
 
 #include "life_game.h"
 #include "butil/threading/simple_thread.h"
+#include "butil/fast_rand.h"
 
 #include <numeric>
 #include <time.h>
@@ -17,13 +18,7 @@
 #include <string>
 
 uint64_t RandGenerator(uint64_t min, uint64_t max) {
-static bool first = true;
-   if (first) {
-      srand(time(NULL)); //seeding for the first time only!
-      first = false;
-   }
-   return min + rand() % (( max + 1 ) - min);
-
+  return min + butil::fast_rand() % (( max + 1 ) - min);
 }
 
 namespace YiNuo {
@@ -36,7 +31,7 @@ LifeGame::LifeGame(int x, int y)
   life_condition_ = 3;
   lived_ = 0;
   same_count_ = 0;
-  int* matrix = (int*) malloc(sizeof(int) * y_ * x_);
+  int* matrix = (int*) malloc(sizeof(int) * x_ * y_);
   matrix_ = new int*[y_];
   for (int j = 0; j < y_; ++j) {
     matrix_[j] = matrix + x_ * j;
@@ -210,6 +205,35 @@ void LifeGame::LifeThread(bool print) {
   }
 }
 
+class InitRunner : public butil::DelegateSimpleThread::Delegate {
+ public:
+  explicit InitRunner(LifeGame* game, int index, int work_num) :
+    game_(game), index_(index), work_num_(work_num) {
+     int y = game_->y();
+     uint64_t init_number = game_->init_number();
+     start_ = (y / work_num_) * index_;
+     if (index_ != work_num_ - 1) {
+       end_ = (y / work_num_) * (index_ + 1);
+       init_number_ = init_number / work_num_;
+     } else {
+       end_ = y;
+       init_number_ = init_number - (init_number / work_num_) * (work_num_ - 1);
+     }
+   }
+
+  virtual void Run() OVERRIDE {
+    game_->InitRandom(init_number_, start_, end_);
+  }
+
+ private:
+  LifeGame* game_;
+  int index_;
+  int work_num_;
+  int start_;
+  int end_;
+  uint64_t init_number_;
+};
+
 class CheckRunner : public butil::DelegateSimpleThread::Delegate {
  public:
   explicit CheckRunner(LifeGame* game, int index, int thread_num) :
@@ -299,7 +323,7 @@ struct Args {
   explicit Args(LifeGame* game, int index, int work_num, uint64_t* lifes) :
    game_(game), index_(index), work_num_(work_num), lifes_(lifes) {
      int y = game_->y();
-     int init_number = game_->init_number();
+     uint64_t init_number = game_->init_number();
      start_ = (y / work_num_) * index_;
      if (index_ != work_num_ - 1) {
        end_ = (y / work_num_) * (index_ + 1);
@@ -321,10 +345,14 @@ LifeGameRunner::LifeGameRunner(LifeGame* game, int thread_num, int work_num, int
   game_(game), thread_num_(thread_num), work_num_(work_num) {
   sleep_time_ = sleep_ms * 1000;
   counter_.resize(work_num_);
-  tids_.resize(work_num_);
 
   thread_pool_ = new butil::DelegateSimpleThreadPool("work_pool", thread_num_);
+  for (int i = 0; i < thread_num_; ++i) {
+    auto init_runner = new InitRunner(game_, i, thread_num_);
+    init_delegates_.push_back(init_runner);
+  }
   for (int i = 0; i < work_num_; ++i) {
+
     auto check_runner = new CheckRunner(game_, i, work_num_);
     check_delegates_.push_back(check_runner);
 
@@ -333,9 +361,6 @@ LifeGameRunner::LifeGameRunner(LifeGame* game, int thread_num, int work_num, int
 
     auto count_runner = new CounterRunner(game_, i, work_num_, &counter_[i]);
     count_delegates_.push_back(count_runner);
-
-    auto args = new Args(game_, i, work_num_, &counter_[i]);
-    args_.push_back(args);
   }
 }
 
@@ -345,12 +370,10 @@ LifeGameRunner::~LifeGameRunner() {
     delete check_delegates_[i];
     delete trans_delegates_[i];
     delete count_delegates_[i];
-    delete args_[i];
   }
   check_delegates_.clear();
   trans_delegates_.clear();
   count_delegates_.clear();
-  args_.clear();
 }
 
 void LifeGameRunner::Run(bool print) {
@@ -412,13 +435,11 @@ bool LifeGameRunner::CheckAllExpired() {
 }
 
 void LifeGameRunner::InitGame() {
-  for (int i = 0; i < work_num_; ++i) {
-    bthread_start_background(&tids_[i], NULL, init_game, args_[i]);
+  for (int i = 0; i < thread_num_; ++i) {
+    thread_pool_->AddWork(init_delegates_[i], 1);
   }
-
-  for (int i = 0; i < work_num_; ++i) {
-    bthread_join(tids_[i], NULL);
-  }
+  thread_pool_->Start();
+  thread_pool_->JoinAll();
 }
 
 } // namespace YiNuo

@@ -63,7 +63,7 @@ use_cxx11()
 # Set CXX_FLAGS
 set(GFLAGS_NS google)
 if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-  set(CMAKE_CPP_FLAGS "-Wno-unused-local-typedef -Wno-inconsistent-missing-override")
+  set(CMAKE_CPP_FLAGS "-Wno-unused-local-typedef -Wno-inconsistent-missing-override -Wno-macro-redefined")
 endif()
 
 if(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
@@ -78,7 +78,7 @@ if(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
   set(OPENSSL_ROOT_DIR "/opt/homebrew/opt/openssl")
 endif()
 
-set(CMAKE_CPP_FLAGS "${CMAKE_CPP_FLAGS} -pipe -O2 -Wall -W -fPIC -fstrict-aliasing -Wno-unused-but-set-variable -Wno-macro-redefined -Wno-unused-function -Wno-deprecated-declarations -Wno-unused-variable -Wno-unused-parameter -fno-omit-frame-pointer")
+set(CMAKE_CPP_FLAGS "${CMAKE_CPP_FLAGS} -pipe -g -O2 -Wall -W -fPIC -fstrict-aliasing -Wno-unused-but-set-variable -Wno-unused-function -Wno-deprecated-declarations -Wno-unused-variable -Wno-unused-parameter -fno-omit-frame-pointer")
 set(CMAKE_CPP_FLAGS "${CMAKE_CPP_FLAGS} -Wno-sign-compare")
 set(CMAKE_CXX_FLAGS "${CMAKE_CPP_FLAGS} -DGFLAGS_NS=${GFLAGS_NS}")
 

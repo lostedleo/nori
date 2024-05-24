@@ -10,7 +10,7 @@ set(LIFE_GAME_MAIN
 )
 
 add_library(life_game ${LIFE_GAME})
-target_link_libraries(life_game brpc-static)
+target_link_libraries(life_game butil-static)
 
 add_executable(nori_main ${LIFE_GAME_MAIN})
 target_link_libraries(nori_main life_game)

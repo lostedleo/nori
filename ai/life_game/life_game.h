@@ -12,7 +12,6 @@
 #include "butil/threading/simple_thread.h"
 
 #include <chrono>
-#include <bthread/bthread.h>
 #include <vector>
 
 namespace YiNuo {
@@ -83,12 +82,11 @@ class LifeGameRunner {
   int thread_num_;
   int work_num_;
   butil::DelegateSimpleThreadPool* thread_pool_;
+  std::vector<Delegate*> init_delegates_;
   std::vector<Delegate*> check_delegates_;
   std::vector<Delegate*> trans_delegates_;
   std::vector<Delegate*> count_delegates_;
   std::vector<uint64_t> counter_;
-  std::vector<bthread_t> tids_;
-  std::vector<Args*> args_;
 };
 
 } // namespace YiNuo
