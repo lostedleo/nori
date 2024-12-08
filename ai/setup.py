@@ -14,7 +14,7 @@ if platform.system() == 'Linux':
 else:
     depend_libs = []
 
-nrai_module =  Pybind11Extension(
+nrai_module = Pybind11Extension(
     "_nrai",
     sources=["nrai/pybind11_module.cc"],
     extra_compile_args=['-std=c++14', '-Wno-reorder-ctor', '-Wno-sometimes-uninitialized',
